@@ -1,0 +1,79 @@
+{
+  "name": "@sanity/agent-context",
+  "version": "0.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/sanity-io/agent-context.git",
+    "directory": "packages/agent-context"
+  },
+  "license": "MIT",
+  "author": "Sanity.io <hello@sanity.io>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./studio": {
+      "source": "./src/studio/index.ts",
+      "import": "./dist/studio.js",
+      "default": "./dist/studio.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "pkg build --strict --clean --check",
+    "check:lint": "eslint .",
+    "check:lint:fix": "eslint . --fix",
+    "check:types": "tsc --noEmit",
+    "dev": "pkg-utils watch",
+    "test": "vitest run --typecheck",
+    "test:unit": "vitest --typecheck",
+    "test:unit:coverage": "vitest run --coverage"
+  },
+  "browserslist": "extends @sanity/browserslist-config",
+  "dependencies": {
+    "groq-js": "^1.25.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@sanity/icons": "^3",
+    "@sanity/pkg-utils": "^10.3.2",
+    "@sanity/tsconfig": "^2.1.0",
+    "@sanity/ui": "^3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.0.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "sanity": "^5.7.0",
+    "styled-components": "^6.3.8",
+    "typescript": "^5",
+    "vitest": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@sanity/icons": "^3",
+    "@sanity/ui": "^3",
+    "react": "^19",
+    "react-dom": "^19",
+    "sanity": "^5.7.0",
+    "styled-components": "^6"
+  },
+  "packageManager": "pnpm@10.19.0",
+  "engines": {
+    "node": ">=20.19 <22 || >=22.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

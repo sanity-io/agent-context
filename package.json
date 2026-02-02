@@ -1,0 +1,43 @@
+{
+  "name": "root",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "turbo build",
+    "check:format": "prettier --check .",
+    "check:lint": "turbo run check:lint --continue",
+    "check:lint:fix": "turbo run check:lint:fix --continue",
+    "check:types": "turbo run check:types",
+    "dev": "turbo dev",
+    "format:all": "prettier --cache --write .",
+    "format:staged": "pretty-quick --staged",
+    "prepare": "husky",
+    "publish:agent-context": "pnpm --filter=@sanity/agent-context exec release-it",
+    "publish:agent-context:preview": "pnpm --filter=@sanity/agent-context exec release-it --dry-run",
+    "test:unit": "turbo test:unit",
+    "test:unit:coverage": "turbo test:unit:coverage"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "*": [
+      "pnpm format:staged"
+    ]
+  },
+  "prettier": "@sanity/prettier-config",
+  "devDependencies": {
+    "@commitlint/cli": "^20",
+    "@commitlint/config-conventional": "^20",
+    "@sanity/prettier-config": "^3.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "pretty-quick": "^4.2.2",
+    "release-it": "^19.2.3",
+    "turbo": "^2.7.4",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.19.0"
+}

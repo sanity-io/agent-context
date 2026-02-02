@@ -1,0 +1,53 @@
+{
+  "name": "@examples/ecommerce-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "check:lint": "eslint .",
+    "check:lint:fix": "eslint . --fix",
+    "check:types": "tsc --noEmit",
+    "dev": "next dev",
+    "start": "next start",
+    "typegen": "sanity typegen generate"
+  },
+  "prettier": "@sanity/prettier-config",
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.23",
+    "@ai-sdk/mcp": "^1.0.13",
+    "@ai-sdk/react": "^3.0.52",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@sanity/client": "^7",
+    "@sanity/image-url": "^2.0.3",
+    "ai": "^6.0.50",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "html2canvas-pro": "^1.6.6",
+    "lucide-react": "^0.563.0",
+    "next": "16.1.4",
+    "next-sanity": "^12.0.14",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-markdown": "^10.1.0",
+    "remark-directive": "^4.0.0",
+    "sanity": "^5.7.0",
+    "tailwind-merge": "^3.4.0",
+    "turndown": "^7.2.2",
+    "unist": "^0.0.1",
+    "unist-util-visit": "^5.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/turndown": "^5.0.6",
+    "@types/unist": "^3.0.3",
+    "dotenv": "^16.4.5",
+    "eslint-config-next": "16.1.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

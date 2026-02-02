@@ -1,0 +1,43 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "outputs": ["dist/**", "build/**", ".next/**"],
+      "dependsOn": ["^build"]
+    },
+    "@examples/ecommerce-app#build": {
+      "env": [
+        "NEXT_PUBLIC_SANITY_PROJECT_ID",
+        "NEXT_PUBLIC_SANITY_DATASET",
+        "SANITY_API_READ_TOKEN",
+        "SANITY_CONTEXT_MCP_URL",
+        "ANTHROPIC_API_KEY"
+      ]
+    },
+    "check:lint": {
+      "dependsOn": ["^build"],
+      "outputLogs": "errors-only"
+    },
+    "check:lint:fix": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "check:types": {
+      "dependsOn": ["^build"],
+      "outputLogs": "errors-only"
+    },
+    "test:unit": {
+      "dependsOn": ["^build", "^test:unit"],
+      "cache": false
+    },
+    "test:unit:coverage": {
+      "dependsOn": ["^build"],
+      "cache": false
+    }
+  }
+}

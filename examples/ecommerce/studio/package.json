@@ -1,0 +1,33 @@
+{
+  "name": "@examples/ecommerce-studio",
+  "version": "1.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "package.json",
+  "scripts": {
+    "build": "dotenv -e ../.env -- sanity build",
+    "check:lint": "eslint .",
+    "check:lint:fix": "eslint . --fix",
+    "check:types": "tsc --noEmit",
+    "deploy": "dotenv -e ../.env -- sanity deploy",
+    "deploy-graphql": "dotenv -e ../.env -- sanity graphql deploy",
+    "dev": "dotenv -e ../.env -- sanity dev",
+    "extract-schema": "dotenv -e ../.env -- sanity schema extract --path=schema.json",
+    "start": "dotenv -e ../.env -- sanity start"
+  },
+  "prettier": "@sanity/prettier-config",
+  "dependencies": {
+    "@sanity/agent-context": "workspace:*",
+    "@sanity/vision": "^5.7.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "sanity": "^5.7.0",
+    "styled-components": "^6.3.8"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@types/react": "^19",
+    "dotenv-cli": "^8.0.0",
+    "typescript": "^5"
+  }
+}

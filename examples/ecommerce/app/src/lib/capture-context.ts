@@ -18,8 +18,13 @@ export const AGENT_CHAT_HIDDEN_ATTRIBUTE = 'agent-chat-hidden'
  * This is sent with every message so the agent knows where the user is.
  */
 export function captureUserContext(): UserContext {
+  const metaDescription =
+    document.querySelector('meta[name="description"]')?.getAttribute('content') ||
+    document.querySelector('meta[property="og:description"]')?.getAttribute('content')
+
   return {
     documentTitle: document.title,
+    documentDescription: metaDescription || undefined,
     documentLocation: window.location.pathname,
   }
 }

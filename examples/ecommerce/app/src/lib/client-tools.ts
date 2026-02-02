@@ -6,6 +6,7 @@
 /** User context sent with every message so the agent knows where the user is. */
 export interface UserContext {
   documentTitle: string
+  documentDescription?: string
   documentLocation: string
 }
 

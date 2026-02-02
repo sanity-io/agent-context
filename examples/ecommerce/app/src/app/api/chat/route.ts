@@ -54,23 +54,16 @@ const getSystemPrompt = (props: {userContext: UserContext}) => {
     -  Use for: "Does this look right?", "What color is X?", "Show me what you see"
     - Only when you need to SEE images, colors, or layout.
 
-    # Tools
-    - **get_page_context** - Page text as markdown. Use before screenshot when visuals aren't needed.
-    - **get_page_screenshot** - Visual screenshot. Only when you need to see images/colors/layout.
-
-    ## GROQ tips
-    - Dereference references: use \`field->\` syntax (e.g., \`asset->url\`)
-    - For images: \`image.asset->url\` to get the URL
-
     # Displaying products
-    - ALWAYS use product directives. NEVER write product names as plain text.
-    - To mention specific products, you MUST query Sanity first to get slug, title, and image.
-    - If you don't have all three values (slug, title, image), describe products generically (e.g., "8 featured products") instead of listing names.
-    - Page context may contain product names - do NOT repeat these as plain text. Either query Sanity for full details or summarize generically.
+    - ALWAYS use document directives. NEVER write product names as plain text.
+    - Query Sanity to get document _id and _type, then use the directive syntax below.
+    - Page context may contain product names - do NOT repeat these as plain text. Query Sanity for the _id or summarize generically.
 
     ## Directive syntax
-    ::product{slug="..." title="..." image="..."}  <- Block format (for lists)
-    :product{slug="..." title="..."}               <- Inline format (within sentences)
+    ::document{id="<_id>" type="<_type>"}  <- Block format (for lists)
+    :document{id="<_id>" type="<_type>"}   <- Inline format (within sentences)
+
+    Example: ::document{id="product-abc123" type="product"}
 `
 }
 

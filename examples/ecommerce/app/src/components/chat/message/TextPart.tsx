@@ -4,7 +4,7 @@ import remarkDirective from 'remark-directive'
 
 import {cn} from '@/lib/utils'
 
-import {Product} from './Product'
+import {Document} from './Document'
 import {remarkDirectives} from './remarkDirectives'
 
 interface TextPartProps {
@@ -13,14 +13,14 @@ interface TextPartProps {
 }
 
 type ExtendedComponents = Components & {
-  Product: typeof Product
+  Document: typeof Document
 }
 
 export function TextPart({text, isUser}: TextPartProps) {
   if (!text.trim()) return null
 
   const components: ExtendedComponents = {
-    Product,
+    Document,
 
     a(props) {
       const {href = '', children} = props

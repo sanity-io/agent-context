@@ -43,6 +43,7 @@ const getSystemPrompt = (props: {userContext: UserContext}) => {
 
     <user-context>
       <document-title>${userContext.documentTitle}</document-title>
+      <document-description>${userContext.documentDescription}</document-description>
       <document-location>${userContext.documentLocation}</document-location>
     </user-context>
 

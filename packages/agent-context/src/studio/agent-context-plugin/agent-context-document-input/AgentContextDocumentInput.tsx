@@ -1,6 +1,5 @@
 import {CopyIcon} from '@sanity/icons'
 import {Box, Button, Card, Flex, Stack, Text, useToast} from '@sanity/ui'
-import {useMemo} from 'react'
 import {
   DEFAULT_STUDIO_CLIENT_OPTIONS,
   getValueAtPath,
@@ -18,11 +17,8 @@ export function AgentContextDocumentInput(props: InputProps) {
   const toast = useToast()
   const apiHost = useClient(DEFAULT_STUDIO_CLIENT_OPTIONS).config().apiHost
 
-  const mcpURL = useMemo(() => {
-    const slug = getValueAtPath(props.value, ['slug'])
-
-    return getMcpURL({apiHost, projectId, dataset, slug})
-  }, [apiHost, projectId, dataset, props.value])
+  const slug = getValueAtPath(props.value, ['slug'])
+  const mcpURL = getMcpURL({apiHost, projectId, dataset, slug})
 
   const handleCopy = () => {
     try {

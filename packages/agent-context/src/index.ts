@@ -1,4 +1,2 @@
-/** @public */
-export function main(): void {
-  //
-}
+// No root exports yet
+export {}

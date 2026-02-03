@@ -24,9 +24,12 @@ export default defineConfig({
   plugins: [
     structureTool({
       structure: (S: StructureBuilder) => {
-        // Get all schema types except the agent context type
+        // Document types to group under "Agents"
+        const agentTypes = [AGENT_CONTEXT_SCHEMA_TYPE_NAME, 'agent.config']
+
+        // Get all schema types except agent-related types
         const defaultListItems = S.documentTypeListItems().filter(
-          (item: ListItemBuilder) => item.getId() !== AGENT_CONTEXT_SCHEMA_TYPE_NAME,
+          (item: ListItemBuilder) => !agentTypes.includes(item.getId() ?? ''),
         )
 
         return S.list()
@@ -41,6 +44,7 @@ export default defineConfig({
                 S.list()
                   .title('Agents')
                   .items([
+                    S.documentTypeListItem('agent.config').title('Agent Configs'),
                     S.documentTypeListItem(AGENT_CONTEXT_SCHEMA_TYPE_NAME).title('Agent Contexts'),
                   ]),
               ),

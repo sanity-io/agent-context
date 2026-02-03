@@ -4,6 +4,7 @@ import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'a
 import {z} from 'zod'
 
 import {CLIENT_TOOLS, type UserContext} from '@/lib/client-tools'
+import {client} from '@/sanity/lib/client'
 
 /**
  * Client-side tools for capturing page context.
@@ -24,17 +25,41 @@ const clientTools = {
   },
 }
 
-const getSystemPrompt = (props: {userContext: UserContext}) => {
-  const {userContext} = props
+/**
+ * Default system prompt if no agent config is found - personality and communication style only.
+ */
+const DEFAULT_SYSTEM_PROMPT = `
+  You are a polished shopping assistant at a premium store.
+
+  # Communication
+  - If tools are needed, call them without any accompanying text.
+  - Respond with: a brief intro + product directives (when showing products).
+  - NEVER mention: tools, queries, schema, fields, variants, images, data structure, types.
+  - FORBIDDEN phrases: "Let me", "I'll", "I need to", "checking", "looking", "finding".
+`
+
+/**
+ * Builds the full system prompt by combining:
+ * 1. Custom prompt (from an agent config document in Sanity) or default prompt
+ * 2. Technical instructions (always appended - required for app to work)
+ */
+function buildSystemPrompt(props: {customPrompt: string | null; userContext: UserContext}) {
+  const {customPrompt, userContext} = props
+  const basePrompt = customPrompt || DEFAULT_SYSTEM_PROMPT
 
   return `
-    You are a polished shopping assistant at a premium store.
+    ${basePrompt}
 
-    # Communication
-    - If tools are needed, call them without any accompanying text.
-    - Respond with: a brief intro + product directives (when showing products).
-    - NEVER mention: tools, queries, schema, fields, variants, images, data structure, types.
-    - FORBIDDEN phrases: "Let me", "I'll", "I need to", "checking", "looking", "finding".
+    # Displaying products
+    - ALWAYS use document directives. NEVER write product names as plain text.
+    - Query Sanity to get document _id and _type, then use the directive syntax below.
+    - Page context may contain product names - do NOT repeat these as plain text. Query Sanity for the _id or summarize generically.
+
+    ## Directive syntax
+    ::document{id="<_id>" type="<_type>"}  <- Block format (for lists)
+    :document{id="<_id>" type="<_type>"}   <- Inline format (within sentences)
+
+    Example: ::document{id="product-abc123" type="product"}
 
     # Page Context (3 levels - use the minimum needed)
 
@@ -52,20 +77,9 @@ const getSystemPrompt = (props: {userContext: UserContext}) => {
     - Returns page text as markdown. Cheaper than screenshot.
 
     **Level 3: get_page_screenshot tool (visual)**
-    -  Use for: "Does this look right?", "What color is X?", "Show me what you see"
+    - Use for: "Does this look right?", "What color is X?", "Show me what you see"
     - Only when you need to SEE images, colors, or layout.
-
-    # Displaying products
-    - ALWAYS use document directives. NEVER write product names as plain text.
-    - Query Sanity to get document _id and _type, then use the directive syntax below.
-    - Page context may contain product names - do NOT repeat these as plain text. Query Sanity for the _id or summarize generically.
-
-    ## Directive syntax
-    ::document{id="<_id>" type="<_type>"}  <- Block format (for lists)
-    :document{id="<_id>" type="<_type>"}   <- Inline format (within sentences)
-
-    Example: ::document{id="product-abc123" type="product"}
-`
+`.trim()
 }
 
 export async function POST(req: Request) {
@@ -80,17 +94,31 @@ export async function POST(req: Request) {
     throw new Error('ANTHROPIC_API_KEY is not set')
   }
 
-  const mcpClient = await createMCPClient({
-    transport: {
-      type: 'http',
-      url: process.env.SANITY_CONTEXT_MCP_URL,
-      headers: {
-        Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
+  const [mcpClient, agentConfig] = await Promise.all([
+    // Create the MCP client
+    createMCPClient({
+      transport: {
+        type: 'http',
+        url: process.env.SANITY_CONTEXT_MCP_URL,
+        headers: {
+          Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
+        },
       },
-    },
-  })
+    }),
 
-  const systemPrompt = getSystemPrompt({userContext})
+    // Get the agent config from Sanity
+    client.fetch<{name: string; systemPrompt: string | null}>(
+      `*[_type == "agent.config" && slug.current == $slug][0] { name, systemPrompt }`,
+      {
+        slug: process.env.AGENT_CONFIG_SLUG || 'default',
+      },
+    ),
+  ])
+
+  const systemPrompt = buildSystemPrompt({
+    customPrompt: agentConfig?.systemPrompt ?? null,
+    userContext,
+  })
 
   try {
     const mcpTools = await mcpClient.tools()

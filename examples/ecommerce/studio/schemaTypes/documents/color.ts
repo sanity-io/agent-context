@@ -2,7 +2,7 @@ import {defineField, defineType} from 'sanity'
 
 export const color = defineType({
   name: 'color',
-  title: 'Color',
+  title: 'Colors',
   type: 'document',
   fields: [
     defineField({

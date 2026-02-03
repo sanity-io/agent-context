@@ -4,6 +4,7 @@ import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'a
 import {z} from 'zod'
 
 import {CLIENT_TOOLS, type UserContext} from '@/lib/client-tools'
+import {client} from '@/sanity/lib/client'
 
 /**
  * Client-side tools for capturing page context.
@@ -24,48 +25,19 @@ const clientTools = {
   },
 }
 
-const getSystemPrompt = (props: {userContext: UserContext}) => {
-  const {userContext} = props
+/**
+ * Builds the system prompt from the Sanity document, interpolating runtime variables.
+ * Available variables: {{documentTitle}}, {{documentLocation}}
+ */
+function buildSystemPrompt(props: {template: string; userContext: UserContext}) {
+  const {template, userContext} = props
 
-  return `
-    You are a polished shopping assistant at a premium store.
+  const vars: Record<string, string> = {
+    documentTitle: userContext.documentTitle,
+    documentLocation: userContext.documentLocation,
+  }
 
-    # Communication
-    - If tools are needed, call them without any accompanying text.
-    - Respond with: a brief intro + product directives (when showing products).
-    - NEVER mention: tools, queries, schema, fields, variants, images, data structure, types.
-    - FORBIDDEN phrases: "Let me", "I'll", "I need to", "checking", "looking", "finding".
-
-    # Page Context (3 levels - use the minimum needed)
-
-    **Level 1: <user-context> (already available - no tool needed)**
-    - Use for: "Where am I?", "What page is this?", "Give me a link"
-
-    <user-context>
-      <document-title>${userContext.documentTitle}</document-title>
-      <document-description>${userContext.documentDescription}</document-description>
-      <document-location>${userContext.documentLocation}</document-location>
-    </user-context>
-
-    **Level 2: get_page_context tool (text content)**
-    - Use for: "What's on this page?", "What products are shown?", "Read this page"
-    - Returns page text as markdown. Cheaper than screenshot.
-
-    **Level 3: get_page_screenshot tool (visual)**
-    -  Use for: "Does this look right?", "What color is X?", "Show me what you see"
-    - Only when you need to SEE images, colors, or layout.
-
-    # Displaying products
-    - ALWAYS use document directives. NEVER write product names as plain text.
-    - Query Sanity to get document _id and _type, then use the directive syntax below.
-    - Page context may contain product names - do NOT repeat these as plain text. Query Sanity for the _id or summarize generically.
-
-    ## Directive syntax
-    ::document{id="<_id>" type="<_type>"}  <- Block format (for lists)
-    :document{id="<_id>" type="<_type>"}   <- Inline format (within sentences)
-
-    Example: ::document{id="product-abc123" type="product"}
-`
+  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => vars[key] ?? '')
 }
 
 export async function POST(req: Request) {
@@ -80,17 +52,35 @@ export async function POST(req: Request) {
     throw new Error('ANTHROPIC_API_KEY is not set')
   }
 
-  const mcpClient = await createMCPClient({
-    transport: {
-      type: 'http',
-      url: process.env.SANITY_CONTEXT_MCP_URL,
-      headers: {
-        Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
+  const [mcpClient, agentConfig] = await Promise.all([
+    // Create the MCP client
+    createMCPClient({
+      transport: {
+        type: 'http',
+        url: process.env.SANITY_CONTEXT_MCP_URL,
+        headers: {
+          Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
+        },
       },
-    },
-  })
+    }),
 
-  const systemPrompt = getSystemPrompt({userContext})
+    // Get the agent config from Sanity
+    client.fetch<{systemPrompt: string | null} | null>(
+      `*[_type == "agent.config" && slug.current == $slug][0] { systemPrompt }`,
+      {
+        slug: process.env.AGENT_CONFIG_SLUG || 'default',
+      },
+    ),
+  ])
+
+  if (!agentConfig?.systemPrompt) {
+    throw new Error('Agent config not found or missing system prompt. Create one in Sanity Studio.')
+  }
+
+  const systemPrompt = buildSystemPrompt({
+    template: agentConfig.systemPrompt,
+    userContext,
+  })
 
   try {
     const mcpTools = await mcpClient.tools()

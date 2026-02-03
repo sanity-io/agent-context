@@ -19,9 +19,11 @@
   "dependencies": {
     "@sanity/agent-context": "workspace:*",
     "@sanity/vision": "^5.7.0",
+    "easymde": "^2.20.0",
     "react": "^19",
     "react-dom": "^19",
     "sanity": "^5.7.0",
+    "sanity-plugin-markdown": "^8.0.5",
     "styled-components": "^6.3.8"
   },
   "devDependencies": {

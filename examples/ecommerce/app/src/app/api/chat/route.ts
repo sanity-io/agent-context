@@ -3,6 +3,7 @@ import {createMCPClient} from '@ai-sdk/mcp'
 import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'ai'
 import {z} from 'zod'
 
+import {saveConversation} from '@/lib/classify-conversation'
 import {CLIENT_TOOLS, type UserContext} from '@/lib/client-tools'
 import {client} from '@/sanity/lib/client'
 
@@ -41,8 +42,11 @@ function buildSystemPrompt(props: {template: string; userContext: UserContext}) 
 }
 
 export async function POST(req: Request) {
-  const {messages, userContext}: {messages: UIMessage[]; userContext: UserContext} =
-    await req.json()
+  const {
+    messages,
+    userContext,
+    id: chatId,
+  }: {messages: UIMessage[]; userContext: UserContext; id: string} = await req.json()
 
   if (!process.env.SANITY_CONTEXT_MCP_URL) {
     throw new Error('SANITY_CONTEXT_MCP_URL is not set')
@@ -99,7 +103,15 @@ export async function POST(req: Request) {
       },
     })
 
-    return result.toUIMessageStreamResponse()
+    return result.toUIMessageStreamResponse({
+      originalMessages: messages,
+      onFinish: async ({messages: allMessages}) => {
+        await saveConversation({
+          chatId,
+          messages: allMessages,
+        })
+      },
+    })
   } catch (error) {
     await mcpClient.close()
     throw error

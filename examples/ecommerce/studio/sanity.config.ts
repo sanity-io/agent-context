@@ -4,6 +4,7 @@ import {defineConfig} from 'sanity'
 import {type ListItemBuilder, type StructureBuilder, structureTool} from 'sanity/structure'
 import {markdownSchema} from 'sanity-plugin-markdown'
 
+import {agentInsightsPlugin} from './agent-insights-tool/agentInsightsPlugin'
 import {schemaTypes} from './schemaTypes'
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID
@@ -26,7 +27,7 @@ export default defineConfig({
     structureTool({
       structure: (S: StructureBuilder) => {
         // Document types to group under "Agents"
-        const agentTypes = [AGENT_CONTEXT_SCHEMA_TYPE_NAME, 'agent.config']
+        const agentTypes = [AGENT_CONTEXT_SCHEMA_TYPE_NAME, 'agent.config', 'agent.conversation']
 
         // Get all schema types except agent-related types
         const defaultListItems = S.documentTypeListItems().filter(
@@ -47,6 +48,7 @@ export default defineConfig({
                   .items([
                     S.documentTypeListItem('agent.config').title('Agent Configs'),
                     S.documentTypeListItem(AGENT_CONTEXT_SCHEMA_TYPE_NAME).title('Agent Contexts'),
+                    S.documentTypeListItem('agent.conversation').title('Agent Conversations'),
                   ]),
               ),
           ])
@@ -55,6 +57,7 @@ export default defineConfig({
     visionTool(),
     agentContextPlugin(),
     markdownSchema(),
+    agentInsightsPlugin(),
   ],
 
   schema: {

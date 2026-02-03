@@ -2,6 +2,8 @@
 
 Configure the Sanity Context plugin in your Studio and create agent context documents.
 
+> **Reference Implementation**: See [ecommerce/\_index.md](ecommerce/_index.md) for file navigation, then explore [ecommerce/studio/](ecommerce/studio/).
+
 ## 1. Install the Package
 
 ```bash
@@ -12,27 +14,24 @@ pnpm add @sanity/agent-context
 
 ## 2. Add the Plugin
 
-Add `agentContextPlugin()` to your `sanity.config.ts`:
+See [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for a complete example.
+
+**Key parts:**
+
+- **Lines 1-7**: Import the plugin, structure tool types, and markdown plugin
+- **Lines 25-58**: Plugin configuration with custom structure (groups agent types under "Agents" section)
+- **Lines 60-62**: Schema registration
+
+**Minimal setup** (without custom structure):
 
 ```ts
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {agentContextPlugin} from '@sanity/agent-context/studio'
 
-import {schemaTypes} from './schemaTypes'
-
 export default defineConfig({
-  name: 'default',
-  title: 'My Studio',
-
-  projectId: 'your-project-id',
-  dataset: 'production',
-
+  // ... your config
   plugins: [structureTool(), agentContextPlugin()],
-
-  schema: {
-    types: schemaTypes,
-  },
 })
 ```
 
@@ -40,56 +39,14 @@ This registers the `sanity.agentContext` document type in your Studio.
 
 ## 3. Customize Structure Tool (Optional)
 
-Organize agent-related documents in a dedicated section:
+The reference implementation organizes agent-related documents in a dedicated section. See [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts):
 
-```ts
-import {defineConfig} from 'sanity'
-import {structureTool, type StructureBuilder, type ListItemBuilder} from 'sanity/structure'
-import {agentContextPlugin, AGENT_CONTEXT_SCHEMA_TYPE_NAME} from '@sanity/agent-context/studio'
+**Key patterns:**
 
-import {schemaTypes} from './schemaTypes'
+- **Lines 28-34**: Filter agent-related types (`sanity.agentContext`, `agent.config`) from the default document list
+- **Lines 36-52**: Group under an "Agents" section with a divider
 
-export default defineConfig({
-  name: 'default',
-  title: 'My Studio',
-
-  projectId: 'your-project-id',
-  dataset: 'production',
-
-  plugins: [
-    structureTool({
-      structure: (S: StructureBuilder) => {
-        // Filter out agent context from the default list
-        const defaultListItems = S.documentTypeListItems().filter(
-          (item: ListItemBuilder) => item.getId() !== AGENT_CONTEXT_SCHEMA_TYPE_NAME,
-        )
-
-        return S.list()
-          .title('Content')
-          .items([
-            ...defaultListItems,
-            S.divider(),
-            // Group agent documents together
-            S.listItem()
-              .title('Agents')
-              .child(
-                S.list()
-                  .title('Agents')
-                  .items([
-                    S.documentTypeListItem(AGENT_CONTEXT_SCHEMA_TYPE_NAME).title('Agent Contexts'),
-                  ]),
-              ),
-          ])
-      },
-    }),
-    agentContextPlugin(),
-  ],
-
-  schema: {
-    types: schemaTypes,
-  },
-})
-```
+This keeps your content types organized separately from agent configuration.
 
 ## 4. Create an Agent Context Document
 
@@ -144,12 +101,23 @@ Copy this URL—you'll need it when configuring your agent.
 
 ## Environment Variables
 
-Add to your Studio's `.env`:
+See [ecommerce/studio/.env.example](ecommerce/.env.example) for the template.
+
+Required variables:
 
 ```bash
 SANITY_STUDIO_PROJECT_ID=your-project-id
 SANITY_STUDIO_DATASET=production
 ```
+
+## Schema Reference
+
+The reference implementation includes a complete e-commerce schema. See [ecommerce/studio/schemaTypes/](ecommerce/studio/schemaTypes/):
+
+- **Documents**: [product.ts](ecommerce/studio/schemaTypes/documents/product.ts), [category.ts](ecommerce/studio/schemaTypes/documents/category.ts), [brand.ts](ecommerce/studio/schemaTypes/documents/brand.ts)
+- **Objects**: [productVariant.ts](ecommerce/studio/schemaTypes/objects/productVariant.ts), [price.ts](ecommerce/studio/schemaTypes/objects/price.ts), [seo.ts](ecommerce/studio/schemaTypes/objects/seo.ts)
+
+These schemas demonstrate patterns for structured content that agents can query effectively.
 
 ## Next Steps
 

@@ -32,6 +32,9 @@ importers:
       release-it:
         specifier: ^19.2.3
         version: 19.2.3(@types/node@25.0.9)(magicast@0.5.1)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       turbo:
         specifier: ^2.7.4
         version: 2.7.4

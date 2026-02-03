@@ -1,5 +1,6 @@
 // Object types (embedded)
 // Document types (reusable)
+import {agentConversation} from './documents/agentConversation'
 import {brand} from './documents/brand'
 import {category} from './documents/category'
 import {color} from './documents/color'
@@ -23,4 +24,7 @@ export const schemaTypes = [
   category,
   material,
   product,
+
+  // Agent
+  agentConversation,
 ]

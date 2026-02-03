@@ -3,6 +3,7 @@ import {visionTool} from '@sanity/vision'
 import {defineConfig} from 'sanity'
 import {type ListItemBuilder, type StructureBuilder, structureTool} from 'sanity/structure'
 
+import {agentInsightsPlugin} from './agent-insights-tool/agentInsightsPlugin'
 import {schemaTypes} from './schemaTypes'
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID
@@ -24,9 +25,11 @@ export default defineConfig({
   plugins: [
     structureTool({
       structure: (S: StructureBuilder) => {
-        // Get all schema types except the agent context type
+        const agentTypes = [AGENT_CONTEXT_SCHEMA_TYPE_NAME, 'agent.conversation']
+
+        // Get all schema types except agent-related types
         const defaultListItems = S.documentTypeListItems().filter(
-          (item: ListItemBuilder) => item.getId() !== AGENT_CONTEXT_SCHEMA_TYPE_NAME,
+          (item: ListItemBuilder) => !agentTypes.includes(item.getId() || ''),
         )
 
         return S.list()
@@ -41,7 +44,8 @@ export default defineConfig({
                 S.list()
                   .title('Agents')
                   .items([
-                    S.documentTypeListItem(AGENT_CONTEXT_SCHEMA_TYPE_NAME).title('Agent Contexts'),
+                    S.documentTypeListItem(AGENT_CONTEXT_SCHEMA_TYPE_NAME).title('Contexts'),
+                    S.documentTypeListItem('agent.conversation').title('Conversations'),
                   ]),
               ),
           ])
@@ -49,6 +53,7 @@ export default defineConfig({
     }),
     visionTool(),
     agentContextPlugin(),
+    agentInsightsPlugin(),
   ],
 
   schema: {

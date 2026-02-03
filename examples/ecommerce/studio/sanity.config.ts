@@ -2,6 +2,7 @@ import {AGENT_CONTEXT_SCHEMA_TYPE_NAME, agentContextPlugin} from '@sanity/agent-
 import {visionTool} from '@sanity/vision'
 import {defineConfig} from 'sanity'
 import {type ListItemBuilder, type StructureBuilder, structureTool} from 'sanity/structure'
+import {markdownSchema} from 'sanity-plugin-markdown'
 
 import {schemaTypes} from './schemaTypes'
 
@@ -53,6 +54,7 @@ export default defineConfig({
     }),
     visionTool(),
     agentContextPlugin(),
+    markdownSchema(),
   ],
 
   schema: {

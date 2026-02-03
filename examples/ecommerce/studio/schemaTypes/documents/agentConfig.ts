@@ -24,10 +24,8 @@ export const agentConfig = defineType({
     defineField({
       name: 'systemPrompt',
       title: 'System Prompt',
-      type: 'text',
-      rows: 20,
-      description:
-        'Instructions for how the agent should behave. Leave empty to use the default prompt.',
+      type: 'markdown',
+      description: 'Instructions for how the agent should behave.',
     }),
   ],
   preview: {

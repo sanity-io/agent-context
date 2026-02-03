@@ -26,60 +26,18 @@ const clientTools = {
 }
 
 /**
- * Default system prompt if no agent config is found - personality and communication style only.
+ * Builds the system prompt from the Sanity document, interpolating runtime variables.
+ * Available variables: {{documentTitle}}, {{documentLocation}}
  */
-const DEFAULT_SYSTEM_PROMPT = `
-  You are a polished shopping assistant at a premium store.
+function buildSystemPrompt(props: {template: string; userContext: UserContext}) {
+  const {template, userContext} = props
 
-  # Communication
-  - If tools are needed, call them without any accompanying text.
-  - Respond with: a brief intro + product directives (when showing products).
-  - NEVER mention: tools, queries, schema, fields, variants, images, data structure, types.
-  - FORBIDDEN phrases: "Let me", "I'll", "I need to", "checking", "looking", "finding".
-`
+  const vars: Record<string, string> = {
+    documentTitle: userContext.documentTitle,
+    documentLocation: userContext.documentLocation,
+  }
 
-/**
- * Builds the full system prompt by combining:
- * 1. Custom prompt (from an agent config document in Sanity) or default prompt
- * 2. Technical instructions (always appended - required for app to work)
- */
-function buildSystemPrompt(props: {customPrompt: string | null; userContext: UserContext}) {
-  const {customPrompt, userContext} = props
-  const basePrompt = customPrompt || DEFAULT_SYSTEM_PROMPT
-
-  return `
-    ${basePrompt}
-
-    # Displaying products
-    - ALWAYS use document directives. NEVER write product names as plain text.
-    - Query Sanity to get document _id and _type, then use the directive syntax below.
-    - Page context may contain product names - do NOT repeat these as plain text. Query Sanity for the _id or summarize generically.
-
-    ## Directive syntax
-    ::document{id="<_id>" type="<_type>"}  <- Block format (for lists)
-    :document{id="<_id>" type="<_type>"}   <- Inline format (within sentences)
-
-    Example: ::document{id="product-abc123" type="product"}
-
-    # Page Context (3 levels - use the minimum needed)
-
-    **Level 1: <user-context> (already available - no tool needed)**
-    - Use for: "Where am I?", "What page is this?", "Give me a link"
-
-    <user-context>
-      <document-title>${userContext.documentTitle}</document-title>
-      <document-description>${userContext.documentDescription}</document-description>
-      <document-location>${userContext.documentLocation}</document-location>
-    </user-context>
-
-    **Level 2: get_page_context tool (text content)**
-    - Use for: "What's on this page?", "What products are shown?", "Read this page"
-    - Returns page text as markdown. Cheaper than screenshot.
-
-    **Level 3: get_page_screenshot tool (visual)**
-    - Use for: "Does this look right?", "What color is X?", "Show me what you see"
-    - Only when you need to SEE images, colors, or layout.
-`.trim()
+  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => vars[key] ?? '')
 }
 
 export async function POST(req: Request) {
@@ -107,16 +65,20 @@ export async function POST(req: Request) {
     }),
 
     // Get the agent config from Sanity
-    client.fetch<{name: string; systemPrompt: string | null}>(
-      `*[_type == "agent.config" && slug.current == $slug][0] { name, systemPrompt }`,
+    client.fetch<{systemPrompt: string | null} | null>(
+      `*[_type == "agent.config" && slug.current == $slug][0] { systemPrompt }`,
       {
         slug: process.env.AGENT_CONFIG_SLUG || 'default',
       },
     ),
   ])
 
+  if (!agentConfig?.systemPrompt) {
+    throw new Error('Agent config not found or missing system prompt. Create one in Sanity Studio.')
+  }
+
   const systemPrompt = buildSystemPrompt({
-    customPrompt: agentConfig?.systemPrompt ?? null,
+    template: agentConfig.systemPrompt,
     userContext,
   })
 

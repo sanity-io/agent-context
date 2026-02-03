@@ -1,7 +1,7 @@
 import {DatabaseIcon} from '@sanity/icons'
 import {defineField, defineType} from 'sanity'
 
-import {AgentContextDocumentInput} from './AgentContextDocumentInput'
+import {AgentContextDocumentInput} from './agent-context-document-input/AgentContextDocumentInput'
 import {GroqFilterInput} from './groq-filter-input/GroqFilterInput'
 
 /**
@@ -24,10 +24,19 @@ export const agentContextSchema = defineType({
   title: AGENT_CONTEXT_SCHEMA_TITLE,
   type: 'document',
   icon: DatabaseIcon,
+  initialValue: {
+    version: '1',
+  },
   components: {
     input: AgentContextDocumentInput,
   },
   fields: [
+    defineField({
+      name: 'version',
+      title: 'Version',
+      type: 'string',
+      hidden: true,
+    }),
     defineField({
       name: 'name',
       title: 'Name',
@@ -43,10 +52,16 @@ export const agentContextSchema = defineType({
       },
     }),
     defineField({
+      name: 'instructions',
+      title: 'Instructions',
+      description: 'Instructions for the agent to use the context',
+      type: 'text',
+    }),
+    defineField({
       name: 'groqFilter',
       title: 'Content filter',
       description:
-        'Define which content AI agents can access. Pick types which will generate the filter, or manually enter the filter in the GROQ tab.',
+        'Control what content AI agents can access. Leave empty for full access, or pick specific document types. Use the GROQ tab for advanced filters.',
       type: 'string',
       components: {
         input: GroqFilterInput,

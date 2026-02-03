@@ -1,19 +1,32 @@
 import {CopyIcon} from '@sanity/icons'
 import {Box, Button, Card, Flex, Stack, Text, useToast} from '@sanity/ui'
-import {getValueAtPath, type InputProps, useDataset, useProjectId} from 'sanity'
+import {useMemo} from 'react'
+import {
+  DEFAULT_STUDIO_CLIENT_OPTIONS,
+  getValueAtPath,
+  type InputProps,
+  useClient,
+  useDataset,
+  useProjectId,
+} from 'sanity'
+
+import {getMcpURL} from './mcpUrlUtils'
 
 export function AgentContextDocumentInput(props: InputProps) {
   const dataset = useDataset()
   const projectId = useProjectId()
   const toast = useToast()
+  const apiHost = useClient(DEFAULT_STUDIO_CLIENT_OPTIONS).config().apiHost
 
-  const slug = getValueAtPath(props.value, ['slug'])
-  const currentSlug = slug && typeof slug === 'object' && 'current' in slug ? slug.current : ''
-  const MCP_URL = `https://context-mcp.sanity.io/mcp/${projectId}/${dataset}/${currentSlug}`
+  const mcpURL = useMemo(() => {
+    const slug = getValueAtPath(props.value, ['slug'])
+
+    return getMcpURL({apiHost, projectId, dataset, slug})
+  }, [apiHost, projectId, dataset, props.value])
 
   const handleCopy = () => {
     try {
-      navigator.clipboard.writeText(MCP_URL)
+      navigator.clipboard.writeText(mcpURL)
       toast.push({
         title: 'Copied to clipboard',
         description: 'The MCP URL has been copied to your clipboard',
@@ -38,13 +51,13 @@ export function AgentContextDocumentInput(props: InputProps) {
             Context MCP URL
           </Text>
 
-          {slug ? (
+          {mcpURL ? (
             <Flex align="center" gap={2}>
               <Button icon={CopyIcon} mode="bleed" fontSize={1} padding={2} onClick={handleCopy} />
 
               <Box flex={1}>
                 <Text size={1} muted>
-                  {MCP_URL}
+                  {mcpURL}
                 </Text>
               </Box>
             </Flex>

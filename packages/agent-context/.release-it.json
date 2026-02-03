@@ -5,7 +5,8 @@
     "tagName": "v${version}",
     "requireCleanWorkingDir": true,
     "requireBranch": "main",
-    "requireCommits": true
+    "requireCommits": true,
+    "changelog": "git log --pretty=format:\"* %s (%h)\" ${from}...${to} -- ."
   },
   "npm": {
     "publish": true,

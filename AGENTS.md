@@ -99,7 +99,7 @@ The filter UI provides two modes:
 Each agent context document generates an MCP URL:
 
 ```
-https://context-mcp.sanity.io/mcp/:projectId/:dataset/:slug
+https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug
 ```
 
 Agents connect via HTTP transport with a Bearer token (Sanity API read token).

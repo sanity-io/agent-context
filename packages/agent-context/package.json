@@ -1,7 +1,14 @@
 {
   "name": "@sanity/agent-context",
   "version": "0.0.1",
-  "description": "",
+  "description": "Tools for building AI agents with structured access to Sanity content",
+  "keywords": [
+    "sanity",
+    "ai",
+    "agent",
+    "mcp",
+    "studio"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/sanity-io/agent-context.git",

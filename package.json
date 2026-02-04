@@ -13,6 +13,7 @@
     "prepare": "husky",
     "publish:agent-context": "pnpm --filter=@sanity/agent-context exec release-it",
     "publish:agent-context:preview": "pnpm --filter=@sanity/agent-context exec release-it --dry-run",
+    "sync-skill-example": "tsx scripts/sync-skill-example.ts",
     "test:unit": "turbo test:unit",
     "test:unit:coverage": "turbo test:unit:coverage"
   },
@@ -24,6 +25,9 @@
   "lint-staged": {
     "*": [
       "pnpm format:staged"
+    ],
+    "examples/ecommerce/**/*.{ts,tsx,js,jsx,json,md,css}": [
+      "pnpm run sync-skill-example"
     ]
   },
   "prettier": "@sanity/prettier-config",
@@ -36,6 +40,7 @@
     "prettier": "^3.7.4",
     "pretty-quick": "^4.2.2",
     "release-it": "^19.2.3",
+    "tsx": "^4.21.0",
     "turbo": "^2.7.4",
     "typescript": "^5"
   },

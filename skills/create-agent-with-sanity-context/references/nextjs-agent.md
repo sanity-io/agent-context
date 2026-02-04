@@ -2,6 +2,8 @@
 
 This is a reference implementation using Next.js and Vercel AI SDK. Use it as a pattern guide—adapt the concepts to whatever framework and AI library the user is working with.
 
+> **Reference Implementation**: See [ecommerce/\_index.md](ecommerce/_index.md) for file navigation, then explore [ecommerce/app/](ecommerce/app/).
+
 ## Core Concepts (Apply to Any Stack)
 
 These patterns transfer regardless of framework:
@@ -24,9 +26,13 @@ npm install @ai-sdk/anthropic @ai-sdk/mcp ai
 pnpm add @ai-sdk/anthropic @ai-sdk/mcp ai
 ```
 
+See [ecommerce/app/package.json](ecommerce/app/package.json) for complete dependency list.
+
 ### 2. Environment Variables
 
-Add to your `.env.local`:
+See [ecommerce/.env.example](ecommerce/.env.example) for the template.
+
+Required variables:
 
 ```bash
 # Sanity Configuration
@@ -45,67 +51,57 @@ ANTHROPIC_API_KEY=your-anthropic-key
 
 ### 3. Create the Chat API Route
 
-Create `app/api/chat/route.ts`:
+See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for the complete implementation.
+
+**Key sections:**
+
+- **Lines 13-26**: Client tool definitions (no `execute` function - execution happens client-side)
+- **Lines 28-41**: `buildSystemPrompt` function - template interpolation with runtime variables
+- **Lines 55-74**: MCP client + agent config fetch from Sanity (parallel Promise.all)
+- **Lines 80-83**: Build system prompt from fetched template
+- **Lines 86-100**: `streamText` call combining MCP tools with client tools
+
+**MCP Connection Pattern** (lines 57-65):
 
 ```ts
-import {anthropic} from '@ai-sdk/anthropic'
-import {createMCPClient} from '@ai-sdk/mcp'
-import {streamText, convertToModelMessages, stepCountIs, type UIMessage} from 'ai'
-
-// Customize this for your domain
-const getSystemPrompt = () => {
-  return `You are a helpful assistant. Use your tools to find content and answer questions.`
-}
-
-export async function POST(req: Request) {
-  const {messages}: {messages: UIMessage[]} = await req.json()
-
-  // Validate environment variables
-  if (!process.env.SANITY_CONTEXT_MCP_URL) {
-    throw new Error('SANITY_CONTEXT_MCP_URL is not set')
-  }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY is not set')
-  }
-
-  // Create MCP client connection
-  const mcpClient = await createMCPClient({
-    transport: {
-      type: 'http',
-      url: process.env.SANITY_CONTEXT_MCP_URL,
-      headers: {
-        Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
-      },
+const mcpClient = await createMCPClient({
+  transport: {
+    type: 'http',
+    url: process.env.SANITY_CONTEXT_MCP_URL,
+    headers: {
+      Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
     },
-  })
+  },
+})
+```
 
-  const systemPrompt = getSystemPrompt()
+**Tool Combination** (lines 86-100):
 
-  try {
-    const result = streamText({
-      model: anthropic('claude-opus-4-5'), // or 'claude-sonnet-4-20250514' for faster/cheaper responses
-      system: systemPrompt,
-      messages: await convertToModelMessages(messages),
-      tools: await mcpClient.tools(),
-      stopWhen: stepCountIs(10), // Limit tool use iterations
-      onFinish: async () => {
-        await mcpClient.close()
-      },
-    })
-
-    return result.toUIMessageStreamResponse()
-  } catch (error) {
-    await mcpClient.close()
-    throw error
-  }
-}
+```ts
+const mcpTools = await mcpClient.tools()
+const result = streamText({
+  model: anthropic('claude-opus-4-5'),
+  system: systemPrompt,
+  messages: await convertToModelMessages(messages),
+  tools: {
+    ...mcpTools, // Context MCP tools (groq_query, initial_context, etc.)
+    ...clientTools, // Client-side tools (page context, screenshot)
+  },
+})
 ```
 
 ### 4. Customizing the System Prompt
 
-The system prompt shapes how your agent behaves. Customize it for your domain.
+The system prompt shapes how your agent behaves. The reference implementation stores the system prompt in Sanity as an `agent.config` document, allowing content editors to customize it without code changes.
 
-### Structure of an Effective System Prompt
+See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts):
+
+- **Lines 28-41**: `buildSystemPrompt` function that interpolates runtime variables (`{{documentTitle}}`, `{{documentLocation}}`)
+- **Lines 68-83**: Fetching the system prompt from Sanity and applying it
+
+See [ecommerce/studio/schemaTypes/documents/agentConfig.ts](ecommerce/studio/schemaTypes/documents/agentConfig.ts) for the schema.
+
+#### Structure of an Effective System Prompt
 
 ```ts
 const getSystemPrompt = () => {
@@ -128,7 +124,7 @@ You are [role description].
 }
 ```
 
-### Example: E-commerce Assistant
+#### Example: E-commerce Assistant
 
 ```ts
 const getSystemPrompt = () => {
@@ -153,7 +149,7 @@ You are a helpful shopping assistant for an online store.
 }
 ```
 
-### Example: Documentation Helper
+#### Example: Documentation Helper
 
 ```ts
 const getSystemPrompt = () => {
@@ -177,7 +173,7 @@ You are a documentation assistant that helps users find information.
 }
 ```
 
-### Example: Support Agent
+#### Example: Support Agent
 
 ```ts
 const getSystemPrompt = () => {
@@ -201,7 +197,7 @@ You are a customer support agent with access to help articles and FAQs.
 }
 ```
 
-### Example: Content Curator
+#### Example: Content Curator
 
 ```ts
 const getSystemPrompt = () => {
@@ -226,63 +222,21 @@ You are a content curator that helps users discover relevant content.
 }
 ```
 
-### 5. Frontend Chat Component (Optional)
+### 5. Frontend Chat Component
 
-A basic chat interface using `@ai-sdk/react`:
+See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) for a complete implementation.
 
-```tsx
-'use client'
+**Key sections:**
 
-import {useChat} from '@ai-sdk/react'
-import {useState} from 'react'
+- **Lines 62-109**: `useChat` hook setup with transport, auto-continuation, and tool handling
+- **Lines 73-108**: Client-side tool execution via `onToolCall` callback
+- **Lines 113-129**: Screenshot handling workaround (files sent as follow-up message)
+- **Lines 146-238**: Chat UI rendering with message display and input
 
-export function Chat() {
-  const {messages, sendMessage, status, error} = useChat()
-  const [input, setInput] = useState('')
+**Related files:**
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
-    sendMessage({text: input})
-    setInput('')
-  }
-
-  const isLoading = status === 'submitted' || status === 'streaming'
-
-  return (
-    <div>
-      <div>
-        {messages.map((message) => (
-          <div key={message.id}>
-            <strong>{message.role}:</strong>
-            {message.parts?.map((part, i) => part.type === 'text' && <p key={i}>{part.text}</p>)}
-          </div>
-        ))}
-        {error && <p style={{color: 'red'}}>Error: {error.message}</p>}
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a question..."
-          disabled={isLoading}
-        />
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Thinking...' : 'Send'}
-        </button>
-      </form>
-    </div>
-  )
-}
-```
-
-This is a minimal example. For production, see [Advanced Patterns](#advanced-patterns) for:
-
-- Client-side tool execution (page context, screenshots)
-- Custom transport for user context
-- Auto-continuation for tool calls
-- Rich message rendering
+- [ecommerce/app/src/lib/client-tools.ts](ecommerce/app/src/lib/client-tools.ts) - Tool name constants and `UserContext` type
+- [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts) - Page context and screenshot capture functions
 
 ### 6. Testing the Agent
 
@@ -374,7 +328,7 @@ const langchainTools = mcpTools.map(
 ```ts
 const tools = await mcpClient.tools()
 const response = await anthropic.messages.create({
-  model: 'claude-opus-4-5',
+  model: 'claude-sonnet-4-20250514',
   system: systemPrompt,
   messages,
   tools: tools.map((t) => ({
@@ -399,222 +353,69 @@ When adapting this pattern, understand:
 
 ## Advanced Patterns
 
-These patterns take your agent from basic to production-ready.
+These patterns take your agent from basic to production-ready. See the reference implementation for working examples of each.
 
 ### Client-Side Tools
 
 Some tools need to run in the browser (capturing page context, taking screenshots). Define these as tools without execute functions on the server, then handle them on the client.
 
-**Server (route.ts):**
+**Server definition**: See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) lines 13-26
 
-```ts
-import {z} from 'zod'
+**Client handling**: See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) lines 73-108
 
-// Define client tools (no execute function - handled on client)
-const clientTools = {
-  get_page_context: {
-    description:
-      'Get page content as markdown: URL, title, headings, links, lists. Fast. No visuals.',
-    inputSchema: z.object({
-      reason: z.string().describe('Why you need page context'),
-    }),
-  },
-  get_page_screenshot: {
-    description:
-      'Visual screenshot of the page. Use only when you need to see images, colors, or layout.',
-    inputSchema: z.object({
-      reason: z.string().describe('Why you need a screenshot'),
-    }),
-  },
-}
+**Context capture utilities**: See [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts)
 
-// In streamText, combine MCP tools with client tools:
-const result = streamText({
-  model: anthropic('claude-opus-4-5'),
-  system: systemPrompt,
-  messages: await convertToModelMessages(messages),
-  tools: {
-    ...(await mcpClient.tools()),
-    ...clientTools,
-  },
-  // ...
-})
-```
-
-**Client (Chat.tsx):**
-
-```tsx
-import {useChat} from '@ai-sdk/react'
-
-const {messages, sendMessage, addToolOutput} = useChat({
-  onToolCall: async ({toolCall}) => {
-    // Skip MCP tools (handled server-side)
-    if (toolCall.dynamic) return
-
-    switch (toolCall.toolName) {
-      case 'get_page_context': {
-        const markdown = capturePageContext() // Your implementation
-        addToolOutput({
-          tool: 'get_page_context',
-          toolCallId: toolCall.toolCallId,
-          output: markdown,
-        })
-        return
-      }
-
-      case 'get_page_screenshot': {
-        const screenshot = await captureScreenshot() // Your implementation
-        addToolOutput({
-          tool: 'get_page_screenshot',
-          toolCallId: toolCall.toolCallId,
-          output: 'Screenshot captured.',
-        })
-        // Send screenshot as follow-up message with file attachment
-        return
-      }
-    }
-  },
-})
-```
+- `captureUserContext()` (lines 20-30): Lightweight context sent with every message
+- `capturePageContext()` (lines 35-68): Page content as markdown using Turndown
+- `captureScreenshot()` (lines 73-93): Visual screenshot using html2canvas
 
 ### User Context Transport
 
-Include context (current page, user preferences) with every request without the user typing it:
+Include context (current page, user preferences) with every request without the user typing it.
+
+See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) lines 64-66:
 
 ```tsx
-import {DefaultChatTransport} from 'ai'
-
-const {messages, sendMessage} = useChat({
-  transport: new DefaultChatTransport({
-    body: () => ({
-      userContext: {
-        documentTitle: document.title,
-        documentLocation: window.location.href,
-      },
-    }),
-  }),
-})
+transport: new DefaultChatTransport({
+  body: () => ({userContext: captureUserContext()}),
+}),
 ```
 
-Then access it on the server:
+Then access it on the server at [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) lines 44-45:
 
 ```ts
-export async function POST(req: Request) {
-  const {messages, userContext} = await req.json()
-
-  const systemPrompt = `
-    The user is currently on: ${userContext.documentLocation}
-    Page title: ${userContext.documentTitle}
-    // ... rest of prompt
-  `
-}
+const {messages, userContext}: {messages: UIMessage[]; userContext: UserContext} = await req.json()
 ```
 
 ### Auto-Continuation for Tool Calls
 
-When the LLM makes tool calls, automatically continue the conversation:
+When the LLM makes tool calls, automatically continue the conversation.
+
+See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) lines 69-72:
 
 ```tsx
-import {lastAssistantMessageIsCompleteWithToolCalls} from 'ai'
-
-const {messages, sendMessage} = useChat({
-  sendAutomaticallyWhen: ({messages}) => {
-    return lastAssistantMessageIsCompleteWithToolCalls({messages})
-  },
-})
+sendAutomaticallyWhen: ({messages}) => {
+  if (pendingScreenshotRef.current) return false
+  return lastAssistantMessageIsCompleteWithToolCalls({messages})
+},
 ```
 
 ### Custom Rendering (Product Directives)
 
-For e-commerce or content-heavy apps, define custom markdown directives to render rich content:
+For e-commerce or content-heavy apps, define custom markdown directives to render rich content.
 
-**System Prompt:**
+**System Prompt** (define the syntax): Define custom directives in your system prompt stored in Sanity's `agent.config` document
 
-```
-When mentioning products, use this directive syntax:
-::product{slug="product-slug" title="Product Name" image="https://..."}
-```
+**Directive parsing**: See [ecommerce/app/src/components/chat/message/remarkDirectives.ts](ecommerce/app/src/components/chat/message/remarkDirectives.ts)
 
-**Client Renderer:**
+- Lines 64-131: `remarkDirectives()` plugin that transforms directive syntax to React components
+- Handles both inline (`:product{...}`) and block (`::product{...}`) formats
+- Validates directive names and filters incomplete directives during streaming
 
-```tsx
-import ReactMarkdown from 'react-markdown'
-import remarkDirective from 'remark-directive'
+**Product component**: See [ecommerce/app/src/components/chat/message/Product.tsx](ecommerce/app/src/components/chat/message/Product.tsx)
 
-// Custom plugin to handle ::product directives
-function remarkProduct() {
-  return (tree) => {
-    visit(tree, 'leafDirective', (node) => {
-      if (node.name === 'product') {
-        // Transform to custom component data
-        node.data = {
-          hName: 'product-card',
-          hProperties: node.attributes,
-        }
-      }
-    })
-  }
-}
-
-// In your component
-;<ReactMarkdown
-  remarkPlugins={[remarkDirective, remarkProduct]}
-  components={{
-    'product-card': ({slug, title, image}) => (
-      <ProductCard slug={slug} title={title} image={image} />
-    ),
-  }}
->
-  {messageText}
-</ReactMarkdown>
-```
-
-### Sophisticated System Prompts
-
-**Every domain needs a specialized system prompt.** The examples above (e-commerce, docs, support) are starting points—you'll need to work with the user to understand their specific content, terminology, and desired agent behavior.
-
-System prompt development is iterative:
-
-1. Start with a basic prompt based on the domain
-2. Test with real user queries
-3. Identify where the agent fails or behaves unexpectedly
-4. Refine the prompt to handle those cases
-5. Repeat until the agent meets expectations
-
-Production prompts often need multiple context levels and strict formatting rules. Here's an example for an e-commerce store:
-
-```ts
-const getSystemPrompt = ({userContext}) => `
-You are a shopping assistant at a premium store.
-
-# Communication Rules
-- If tools are needed, call them without any accompanying text.
-- NEVER mention: tools, queries, schema, fields, data structure.
-- FORBIDDEN phrases: "Let me", "I'll", "I need to", "checking", "looking".
-
-# Context Levels (use minimum needed)
-
-**Level 1: User Context (always available)**
-- Current page: ${userContext.documentLocation}
-- Page title: ${userContext.documentTitle}
-
-**Level 2: get_page_context tool**
-- Use for: "What's on this page?", "What products are shown?"
-- Returns page text as markdown. Cheaper than screenshot.
-
-**Level 3: get_page_screenshot tool**
-- Use ONLY when you need to SEE images, colors, or layout.
-
-# Displaying Products
-- ALWAYS use product directives: ::product{slug="..." title="..." image="..."}
-- NEVER write product names as plain text.
-- If you don't have slug/title/image, describe generically ("several running shoes").
-
-# GROQ Tips
-- Dereference references: \`field->\` syntax
-- For images: \`image.asset->url\` to get the URL
-`
-```
+- Lines 16-21: Inline rendering as a link
+- Lines 24-35: Block rendering with image thumbnail
 
 ---
 

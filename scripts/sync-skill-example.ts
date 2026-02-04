@@ -7,12 +7,11 @@
  * excluding files that match .gitignore patterns.
  *
  * Run manually: pnpm sync-skill-example
- * Runs automatically: via lint-staged when ecommerce files change
+ * Runs automatically: via CI when ecommerce files are merged to main
  */
 
-import {execSync} from 'child_process'
 import {cpSync, existsSync, mkdirSync, readdirSync, rmSync} from 'fs'
-import {basename, join, relative} from 'path'
+import {join, relative} from 'path'
 
 const SOURCE = 'examples/ecommerce'
 const DEST = 'skills/create-agent-with-sanity-context/references/ecommerce'
@@ -111,15 +110,6 @@ function main(): void {
   // Copy files (includes _index.md from source)
   console.log('Copying files...')
   copyDir(SOURCE, DEST, SOURCE)
-
-  // Stage changes
-  console.log('Staging changes...')
-  try {
-    execSync(`git add "${DEST}"`, {stdio: 'inherit'})
-  } catch {
-    // git add might fail if not in a git repo or no changes, that's ok
-    console.log('Note: git add skipped (may not be in git context)')
-  }
 
   // Count files
   const countFiles = (dir: string): number => {

@@ -38,8 +38,8 @@ An MCP server that gives AI agents structured access to Sanity content. The core
 
 **MCP URL formats:**
 
-- `https://context-mcp.sanity.io/mcp/:projectId/:dataset` — Access all content in the dataset
-- `https://context-mcp.sanity.io/mcp/:projectId/:dataset/:slug` — Access filtered content (requires agent context document with that slug)
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — Access all content in the dataset
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — Access filtered content (requires agent context document with that slug)
 
 The slug-based URL uses the GROQ filter defined in your agent context document to scope what content the agent can access. Use this for production agents that should only see specific content types.
 
@@ -88,7 +88,7 @@ The reference patterns use Next.js + Vercel AI SDK, but adapt to whatever the us
 Before building an agent, you can validate MCP access directly using the base URL (no slug required):
 
 ```bash
-curl -X POST https://context-mcp.sanity.io/mcp/YOUR_PROJECT_ID/YOUR_DATASET \
+curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET \
   -H "Authorization: Bearer $SANITY_API_READ_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'

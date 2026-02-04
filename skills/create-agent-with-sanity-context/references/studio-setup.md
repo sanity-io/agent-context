@@ -94,7 +94,7 @@ The filter UI provides two modes:
 Once your Agent Context document has a slug, the MCP URL appears at the top of the document form:
 
 ```
-https://context-mcp.sanity.io/mcp/:projectId/:dataset/:slug
+https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug
 ```
 
 Copy this URL—you'll need it when configuring your agent.

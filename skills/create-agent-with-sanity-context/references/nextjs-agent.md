@@ -8,7 +8,7 @@ This is a reference implementation using Next.js and Vercel AI SDK. Use it as a 
 
 These patterns transfer regardless of framework:
 
-1. **MCP Connection**: HTTP transport to `https://context-mcp.sanity.io/mcp/:projectId/:dataset/:slug`
+1. **MCP Connection**: HTTP transport to `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug`
 2. **Authentication**: Bearer token using Sanity API read token
 3. **Tool Discovery**: Get available tools from MCP client, pass to LLM
 4. **System Prompt**: Domain-specific instructions that shape agent behavior
@@ -43,7 +43,7 @@ NEXT_PUBLIC_SANITY_DATASET=production
 SANITY_API_READ_TOKEN=your-read-token
 
 # Context MCP URL (from your Agent Context document)
-SANITY_CONTEXT_MCP_URL=https://context-mcp.sanity.io/mcp/your-project-id/production/your-slug
+SANITY_CONTEXT_MCP_URL=https://api.sanity.io/:apiVersion/agent-context/your-project-id/production/your-slug
 
 # Anthropic API key
 ANTHROPIC_API_KEY=your-anthropic-key

@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   description: 'A minimal e-commerce demo built with Next.js and Sanity',
 }
 
+// Test change (update)
+
 export default function RootLayout({
   children,
 }: Readonly<{

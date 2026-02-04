@@ -25,9 +25,6 @@
   "lint-staged": {
     "*": [
       "pnpm format:staged"
-    ],
-    "examples/ecommerce/**/*.{ts,tsx,js,jsx,json,md,css}": [
-      "pnpm run sync-skill-example"
     ]
   },
   "prettier": "@sanity/prettier-config",

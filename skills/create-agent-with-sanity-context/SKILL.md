@@ -143,6 +143,7 @@ See [references/nextjs-agent.md](references/nextjs-agent.md#adapting-to-other-st
 ## Best Practices
 
 - **Start simple**: Build the basic integration first, then add advanced patterns as needed
+- **Dependencies**: Run install commands directly (e.g., `npm install sanity`) rather than pre-populating package.json with version numbers—packages update frequently
 - **Schema design**: Use descriptive field names—agents rely on schema understanding
 - **GROQ queries**: Always include `_id` in projections so agents can reference documents
 - **Content filters**: Start broad, then narrow based on what the agent actually needs

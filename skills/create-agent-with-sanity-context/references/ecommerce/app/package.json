@@ -30,7 +30,7 @@
     "react-dom": "^19",
     "react-markdown": "^10.1.0",
     "remark-directive": "^4.0.0",
-    "sanity": "^5.7.0",
+    "sanity": "^5.8.0",
     "tailwind-merge": "^3.4.0",
     "turndown": "^7.2.2",
     "unist": "^0.0.1",

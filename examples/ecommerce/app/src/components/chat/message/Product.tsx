@@ -9,41 +9,57 @@ import {urlFor} from '@/sanity/lib/image'
 
 import type {DocumentProps} from './Document'
 
+const QUERY = `
+  *[_type == "product" && _id == $id][0] {
+    title,
+    "slug": slug.current,
+    "image": variants[0].images[0],
+  }
+`
+
 interface ProductData {
   slug: string
   title: string
   image: {asset: {_ref: string}} | null
 }
 
-const getProduct = async (id: string): Promise<ProductData | null> => {
-  const product = await client.fetch(
-    `*[_type == "product" && _id == $id][0] {
-      title,
-      "slug": slug.current,
-      "image": variants[0].images[0],
-    }
-  `,
-    {id},
-  )
-
-  return product
-}
-
 export function Product(props: DocumentProps) {
   const {isInline} = props
 
   const [product, setProduct] = useState<ProductData | null>(null)
+  const [error, setError] = useState<Error | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchProduct = async () => {
-      const product = await getProduct(props.id)
+      setLoading(true)
+      try {
+        const product = await client.fetch(QUERY, {id: props.id})
 
-      setProduct(product)
+        setProduct(product)
+      } catch (error) {
+        setError(error instanceof Error ? error : new Error('Unknown error'))
+      } finally {
+        setLoading(false)
+      }
     }
+
     fetchProduct()
   }, [props.id])
 
-  if (!product) return null
+  if (loading) {
+    if (isInline) return null
+
+    return (
+      <div className="flex animate-pulse items-center gap-3 rounded-md border border-neutral-200 bg-white p-2">
+        <div className="h-10 w-10 shrink-0 rounded bg-neutral-100" />
+
+        <div className="h-5 w-24 rounded bg-neutral-100" />
+      </div>
+    )
+  }
+
+  if (error || !product) return null
 
   if (isInline) {
     return (

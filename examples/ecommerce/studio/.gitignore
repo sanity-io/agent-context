@@ -32,3 +32,8 @@ schema.json
 .env
 .env.local
 *.local
+
+# Sanity Functions
+functions/**/.env*
+functions/**/.build/
+functions/**/node_modules/

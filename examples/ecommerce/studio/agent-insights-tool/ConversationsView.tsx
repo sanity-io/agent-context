@@ -35,8 +35,8 @@ interface Conversation {
     successRate?: number
     agentConfusion?: number
     userConfusion?: number
-    contentGap?: string
   }
+  contentGap?: string
 }
 
 const QUERY = `*[_type == "agent.conversation"] | order(_createdAt desc) {
@@ -45,7 +45,8 @@ const QUERY = `*[_type == "agent.conversation"] | order(_createdAt desc) {
   summary,
   "firstMessage": messages[0].content,
   classification,
-  messages
+  messages,
+  contentGap
 }`
 
 const COLUMN_WIDTHS = {
@@ -176,6 +177,12 @@ export function ConversationsView() {
               </Text>
             </Box>
 
+            <Box flex={2}>
+              <Text textOverflow="ellipsis" size={1} weight="semibold" muted>
+                Content gap
+              </Text>
+            </Box>
+
             <Box style={{width: COLUMN_WIDTHS.success}} display={RESPONSIVE_DISPLAY}>
               <Text textOverflow="ellipsis" align="center" size={1} weight="semibold" muted>
                 Success
@@ -231,6 +238,12 @@ export function ConversationsView() {
                 <Box flex={2}>
                   <Text size={1} muted>
                     {conversation.summary || 'No summary'}
+                  </Text>
+                </Box>
+
+                <Box flex={2}>
+                  <Text size={1} muted>
+                    {conversation.contentGap || 'No content gap'}
                   </Text>
                 </Box>
 

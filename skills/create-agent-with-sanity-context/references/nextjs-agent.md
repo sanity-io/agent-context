@@ -21,12 +21,14 @@ These patterns transfer regardless of framework:
 ### 1. Install Dependencies
 
 ```bash
-npm install @ai-sdk/anthropic @ai-sdk/mcp ai
+npm install @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/react ai
 # or
-pnpm add @ai-sdk/anthropic @ai-sdk/mcp ai
+pnpm add @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/react ai
 ```
 
-See [ecommerce/app/package.json](ecommerce/app/package.json) for complete dependency list.
+**IMPORTANT: Always check [ecommerce/app/package.json](ecommerce/app/package.json) for current working versions.**
+
+Do NOT guess versions—check the reference `package.json` or use `npm info <package> version` to get the latest. AI SDK packages update frequently.
 
 ### 2. Environment Variables
 

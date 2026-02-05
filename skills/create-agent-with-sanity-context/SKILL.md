@@ -147,6 +147,7 @@ See [references/nextjs-agent.md](references/nextjs-agent.md#adapting-to-other-st
 - **GROQ queries**: Always include `_id` in projections so agents can reference documents
 - **Content filters**: Start broad, then narrow based on what the agent actually needs
 - **System prompts**: Be explicit about forbidden behaviors and formatting rules
+- **Package versions**: NEVER guess package versions. Always check the reference `package.json` files or use `npm info <package> version`. AI SDK and Sanity packages update frequently—outdated versions will cause errors.
 
 ## Troubleshooting
 
@@ -157,6 +158,26 @@ Context MCP requires your schema to be available server-side. This happens autom
 1. **Check Studio version**: Ensure you're on Sanity Studio v5.1.0 or later
 2. **Open your Studio**: Simply opening the Studio in a browser triggers schema deployment
 3. **Verify deployment**: After opening Studio, retry the MCP connection
+
+### Escape hatch: Deploy schema via Sanity MCP
+
+If you're on a **cloud-only platform** (Lovable, v0, Replit) without a local Studio, or if local Studio schema deployment isn't working, you can deploy schemas using the Sanity MCP server's `deploy_schema` tool.
+
+**To install the Sanity MCP** (if you don't have it already):
+
+```bash
+npx sanity@latest mcp configure
+```
+
+This configures the MCP for your AI editor (Claude Code, Cursor, VS Code, etc.). Once connected, ask your AI assistant to use the `deploy_schema` tool to deploy your content types.
+
+> **Recommended approach:** If you have a local Sanity Studio, deploying via the Studio is preferred:
+>
+> - Local schema files (in `schemaTypes/`) are the **source of truth**
+> - Using `deploy_schema` directly can create drift between your code and the deployed schema
+> - Edit your local schema files and run `npx sanity schema deploy` instead
+>
+> Use this escape hatch when local deployment isn't an option or isn't working.
 
 ### Other common issues
 

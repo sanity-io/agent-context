@@ -2,7 +2,7 @@ import {defineArrayMember, defineField, defineType} from 'sanity'
 
 export const product = defineType({
   name: 'product',
-  title: 'Product',
+  title: 'Products',
   type: 'document',
   groups: [
     {name: 'content', title: 'Content', default: true},

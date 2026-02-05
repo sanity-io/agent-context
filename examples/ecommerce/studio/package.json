@@ -24,10 +24,12 @@
     "@sanity/ui": "^3",
     "@sanity/vision": "^5.7.0",
     "ai": "^6.0.50",
+    "easymde": "^2.20.0",
     "react": "^19",
     "react-dom": "^19",
     "react-markdown": "^10.1.0",
     "sanity": "^5.7.0",
+    "sanity-plugin-markdown": "^8.0.5",
     "styled-components": "^6.3.8",
     "zod": "^4.3.6"
   },

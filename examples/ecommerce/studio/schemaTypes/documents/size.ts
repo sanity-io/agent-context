@@ -2,7 +2,7 @@ import {defineField, defineType} from 'sanity'
 
 export const size = defineType({
   name: 'size',
-  title: 'Size',
+  title: 'Sizes',
   type: 'document',
   fields: [
     defineField({

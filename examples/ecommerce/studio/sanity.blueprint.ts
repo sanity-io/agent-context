@@ -10,6 +10,9 @@ export default defineBlueprint({
           '_type == "agent.conversation" && (delta::changedAny(messages) || (delta::operation() == "create") && defined(messages))',
         on: ['create', 'update'],
       },
+      env: {
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY as string,
+      },
     }),
   ],
 })

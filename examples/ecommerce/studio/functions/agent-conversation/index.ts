@@ -94,7 +94,6 @@ export const handler = documentEventHandler(async ({context, event}) => {
     console.error('Classification failed')
     return
   }
-  console.log('classification', classification)
   await client
     .patch(event.data._id)
     .setIfMissing({classification: {}})

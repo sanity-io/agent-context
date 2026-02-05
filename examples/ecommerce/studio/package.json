@@ -17,18 +17,24 @@
   },
   "prettier": "@sanity/prettier-config",
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.23",
     "@sanity/agent-context": "workspace:*",
+    "@sanity/client": "^7.14.1",
     "@sanity/icons": "^3",
     "@sanity/ui": "^3",
     "@sanity/vision": "^5.7.0",
+    "ai": "^6.0.50",
     "react": "^19",
     "react-dom": "^19",
     "react-markdown": "^10.1.0",
     "sanity": "^5.7.0",
-    "styled-components": "^6.3.8"
+    "styled-components": "^6.3.8",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@sanity/blueprints": "0.10.0",
+    "@sanity/functions": "1.2.0",
     "@types/react": "^19",
     "dotenv-cli": "^8.0.0",
     "typescript": "^5"

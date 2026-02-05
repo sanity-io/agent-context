@@ -70,5 +70,11 @@ export const agentConversation = defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'contentGap',
+      title: 'Content Gap',
+      type: 'text',
+      description: 'Content that the agent could not find',
+    }),
   ],
 })

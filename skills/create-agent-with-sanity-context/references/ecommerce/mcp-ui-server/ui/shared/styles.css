@@ -1,0 +1,227 @@
+/*
+ * Base styles for MCP Apps widgets.
+ *
+ * Uses host theme CSS variables with sensible fallbacks for when
+ * the variables aren't provided (e.g., MCP Inspector, standalone testing).
+ */
+
+:root {
+  /* Host theme variables (injected by ChatGPT/Claude) */
+  --color-text-primary: var(--host-color-text-primary, #1a1a1a);
+  --color-text-secondary: var(--host-color-text-secondary, #6b7280);
+  --color-text-muted: var(--host-color-text-muted, #9ca3af);
+  --color-background: var(--host-color-background, #ffffff);
+  --color-surface: var(--host-color-surface, #f9fafb);
+  --color-border: var(--host-color-border, #e5e7eb);
+  --color-accent: var(--host-color-accent, #3b82f6);
+  --color-accent-text: var(--host-color-accent-text, #ffffff);
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+
+  /* Typography */
+  --font-family: var(
+    --host-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Borders */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility classes */
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+.text-muted {
+  color: var(--color-text-muted);
+}
+.text-accent {
+  color: var(--color-accent);
+}
+.text-success {
+  color: var(--color-success);
+}
+.text-danger {
+  color: var(--color-danger);
+}
+
+.text-xs {
+  font-size: var(--font-size-xs);
+}
+.text-sm {
+  font-size: var(--font-size-sm);
+}
+.text-lg {
+  font-size: var(--font-size-lg);
+}
+.text-xl {
+  font-size: var(--font-size-xl);
+}
+.text-2xl {
+  font-size: var(--font-size-2xl);
+}
+
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.font-bold {
+  font-weight: 700;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Common component styles */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: var(--color-accent);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--color-surface);
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Price styles */
+.price {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.price-compare {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.price-sale {
+  color: var(--color-danger);
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+}
+
+.loading::after {
+  content: '';
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: var(--space-2);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Image placeholder */
+.img-placeholder {
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}

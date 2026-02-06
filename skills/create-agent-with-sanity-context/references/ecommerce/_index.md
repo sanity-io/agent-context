@@ -6,17 +6,22 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 
 ## When to Load Files
 
-| Task                      | Load These Files                                                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------------------------- |
-| MCP connection setup      | `app/src/app/api/chat/route.ts` (lines 55-74)                                                        |
-| System prompt from Sanity | `app/src/app/api/chat/route.ts` (lines 28-41, 68-83), `studio/schemaTypes/documents/agentConfig.ts`  |
-| Client-side tool handling | `app/src/components/chat/Chat.tsx`, `app/src/lib/client-tools.ts`                                    |
-| Page context capture      | `app/src/lib/capture-context.ts`                                                                     |
-| Custom markdown rendering | `app/src/components/chat/message/remarkDirectives.ts`, `app/src/components/chat/message/Product.tsx` |
-| Studio plugin setup       | `studio/sanity.config.ts`                                                                            |
-| Schema design patterns    | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                             |
-| Sanity client/queries     | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                            |
-| Environment variables     | `.env.example`                                                                                       |
+| Task                       | Load These Files                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| MCP connection setup       | `app/src/app/api/chat/route.ts` (lines 55-74)                                                        |
+| System prompt from Sanity  | `app/src/app/api/chat/route.ts` (lines 28-41, 68-83), `studio/schemaTypes/documents/agentConfig.ts`  |
+| Client-side tool handling  | `app/src/components/chat/Chat.tsx`, `app/src/lib/client-tools.ts`                                    |
+| Page context capture       | `app/src/lib/capture-context.ts`                                                                     |
+| Custom markdown rendering  | `app/src/components/chat/message/remarkDirectives.ts`, `app/src/components/chat/message/Product.tsx` |
+| Studio plugin setup        | `studio/sanity.config.ts`                                                                            |
+| Schema design patterns     | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                             |
+| Sanity client/queries      | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                            |
+| Environment variables      | `.env.example`                                                                                       |
+| MCP Apps server setup      | `mcp-ui-server/src/server.ts`, `mcp-ui-server/src/upstream.ts`                                       |
+| MCP Apps tool handlers     | `mcp-ui-server/src/tools/show-products.ts`, `mcp-ui-server/src/tools/show-product.ts`                |
+| MCP Apps UI bridge         | `mcp-ui-server/ui/shared/bridge.ts`                                                                  |
+| MCP Apps widget components | `mcp-ui-server/ui/product-grid/App.tsx`, `mcp-ui-server/ui/product-card/App.tsx`                     |
+| MCP Apps environment setup | `mcp-ui-server/.env.example`                                                                         |
 
 ## File Map
 
@@ -83,6 +88,30 @@ app/src/app/
 └── products/
     ├── page.tsx                  # Product listing
     └── [slug]/page.tsx           # Product detail
+```
+
+### MCP UI Server (MCP Apps)
+
+```
+mcp-ui-server/
+├── src/
+│   ├── main.ts                    # HTTP + stdio transport, CORS
+│   ├── server.ts                  # Tool/resource registration, capability detection
+│   ├── upstream.ts                # Agent Context MCP proxy client
+│   └── tools/
+│       ├── show-products.ts       # Product search -> product grid widget
+│       ├── show-product.ts        # Product detail -> product card widget
+│       ├── compare-products.ts    # Comparison -> comparison widget
+│       └── answer-question.ts     # General Q&A -> text-only
+├── ui/
+│   ├── shared/
+│   │   ├── bridge.ts              # MCP Apps bridge helpers + React hooks
+│   │   ├── sanity-image.ts        # Sanity CDN image URL builder
+│   │   └── styles.css             # Host theme variables
+│   ├── product-grid/              # Product grid widget (React)
+│   ├── product-card/              # Product detail widget (React)
+│   └── compare/                   # Comparison widget (React)
+└── dist/                          # Built single-file HTML bundles
 ```
 
 ## Key Patterns

@@ -1,0 +1,30 @@
+{
+  "name": "@examples/ecommerce-mcp-ui-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run build:ui && tsc",
+    "build:ui": "node build-ui.mjs",
+    "check:types": "tsc --noEmit",
+    "dev": "npm run build:ui && tsx src/main.ts",
+    "dev:stdio": "npm run build:ui && tsx src/main.ts --stdio"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.0.1",
+    "@modelcontextprotocol/sdk": "^1.20.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
+    "react": "^19",
+    "react-dom": "^19",
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "vite": "^6",
+    "vite-plugin-singlefile": "^2"
+  }
+}

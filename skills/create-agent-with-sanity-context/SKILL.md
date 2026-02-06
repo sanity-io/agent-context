@@ -1,6 +1,6 @@
 ---
 name: create-agent-with-sanity-context
-description: Build AI agents with structured access to Sanity content via Context MCP. Covers Studio setup, agent implementation, and advanced patterns like client-side tools and custom rendering.
+description: Build AI agents with structured access to Sanity content via Context MCP. Covers Studio setup, agent implementation, advanced patterns like client-side tools and custom rendering, and interactive UIs with MCP Apps for ChatGPT and Claude.
 ---
 
 # Build an Agent with Sanity Context
@@ -139,6 +139,16 @@ See [references/nextjs-agent.md](references/nextjs-agent.md#adapting-to-other-st
 - Framework-specific route patterns (Express, Remix, Python)
 - AI library integrations (LangChain, direct API calls)
 - System prompt examples for different domains (e-commerce, docs, support)
+
+## Adding Interactive UI with MCP Apps (Optional)
+
+Context MCP returns text and data by default. If you want your agent to render interactive UIs inside ChatGPT or Claude — product cards, comparison views, dashboards — you can build a wrapper MCP server that adds `ui://` resources on top of Context MCP.
+
+This is the **MCP Apps** pattern: your server proxies Context MCP for content access, then registers tools with HTML UI bundles that render as sandboxed iframes in the host. The same server works in both ChatGPT and Claude.
+
+**When to use this:** You want rich, interactive experiences beyond text (clickable product grids, variant pickers, comparison tables, data visualizations). Context MCP stays generic across domains; your wrapper adds domain-specific UI.
+
+See [references/mcp-apps.md](references/mcp-apps.md)
 
 ## Best Practices
 

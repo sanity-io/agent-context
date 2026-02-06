@@ -12,6 +12,18 @@ npm install @sanity/agent-context
 pnpm add @sanity/agent-context
 ```
 
+**IMPORTANT: Always check [ecommerce/studio/package.json](ecommerce/studio/package.json) for current working versions.** Key dependencies:
+
+| Package                 | Version | Notes                                         |
+| ----------------------- | ------- | --------------------------------------------- |
+| `@sanity/agent-context` | latest  | Use `latest` or check npm for current version |
+| `sanity`                | ^5.8.0  | Sanity Studio v5.1+                           |
+| `@sanity/vision`        | ^5.8.0  | Must match Sanity version                     |
+| `react`                 | ^19     | React 19                                      |
+| `react-dom`             | ^19     | React 19                                      |
+
+Do NOT guess versions—check the reference `package.json` or use `npm info <package> version` to get the latest.
+
 ## 2. Add the Plugin
 
 See [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for a complete example.

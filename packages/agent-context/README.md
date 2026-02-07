@@ -49,3 +49,51 @@ export default defineConfig({
   ],
 })
 ```
+
+## Private Document IDs
+
+Agent context documents are created with a `sanity.agentContext.` ID prefix (e.g., `sanity.agentContext.abc123`). The `.` in the ID makes the document private — it will not appear in public API queries on public datasets. This is important because agent context documents may contain sensitive AI instructions.
+
+The plugin automatically enforces the prefix for documents created through the Studio's standard creation flows:
+
+- **Pane header "+" button** — sets `initialDocumentId` with prefix
+- **Global "+" menu** — hidden (the global menu does not support custom IDs)
+- **Duplicate action** — replaced with a custom action that generates prefixed IDs
+
+### Custom prefix
+
+The default prefix is `sanity.agentContext`. You can change it by passing `documentIdPrefix` to the plugin. A `.` separator is automatically added between the prefix and the UUID:
+
+```ts
+agentContextPlugin({documentIdPrefix: 'myPrefix'})
+// Documents will have IDs like: myPrefix.abc123...
+```
+
+### Creating documents outside Studio
+
+The plugin cannot enforce the prefix when documents are created outside of Studio. If you create `sanity.agentContext` documents via the Sanity Client or HTTP API, you **must** include the prefix in the document ID yourself:
+
+```ts
+import {uuid} from '@sanity/uuid'
+
+// Correct — document will be private
+client.create({
+  _id: `sanity.agentContext.${uuid()}`,
+  _type: 'sanity.agentContext',
+  // ...
+})
+
+// Wrong — document will be publicly queryable
+client.create({
+  _type: 'sanity.agentContext',
+  // ...
+})
+```
+
+Similarly, if you construct a Studio URL to create a document via intent navigation, include the `id` parameter:
+
+```
+/intent/create/template=sanity.agentContext;type=sanity.agentContext;id=sanity.agentContext.<uuid>
+```
+
+Without the `id` parameter, Studio will generate a plain UUID without the privacy prefix.

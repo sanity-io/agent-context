@@ -56,6 +56,7 @@
     "@repo/eslint-config": "workspace:*",
     "@sanity/icons": "^3",
     "@sanity/pkg-utils": "^10.3.2",
+    "@sanity/uuid": "^3.0.2",
     "@sanity/tsconfig": "^2.1.0",
     "@sanity/ui": "^3",
     "@types/react": "^19",
@@ -63,6 +64,7 @@
     "@vitest/coverage-v8": "^4.0.0",
     "react": "^19",
     "react-dom": "^19",
+    "rxjs": "^7",
     "sanity": "^5.8.0",
     "styled-components": "^6.3.8",
     "typescript": "^5",
@@ -71,8 +73,10 @@
   "peerDependencies": {
     "@sanity/icons": "^3",
     "@sanity/ui": "^3",
+    "@sanity/uuid": "^3",
     "react": "^19",
     "react-dom": "^19",
+    "rxjs": "^7",
     "sanity": "^5.8.0",
     "styled-components": "^6"
   },

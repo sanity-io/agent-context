@@ -243,6 +243,9 @@ importers:
       '@sanity/ui':
         specifier: ^3
         version: 3.1.11(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.3(react@19.2.3))(react-is@19.2.4)(react@19.2.3)(styled-components@6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
+      '@sanity/uuid':
+        specifier: ^3.0.2
+        version: 3.0.2
       '@types/react':
         specifier: ^19
         version: 19.2.8
@@ -258,6 +261,9 @@ importers:
       react-dom:
         specifier: ^19
         version: 19.2.3(react@19.2.3)
+      rxjs:
+        specifier: ^7
+        version: 7.8.2
       sanity:
         specifier: ^5.8.0
         version: 5.8.0(@emotion/is-prop-valid@1.4.0)(@types/node@25.0.9)(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(babel-plugin-react-compiler@1.0.0)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(styled-components@6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(terser@5.44.1)(tsx@4.21.0)(typescript@5.9.3)(vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)

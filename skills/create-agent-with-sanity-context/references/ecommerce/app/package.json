@@ -17,7 +17,7 @@
     "@ai-sdk/mcp": "^1.0.13",
     "@ai-sdk/react": "^3.0.52",
     "@radix-ui/react-slot": "^1.2.4",
-    "@sanity/client": "^7",
+    "@sanity/client": "^7.14.1",
     "@sanity/image-url": "^2.0.3",
     "ai": "^6.0.50",
     "class-variance-authority": "^0.7.1",

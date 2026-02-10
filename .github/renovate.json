@@ -1,4 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["local>sanity-io/renovate-config"]
+  "extends": ["local>sanity-io/renovate-config"],
+  "minimumReleaseAge": "3 days"
 }

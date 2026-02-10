@@ -9,13 +9,15 @@ interface Stats {
   avgSuccess: number | null
   avgAgentConfusion: number | null
   avgUserConfusion: number | null
+  contentGapRate: number | null
 }
 
 const QUERY = `{
   "total": count(*[_type == "agent.conversation"]),
   "avgSuccess": round(math::avg(*[_type == "agent.conversation"].classification.successRate)),
   "avgAgentConfusion": round(math::avg(*[_type == "agent.conversation"].classification.agentConfusion)),
-  "avgUserConfusion": round(math::avg(*[_type == "agent.conversation"].classification.userConfusion))
+  "avgUserConfusion": round(math::avg(*[_type == "agent.conversation"].classification.userConfusion)),
+  "contentGapRate": round(count(*[_type == "agent.conversation" && defined(contentGap)]) / count(*[_type == "agent.conversation"]) * 100)
 }`
 
 interface StatCardProps {
@@ -68,7 +70,7 @@ export function OverviewView() {
     <ViewLayout title="Overview" description="Summary of agent conversations and performance">
       <Box>
         <Stack space={4}>
-          <Grid columns={4} gap={4}>
+          <Grid columns={[1, 1, 1, 3, 5]} gap={4}>
             <StatCard label="Total Conversations" value={stats?.total ?? 0} />
 
             <StatCard
@@ -87,6 +89,12 @@ export function OverviewView() {
               label="Avg User Confusion"
               value={`${stats?.avgUserConfusion ?? 0}%`}
               muted={!stats?.avgUserConfusion}
+            />
+
+            <StatCard
+              label="Content Gap Rate"
+              value={`${stats?.contentGapRate ?? 0}%`}
+              muted={!stats?.contentGapRate}
             />
           </Grid>
         </Stack>

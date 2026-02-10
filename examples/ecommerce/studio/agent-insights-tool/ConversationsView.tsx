@@ -243,7 +243,7 @@ export function ConversationsView() {
 
                 <Box flex={2}>
                   <Text size={1} muted>
-                    {conversation.contentGap || 'No content gap'}
+                    {conversation.contentGap || '-'}
                   </Text>
                 </Box>
 

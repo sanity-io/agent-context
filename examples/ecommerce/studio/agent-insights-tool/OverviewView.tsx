@@ -70,7 +70,7 @@ export function OverviewView() {
     <ViewLayout title="Overview" description="Summary of agent conversations and performance">
       <Box>
         <Stack space={4}>
-          <Grid columns={5} gap={4}>
+          <Grid columns={[1, 1, 1, 3, 5]} gap={4}>
             <StatCard label="Total Conversations" value={stats?.total ?? 0} />
 
             <StatCard

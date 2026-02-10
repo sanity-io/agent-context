@@ -60,7 +60,7 @@ importers:
         specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.8)(react@19.2.3)
       '@sanity/client':
-        specifier: ^7
+        specifier: ^7.14.1
         version: 7.14.1(debug@4.4.3)
       '@sanity/image-url':
         specifier: ^2.0.3
@@ -153,12 +153,27 @@ importers:
 
   examples/ecommerce/studio:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^3.0.23
+        version: 3.0.23(zod@4.3.6)
       '@sanity/agent-context':
         specifier: workspace:*
         version: link:../../../packages/agent-context
+      '@sanity/client':
+        specifier: ^7.14.1
+        version: 7.14.1(debug@4.4.3)
+      '@sanity/icons':
+        specifier: ^3
+        version: 3.7.4(react@19.2.3)
+      '@sanity/ui':
+        specifier: ^3
+        version: 3.1.11(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.3(react@19.2.3))(react-is@19.2.4)(react@19.2.3)(styled-components@6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
       '@sanity/vision':
         specifier: ^5.8.0
         version: 5.8.0(@babel/runtime@7.28.6)(@codemirror/lint@6.9.2)(@codemirror/theme-one-dark@6.1.3)(@emotion/is-prop-valid@1.4.0)(codemirror@6.0.2)(react-dom@19.2.3(react@19.2.3))(react-is@19.2.4)(react@19.2.3)(sanity@5.8.0(@emotion/is-prop-valid@1.4.0)(@types/node@25.0.9)(@types/react@19.2.8)(babel-plugin-react-compiler@1.0.0)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(styled-components@6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(terser@5.44.1)(tsx@4.21.0)(typescript@5.9.3)(vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(styled-components@6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
+      ai:
+        specifier: ^6.0.50
+        version: 6.0.50(zod@4.3.6)
       easymde:
         specifier: ^2.20.0
         version: 2.20.0
@@ -168,6 +183,9 @@ importers:
       react-dom:
         specifier: ^19
         version: 19.2.3(react@19.2.3)
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@19.2.8)(react@19.2.3)
       sanity:
         specifier: ^5.8.0
         version: 5.8.0(@emotion/is-prop-valid@1.4.0)(@types/node@25.0.9)(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(babel-plugin-react-compiler@1.0.0)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(styled-components@6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(terser@5.44.1)(tsx@4.21.0)(typescript@5.9.3)(vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
@@ -177,10 +195,19 @@ importers:
       styled-components:
         specifier: ^6.3.8
         version: 6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../../packages/@repo/eslint-config
+      '@sanity/blueprints':
+        specifier: 0.10.0
+        version: 0.10.0
+      '@sanity/functions':
+        specifier: 1.2.0
+        version: 1.2.0
       '@types/react':
         specifier: ^19
         version: 19.2.8
@@ -2604,6 +2631,10 @@ packages:
     resolution: {integrity: sha512-kS/MU3r71MXExzatvP6lCO7J/mhnmxO2qSsC+/j+YXm1qZo9BoXTRMsC8f0M/Hi5r+1i/l/6NSk3RUsNEtHAyg==}
     engines: {node: '>=20.19 <22 || >=22.12'}
 
+  '@sanity/blueprints@0.10.0':
+    resolution: {integrity: sha512-TweEjiarTWY8Bj3JCpcN0RFz1fdanFPpVEH955KWJGqCCKY3EnyOuv3oEctX4sPAuz1C3xpp3X8D0HhaG+6MEQ==}
+    engines: {node: '>=20'}
+
   '@sanity/blueprints@0.8.0':
     resolution: {integrity: sha512-8yfu6YQKpmCjF7wmEv46Ulc+e8DDIG+r2iVbTGhRr04HmhQw6Wdb2FWeY3Os14sWSl3XPmKY8mc6Wrkwk5ogQA==}
     engines: {node: '>=20'}
@@ -2692,6 +2723,10 @@ packages:
     resolution: {integrity: sha512-yLwk+WZdSayG795fvvZmU2jW9gh6ulPCjJrc2jK5BR0VFFdfWHr4euXSKLW43DOKtvcbH3x0pqwnGYn7HjKd+w==}
     engines: {node: '>=20.19 <22 || >=22.12'}
     hasBin: true
+
+  '@sanity/functions@1.2.0':
+    resolution: {integrity: sha512-d8iVuruYKsgYI/KFbAVqjtnotnW3DDwgtOir1tqBJYVxxjPxH7JLiho26Kq6HWd/+N0wZHZEv+uz1aQa+T21kQ==}
+    engines: {node: '>=20'}
 
   '@sanity/generate-help-url@4.0.0':
     resolution: {integrity: sha512-Ooa4xkLT3TLaX+mw/13fq3IeGdnAkx4rbpVASvRVixzBBvvcL6jPqj50fjlCd+EhgB5GRXBCNNAy/hWXwjZEUA==}
@@ -10722,6 +10757,8 @@ snapshots:
 
   '@sanity/blueprints-parser@0.3.0': {}
 
+  '@sanity/blueprints@0.10.0': {}
+
   '@sanity/blueprints@0.8.0': {}
 
   '@sanity/browserslist-config@1.0.5': {}
@@ -11148,6 +11185,8 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
       - supports-color
+
+  '@sanity/functions@1.2.0': {}
 
   '@sanity/generate-help-url@4.0.0': {}
 

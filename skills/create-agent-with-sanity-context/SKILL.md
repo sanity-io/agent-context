@@ -110,6 +110,8 @@ See [references/studio-setup.md](references/studio-setup.md)
 
 See [references/nextjs-agent.md](references/nextjs-agent.md)
 
+For **SvelteKit**, see [references/sveltekit-agent.md](references/sveltekit-agent.md)
+
 The reference covers:
 
 - **Core setup** (required): MCP connection, authentication, basic chat route

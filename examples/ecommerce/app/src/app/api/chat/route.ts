@@ -3,12 +3,12 @@ import {createMCPClient} from '@ai-sdk/mcp'
 import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'ai'
 import {z} from 'zod'
 
-import {CLIENT_TOOLS, type UserContext} from '@/lib/client-tools'
+import {CLIENT_TOOLS, productFiltersSchema, type UserContext} from '@/lib/client-tools'
 import {saveConversation} from '@/lib/save-conversation'
 import {client} from '@/sanity/lib/client'
 
 /**
- * Client-side tools for capturing page context.
+ * Client-side tools for capturing page context and controlling the UI.
  * No execute functions - execution happens on the client via onToolCall.
  */
 const clientTools = {
@@ -23,6 +23,10 @@ const clientTools = {
     inputSchema: z.object({
       reason: z.string().describe('Why you need a screenshot'),
     }),
+  },
+  [CLIENT_TOOLS.SET_FILTERS]: {
+    description: `Update the product listing page filters. Only use AFTER you've used groq_query to: 1) get valid filter values (slugs/codes), and 2) confirm matching products exist. Use the exact values from your query. Do not use this tool blindly - you should already know what results the user will see.`,
+    inputSchema: productFiltersSchema,
   },
 }
 

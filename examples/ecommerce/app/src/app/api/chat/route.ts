@@ -1,6 +1,6 @@
 import {anthropic} from '@ai-sdk/anthropic'
 import {createMCPClient} from '@ai-sdk/mcp'
-import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'ai'
+import {convertToModelMessages, stepCountIs, streamText, type ToolSet, type UIMessage} from 'ai'
 import {z} from 'zod'
 
 import {CLIENT_TOOLS, productFiltersSchema, type UserContext} from '@/lib/client-tools'
@@ -11,7 +11,7 @@ import {client} from '@/sanity/lib/client'
  * Client-side tools for capturing page context and controlling the UI.
  * No execute functions - execution happens on the client via onToolCall.
  */
-const clientTools = {
+const clientTools: ToolSet = {
   [CLIENT_TOOLS.PAGE_CONTEXT]: {
     description: `Page context as markdown: URL, title, and text content (headings, links, lists). Fast. No visuals.`,
     inputSchema: z.object({

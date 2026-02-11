@@ -6,17 +6,18 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 
 ## When to Load Files
 
-| Task                      | Load These Files                                                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------------------------- |
-| MCP connection setup      | `app/src/app/api/chat/route.ts` (lines 55-74)                                                        |
-| System prompt from Sanity | `app/src/app/api/chat/route.ts` (lines 28-41, 68-83), `studio/schemaTypes/documents/agentConfig.ts`  |
-| Client-side tool handling | `app/src/components/chat/Chat.tsx`, `app/src/lib/client-tools.ts`                                    |
-| Page context capture      | `app/src/lib/capture-context.ts`                                                                     |
-| Custom markdown rendering | `app/src/components/chat/message/remarkDirectives.ts`, `app/src/components/chat/message/Product.tsx` |
-| Studio plugin setup       | `studio/sanity.config.ts`                                                                            |
-| Schema design patterns    | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                             |
-| Sanity client/queries     | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                            |
-| Environment variables     | `.env.example`                                                                                       |
+| Task                        | Load These Files                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| MCP connection setup        | `app/src/app/api/chat/route.ts` (lines 55-74)                                                                    |
+| System prompt from Sanity   | `app/src/app/api/chat/route.ts` (lines 28-41, 68-83), `studio/schemaTypes/documents/agentConfig.ts`              |
+| Client-side tool handling   | `app/src/components/chat/Chat.tsx`, `app/src/lib/client-tools.ts`                                                |
+| Page context capture        | `app/src/lib/capture-context.ts`                                                                                 |
+| Custom markdown rendering   | `app/src/components/chat/message/remarkDirectives.ts`, `app/src/components/chat/message/Product.tsx`             |
+| Studio plugin setup         | `studio/sanity.config.ts`                                                                                        |
+| Schema design patterns      | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                                         |
+| Sanity client/queries       | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                                        |
+| Conversation classification | `studio/sanity.blueprint.ts`, `studio/functions/agent-conversation/index.ts`, `app/src/lib/save-conversation.ts` |
+| Environment variables       | `.env.example`                                                                                                   |
 
 ## File Map
 
@@ -26,6 +27,7 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 app/src/app/api/chat/route.ts     # API route: MCP client, tools, streaming
 app/src/lib/client-tools.ts       # Tool constants shared server/client
 app/src/lib/capture-context.ts    # Page context & screenshot capture
+app/src/lib/save-conversation.ts  # Save conversations for classification
 ```
 
 ### Chat UI
@@ -49,12 +51,17 @@ app/src/components/chat/
 ```
 studio/
 ├── sanity.config.ts              # Plugin setup, structure customization
+├── sanity.blueprint.ts           # Function triggers (delta filters!)
+├── functions/
+│   └── agent-conversation/
+│       └── index.ts              # Classification function
 └── schemaTypes/
     ├── index.ts                  # Schema registration
     ├── documents/
     │   ├── product.ts            # Product schema
     │   ├── category.ts           # Category schema
     │   ├── brand.ts              # Brand schema
+    │   ├── agentConversation.ts  # Conversation storage
     │   └── ...
     └── objects/
         ├── productVariant.ts     # Variant (size/color combos)
@@ -110,3 +117,7 @@ See `app/src/components/chat/Chat.tsx` lines 69-72
 ### Custom Directives
 
 See `app/src/components/chat/message/remarkDirectives.ts`
+
+### Conversation Classification (Blueprint + Function)
+
+See [conversation-classification.md](../conversation-classification.md) — includes critical guidance on delta functions to prevent infinite loops.

@@ -45,7 +45,7 @@
     "@types/react-dom": "^19",
     "@types/turndown": "^5.0.6",
     "@types/unist": "^3.0.3",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.4",
     "eslint-config-next": "16.1.4",
     "tailwindcss": "^4",
     "typescript": "^5"

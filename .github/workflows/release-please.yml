@@ -48,9 +48,13 @@ jobs:
           node-version: lts/*
           registry-url: "https://registry.npmjs.org"
 
-      - name: Install dependencies and build
+      - name: Install dependencies
         if: ${{ steps.release.outputs.releases_created == 'true' || github.event.inputs.publish == 'true' }}
-        run: pnpm install --ignore-scripts && pnpm build
+        run: pnpm install --ignore-scripts
+
+      - name: Build
+        if: ${{ steps.release.outputs.releases_created == 'true' || github.event.inputs.publish == 'true' }}
+        run: pnpm --filter @sanity/agent-context build
 
       - name: Set publishing config
         if: ${{ steps.release.outputs.releases_created == 'true' || github.event.inputs.publish == 'true' }}

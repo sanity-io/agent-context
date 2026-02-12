@@ -3,8 +3,8 @@ import {createMCPClient} from '@ai-sdk/mcp'
 import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'ai'
 import {z} from 'zod'
 
-import {saveConversation} from '@/lib/classify-conversation'
 import {CLIENT_TOOLS, type UserContext} from '@/lib/client-tools'
+import {saveConversation} from '@/lib/save-conversation'
 import {client} from '@/sanity/lib/client'
 
 /**

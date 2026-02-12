@@ -63,7 +63,7 @@
     "@vitest/coverage-v8": "^4.0.0",
     "react": "^19",
     "react-dom": "^19",
-    "sanity": "^5.8.0",
+    "sanity": "^5.9.0",
     "styled-components": "^6.3.8",
     "typescript": "^5",
     "vitest": "^4.0.0"

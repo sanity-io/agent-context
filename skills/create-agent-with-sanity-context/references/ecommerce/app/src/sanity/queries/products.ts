@@ -1,5 +1,7 @@
 import {defineQuery} from 'next-sanity'
 
+import {type ProductFiltersInput} from '@/lib/client-tools'
+
 import {
   brandFragment,
   categoryFragment,
@@ -8,31 +10,29 @@ import {
   variantFragment,
 } from './fragments'
 
+// Product card fragment for consistent field selection (internal)
+const productCardFragment = /* groq */ `
+  _id,
+  title,
+  "slug": slug.current,
+  shortDescription,
+  "category": category->{ ${categoryFragment} },
+  "brand": brand->{ ${brandFragment} },
+  "image": variants[0].images[0] { ${imageFragment} },
+  price { ${priceFragment} }
+`
+
 // Product card data (for grids/listings)
 export const PRODUCTS_QUERY = defineQuery(/* groq */ `
   *[_type == "product" && defined(slug.current)] | order(_createdAt desc) {
-    _id,
-    title,
-    "slug": slug.current,
-    shortDescription,
-    "category": category->{ ${categoryFragment} },
-    "brand": brand->{ ${brandFragment} },
-    "image": variants[0].images[0] { ${imageFragment} },
-    price { ${priceFragment} }
+    ${productCardFragment}
   }
 `)
 
 // Featured products for homepage (limited)
 export const FEATURED_PRODUCTS_QUERY = defineQuery(/* groq */ `
   *[_type == "product" && defined(slug.current)] | order(_createdAt desc) [0...8] {
-    _id,
-    title,
-    "slug": slug.current,
-    shortDescription,
-    "category": category->{ ${categoryFragment} },
-    "brand": brand->{ ${brandFragment} },
-    "image": variants[0].images[0] { ${imageFragment} },
-    price { ${priceFragment} }
+    ${productCardFragment}
   }
 `)
 
@@ -65,23 +65,92 @@ export const PRODUCT_SLUGS_QUERY = defineQuery(/* groq */ `
 // Pagination constants (multiple of 4 for grid layout)
 export const PAGE_SIZE = 48
 
-// Paginated products query (uses $page parameter, 1-indexed)
-export const PRODUCTS_PAGINATED_QUERY = defineQuery(/* groq */ `
-  *[_type == "product" && defined(slug.current)] 
-    | order(_createdAt desc) 
-    [($page - 1) * ${PAGE_SIZE}...$page * ${PAGE_SIZE}] {
-    _id,
-    title,
-    "slug": slug.current,
-    shortDescription,
-    "category": category->{ ${categoryFragment} },
-    "brand": brand->{ ${brandFragment} },
-    "image": variants[0].images[0] { ${imageFragment} },
-    price { ${priceFragment} }
-  }
-`)
+// Sort options configuration
+export const SORT_OPTIONS = [
+  {value: 'newest', label: 'Newest'},
+  {value: 'price-asc', label: 'Price: Low to High'},
+  {value: 'price-desc', label: 'Price: High to Low'},
+  {value: 'title-asc', label: 'Name: A to Z'},
+] as const
 
-// Total product count for pagination
-export const PRODUCTS_COUNT_QUERY = defineQuery(/* groq */ `
-  count(*[_type == "product" && defined(slug.current)])
-`)
+/**
+ * Build a GROQ filter string from ProductFilters
+ * Returns an array of filter conditions to be joined with &&
+ */
+function buildProductFilterConditions(filters: ProductFiltersInput): string[] {
+  const conditions: string[] = ['_type == "product"', 'defined(slug.current)']
+
+  if (filters.category?.length) {
+    const slugs = filters.category.map((s) => `"${s}"`).join(', ')
+    conditions.push(`category->slug.current in [${slugs}]`)
+  }
+
+  if (filters.brand?.length) {
+    const slugs = filters.brand.map((s) => `"${s}"`).join(', ')
+    conditions.push(`brand->slug.current in [${slugs}]`)
+  }
+
+  if (filters.color?.length) {
+    // Check if any variant has one of these colors
+    const slugs = filters.color.map((s) => `"${s}"`).join(', ')
+    conditions.push(`count(variants[color->slug.current in [${slugs}]]) > 0`)
+  }
+
+  if (filters.size?.length) {
+    // Check if any variant has one of these sizes
+    const codes = filters.size.map((s) => `"${s}"`).join(', ')
+    conditions.push(`count(variants[count(sizes[@->code in [${codes}]]) > 0]) > 0`)
+  }
+
+  if (filters.minPrice !== undefined) {
+    conditions.push(`price.amount >= ${filters.minPrice}`)
+  }
+
+  if (filters.maxPrice !== undefined) {
+    conditions.push(`price.amount <= ${filters.maxPrice}`)
+  }
+
+  return conditions
+}
+
+/**
+ * Build the order clause from sort option
+ */
+function buildProductSortClause(sort?: ProductFiltersInput['sort']): string {
+  switch (sort) {
+    case 'price-asc':
+      return 'order(price.amount asc)'
+    case 'price-desc':
+      return 'order(price.amount desc)'
+    case 'title-asc':
+      return 'order(title asc)'
+    case 'newest':
+    default:
+      return 'order(_createdAt desc)'
+  }
+}
+
+/**
+ * Build the complete filtered products query string
+ */
+export function buildFilteredProductsQuery(
+  filters: ProductFiltersInput,
+  pageSize: number = PAGE_SIZE,
+): string {
+  const conditions = buildProductFilterConditions(filters)
+  const sortClause = buildProductSortClause(filters.sort)
+
+  return /* groq */ `
+    *[${conditions.join(' && ')}] | ${sortClause} [($page - 1) * ${pageSize}...$page * ${pageSize}] {
+      ${productCardFragment}
+    }
+  `
+}
+
+/**
+ * Build the count query for filtered products
+ */
+export function buildFilteredProductsCountQuery(filters: ProductFiltersInput): string {
+  const conditions = buildProductFilterConditions(filters)
+  return /* groq */ `count(*[${conditions.join(' && ')}])`
+}

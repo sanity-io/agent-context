@@ -1,3 +1,7 @@
+'use client'
+
+import {useSearchParams} from 'next/navigation'
+
 import {
   Pagination,
   PaginationContent,
@@ -13,8 +17,16 @@ interface ProductPaginationProps {
   totalPages: number
 }
 
-export function ProductPagination({currentPage, totalPages}: ProductPaginationProps) {
-  const createPageURL = (page: number) => `/products?page=${page}`
+export function ProductPagination(props: ProductPaginationProps) {
+  const {currentPage, totalPages} = props
+  const searchParams = useSearchParams()
+
+  // Preserve existing filter params when navigating pages
+  const createPageURL = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('page', String(page))
+    return `/products?${params.toString()}`
+  }
 
   // Generate page numbers to display (current +/- 1, plus first/last)
   const getPageNumbers = (): (number | 'ellipsis')[] => {

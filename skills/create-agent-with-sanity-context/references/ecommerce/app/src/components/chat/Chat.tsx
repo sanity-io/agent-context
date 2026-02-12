@@ -9,8 +9,8 @@ import {
   type UIMessage,
 } from 'ai'
 import {MessageCircle, X} from 'lucide-react'
-import {useSearchParams} from 'next/navigation'
-import {Suspense, useEffect, useRef, useState} from 'react'
+import {useRouter, useSearchParams} from 'next/navigation'
+import {Suspense, useCallback, useEffect, useRef, useState} from 'react'
 
 import {
   AGENT_CHAT_HIDDEN_ATTRIBUTE,
@@ -18,7 +18,7 @@ import {
   captureScreenshot,
   captureUserContext,
 } from '../../lib/capture-context'
-import {CLIENT_TOOLS} from '../../lib/client-tools'
+import {CLIENT_TOOLS, type ProductFiltersInput, productFiltersSchema} from '../../lib/client-tools'
 import {ChatInput} from './ChatInput'
 import {Loader} from './Loader'
 import {Message} from './message'
@@ -51,6 +51,7 @@ export function Chat(props: ChatProps) {
 function ChatInner(props: ChatProps) {
   const {onClose} = props
 
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [input, setInput] = useState('')
   const debug = searchParams.get('debug') === 'true'
@@ -58,6 +59,26 @@ function ChatInner(props: ChatProps) {
 
   // Queue for screenshot to send after tool output
   const pendingScreenshotRef = useRef<string | null>(null)
+
+  /** Apply product filters by navigating to /products with URL params */
+  const applyProductFilters = useCallback(
+    (filters: ProductFiltersInput): string => {
+      const params = new URLSearchParams()
+
+      filters.category?.forEach((v) => params.append('category', v))
+      filters.color?.forEach((v) => params.append('color', v))
+      filters.size?.forEach((v) => params.append('size', v))
+      filters.brand?.forEach((v) => params.append('brand', v))
+      if (filters.minPrice) params.set('minPrice', String(filters.minPrice))
+      if (filters.maxPrice) params.set('maxPrice', String(filters.maxPrice))
+      if (filters.sort) params.set('sort', filters.sort)
+
+      const newUrl = `/products${params.toString() ? `?${params}` : ''}`
+      router.push(newUrl, {scroll: false})
+      return newUrl
+    },
+    [router],
+  )
 
   const {messages, sendMessage, status, addToolOutput, error, regenerate} = useChat({
     // Include user context (page title/location) with every request
@@ -101,6 +122,39 @@ function ChatInner(props: ChatProps) {
               output: `Failed to capture screenshot: ${err instanceof Error ? err.message : String(err)}`,
             })
           }
+
+          return
+        }
+
+        case CLIENT_TOOLS.SET_FILTERS: {
+          const result = productFiltersSchema.safeParse(toolCall.input)
+          if (!result.success) {
+            addToolOutput({
+              tool: CLIENT_TOOLS.SET_FILTERS,
+              toolCallId: toolCall.toolCallId,
+              output: `Invalid filter input: ${result.error.message}`,
+            })
+            return
+          }
+
+          const filters = result.data
+          const newUrl = applyProductFilters(filters)
+
+          // Build a human-readable summary of what was done
+          const changes: string[] = []
+          if (filters.category?.length) changes.push(`category: ${filters.category.join(', ')}`)
+          if (filters.color?.length) changes.push(`color: ${filters.color.join(', ')}`)
+          if (filters.size?.length) changes.push(`size: ${filters.size.join(', ')}`)
+          if (filters.brand?.length) changes.push(`brand: ${filters.brand.join(', ')}`)
+          if (filters.minPrice) changes.push(`min price: $${filters.minPrice}`)
+          if (filters.maxPrice) changes.push(`max price: $${filters.maxPrice}`)
+          if (filters.sort) changes.push(`sort: ${filters.sort}`)
+
+          addToolOutput({
+            tool: CLIENT_TOOLS.SET_FILTERS,
+            toolCallId: toolCall.toolCallId,
+            output: `Filters applied${changes.length > 0 ? `: ${changes.join(', ')}` : ''}. Navigated to ${newUrl}.`,
+          })
 
           return
         }

@@ -360,12 +360,6 @@ export type AllSanitySchemaTypes =
 
 export declare const internalGroqTypeReferenceTo: unique symbol
 
-type ArrayOf<T> = Array<
-  T & {
-    _key: string
-  }
->
-
 // Source: src/sanity/queries/categories.ts
 // Variable: CATEGORIES_QUERY
 // Query: *[_type == "category" && defined(slug.current)] | order(title asc) {    _id,    title,    "slug": slug.current,    description  }
@@ -386,9 +380,41 @@ export type CATEGORY_QUERY_RESULT = {
   description: string | null
 } | null
 
+// Source: src/sanity/queries/filters.ts
+// Variable: FILTER_OPTIONS_QUERY
+// Query: {  "categories": *[_type == "category" && defined(slug.current)] | order(title asc) {    _id,    title,    "slug": slug.current  },  "colors": *[_type == "color" && defined(slug.current)] | order(title asc) {    _id,    title,    "slug": slug.current,    hexValue  },  "sizes": *[_type == "size"] | order(sortOrder asc) {    _id,    title,    code,    sortOrder  },  "brands": *[_type == "brand" && defined(slug.current)] | order(title asc) {    _id,    title,    "slug": slug.current  },  "priceRange": {    "min": math::min(*[_type == "product" && defined(price.amount)].price.amount),    "max": math::max(*[_type == "product" && defined(price.amount)].price.amount)  }}
+export type FILTER_OPTIONS_QUERY_RESULT = {
+  categories: Array<{
+    _id: string
+    title: string | null
+    slug: string | null
+  }>
+  colors: Array<{
+    _id: string
+    title: string | null
+    slug: string | null
+    hexValue: string | null
+  }>
+  sizes: Array<{
+    _id: string
+    title: string | null
+    code: string | null
+    sortOrder: number | null
+  }>
+  brands: Array<{
+    _id: string
+    title: string | null
+    slug: string | null
+  }>
+  priceRange: {
+    min: number | null
+    max: number | null
+  }
+}
+
 // Source: src/sanity/queries/products.ts
 // Variable: PRODUCTS_QUERY
-// Query: *[_type == "product" && defined(slug.current)] | order(_createdAt desc) {    _id,    title,    "slug": slug.current,    shortDescription,    "category": category->{   _id,  title,  "slug": slug.current },    "brand": brand->{   _id,  title,  "slug": slug.current },    "image": variants[0].images[0] {   asset->{    _id,    url,    metadata { lqip, dimensions }  },  alt },    price {   amount,  compareAtPrice }  }
+// Query: *[_type == "product" && defined(slug.current)] | order(_createdAt desc) {      _id,  title,  "slug": slug.current,  shortDescription,  "category": category->{   _id,  title,  "slug": slug.current },  "brand": brand->{   _id,  title,  "slug": slug.current },  "image": variants[0].images[0] {   asset->{    _id,    url,    metadata { lqip, dimensions }  },  alt },  price {   amount,  compareAtPrice }  }
 export type PRODUCTS_QUERY_RESULT = Array<{
   _id: string
   title: string | null
@@ -423,7 +449,7 @@ export type PRODUCTS_QUERY_RESULT = Array<{
 
 // Source: src/sanity/queries/products.ts
 // Variable: FEATURED_PRODUCTS_QUERY
-// Query: *[_type == "product" && defined(slug.current)] | order(_createdAt desc) [0...8] {    _id,    title,    "slug": slug.current,    shortDescription,    "category": category->{   _id,  title,  "slug": slug.current },    "brand": brand->{   _id,  title,  "slug": slug.current },    "image": variants[0].images[0] {   asset->{    _id,    url,    metadata { lqip, dimensions }  },  alt },    price {   amount,  compareAtPrice }  }
+// Query: *[_type == "product" && defined(slug.current)] | order(_createdAt desc) [0...8] {      _id,  title,  "slug": slug.current,  shortDescription,  "category": category->{   _id,  title,  "slug": slug.current },  "brand": brand->{   _id,  title,  "slug": slug.current },  "image": variants[0].images[0] {   asset->{    _id,    url,    metadata { lqip, dimensions }  },  alt },  price {   amount,  compareAtPrice }  }
 export type FEATURED_PRODUCTS_QUERY_RESULT = Array<{
   _id: string
   title: string | null
@@ -550,8 +576,9 @@ declare module '@sanity/client' {
   interface SanityQueries {
     '\n  *[_type == "category" && defined(slug.current)] | order(title asc) {\n    _id,\n    title,\n    "slug": slug.current,\n    description\n  }\n': CATEGORIES_QUERY_RESULT
     '\n  *[_type == "category" && slug.current == $slug][0] {\n    _id,\n    title,\n    "slug": slug.current,\n    description\n  }\n': CATEGORY_QUERY_RESULT
-    '\n  *[_type == "product" && defined(slug.current)] | order(_createdAt desc) {\n    _id,\n    title,\n    "slug": slug.current,\n    shortDescription,\n    "category": category->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n    "brand": brand->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n    "image": variants[0].images[0] { \n  asset->{\n    _id,\n    url,\n    metadata { lqip, dimensions }\n  },\n  alt\n },\n    price { \n  amount,\n  compareAtPrice\n }\n  }\n': PRODUCTS_QUERY_RESULT
-    '\n  *[_type == "product" && defined(slug.current)] | order(_createdAt desc) [0...8] {\n    _id,\n    title,\n    "slug": slug.current,\n    shortDescription,\n    "category": category->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n    "brand": brand->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n    "image": variants[0].images[0] { \n  asset->{\n    _id,\n    url,\n    metadata { lqip, dimensions }\n  },\n  alt\n },\n    price { \n  amount,\n  compareAtPrice\n }\n  }\n': FEATURED_PRODUCTS_QUERY_RESULT
+    '{\n  "categories": *[_type == "category" && defined(slug.current)] | order(title asc) {\n    _id,\n    title,\n    "slug": slug.current\n  },\n  "colors": *[_type == "color" && defined(slug.current)] | order(title asc) {\n    _id,\n    title,\n    "slug": slug.current,\n    hexValue\n  },\n  "sizes": *[_type == "size"] | order(sortOrder asc) {\n    _id,\n    title,\n    code,\n    sortOrder\n  },\n  "brands": *[_type == "brand" && defined(slug.current)] | order(title asc) {\n    _id,\n    title,\n    "slug": slug.current\n  },\n  "priceRange": {\n    "min": math::min(*[_type == "product" && defined(price.amount)].price.amount),\n    "max": math::max(*[_type == "product" && defined(price.amount)].price.amount)\n  }\n}': FILTER_OPTIONS_QUERY_RESULT
+    '\n  *[_type == "product" && defined(slug.current)] | order(_createdAt desc) {\n    \n  _id,\n  title,\n  "slug": slug.current,\n  shortDescription,\n  "category": category->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n  "brand": brand->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n  "image": variants[0].images[0] { \n  asset->{\n    _id,\n    url,\n    metadata { lqip, dimensions }\n  },\n  alt\n },\n  price { \n  amount,\n  compareAtPrice\n }\n\n  }\n': PRODUCTS_QUERY_RESULT
+    '\n  *[_type == "product" && defined(slug.current)] | order(_createdAt desc) [0...8] {\n    \n  _id,\n  title,\n  "slug": slug.current,\n  shortDescription,\n  "category": category->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n  "brand": brand->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n  "image": variants[0].images[0] { \n  asset->{\n    _id,\n    url,\n    metadata { lqip, dimensions }\n  },\n  alt\n },\n  price { \n  amount,\n  compareAtPrice\n }\n\n  }\n': FEATURED_PRODUCTS_QUERY_RESULT
     '\n  *[_type == "product" && slug.current == $slug][0] {\n    _id,\n    title,\n    "slug": slug.current,\n    sku,\n    shortDescription,\n    description,\n    features,\n    careInstructions,\n    "category": category->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n    "brand": brand->{ \n  _id,\n  title,\n  "slug": slug.current\n },\n    price { \n  amount,\n  compareAtPrice\n },\n    "materials": materials[]->{ _id, title },\n    "variants": variants[] { \n  _key,\n  sku,\n  available,\n  "color": color->{ _id, title, hex },\n  "sizes": sizes[]->{ _id, title, code, sortOrder },\n  "images": images[] { \n  asset->{\n    _id,\n    url,\n    metadata { lqip, dimensions }\n  },\n  alt\n }\n }\n  }\n': PRODUCT_QUERY_RESULT
     '\n  *[_type == "product" && defined(slug.current)] {\n    "slug": slug.current\n  }\n': PRODUCT_SLUGS_QUERY_RESULT
     '\n  count(*[_type == "product" && defined(slug.current)])\n': PRODUCTS_COUNT_QUERY_RESULT

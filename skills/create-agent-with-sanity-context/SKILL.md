@@ -117,6 +117,12 @@ The reference covers:
 - **Frontend** (optional): React chat component
 - **Advanced patterns** (optional): Client-side tools, auto-continuation, custom rendering
 
+### Step 3: Conversation Classification (Optional)
+
+Track and analyze agent conversations using Sanity Functions. Useful for analytics, debugging, and understanding user interactions.
+
+See [references/conversation-classification.md](references/conversation-classification.md).
+
 ## GROQ with Semantic Search
 
 Context MCP supports `text::embedding()` for semantic ranking:

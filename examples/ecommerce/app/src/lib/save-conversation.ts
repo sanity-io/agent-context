@@ -12,7 +12,7 @@ interface SaveConversationInput {
 }
 
 /**
- * Classifies and saves a conversation to Sanity.
+ * Saves a conversation to Sanity for classification by a Sanity Function.
  */
 export async function saveConversation(input: SaveConversationInput): Promise<void> {
   const {chatId, messages} = input

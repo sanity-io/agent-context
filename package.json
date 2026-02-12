@@ -11,8 +11,6 @@
     "format:all": "prettier --cache --write .",
     "format:staged": "pretty-quick --staged",
     "prepare": "husky",
-    "publish:agent-context": "pnpm --filter=@sanity/agent-context exec release-it",
-    "publish:agent-context:preview": "pnpm --filter=@sanity/agent-context exec release-it --dry-run",
     "sync-skill-example": "tsx scripts/sync-skill-example.ts",
     "test:unit": "turbo test:unit",
     "test:unit:coverage": "turbo test:unit:coverage"
@@ -37,7 +35,6 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "pretty-quick": "^4.2.2",
-    "release-it": "^19.2.3",
     "tsx": "^4.21.0",
     "turbo": "^2.7.4",
     "typescript": "^5"

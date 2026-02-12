@@ -1,6 +1,6 @@
 ---
 name: create-agent-with-sanity-context
-description: Build AI agents with structured access to Sanity content via Context MCP. Covers Studio setup, agent implementation, and advanced patterns like client-side tools and custom rendering.
+description: Build AI agents with structured access to Sanity content via Agent Context. Covers Studio setup, agent implementation, dataset exploration, prompt optimization, and advanced patterns like client-side tools and custom rendering.
 ---
 
 # Build an Agent with Sanity Context
@@ -122,6 +122,69 @@ The reference covers:
 Track and analyze agent conversations using Sanity Functions. Useful for analytics, debugging, and understanding user interactions.
 
 See [references/conversation-classification.md](references/conversation-classification.md).
+
+### Step 4: Explore and Optimize (Recommended)
+
+Once the agent works, run **Agent Context Explorer** to systematically discover what your dataset actually contains, what queries work, and what hazards will trip up a naive agent.
+
+**Install globally** (recommended — you'll reuse it across projects):
+
+```bash
+npm install -g @sanity/agent-context-explorer
+```
+
+**Create a questions file** (`questions.json`) with questions a real user would ask your agent. **Always include `expected_answer`** — the explorer uses it to guide exploration and validate results. Without it, the explorer can't tell if it found the right data, and confidence scores in the output will be less reliable.
+
+```json
+{
+  "questions": [
+    {
+      "question": "What sizes does the Trailblazer Hiking Boot come in?",
+      "expected_answer": "US 7-13, including half sizes"
+    },
+    {
+      "question": "Is the Ultralight Tent waterproof?",
+      "expected_answer": "Yes, it has a 3000mm waterproof rating with taped seams"
+    },
+    {
+      "question": "What's the difference between the Summit Pack and the Daybreak Pack?",
+      "expected_answer": "Summit is 65L for multi-day trips with a frame; Daybreak is 28L for day hikes"
+    }
+  ]
+}
+```
+
+Tips for writing good questions:
+
+- **Always provide `expected_answer`** — it guides the explorer toward the right data and validates results. Even a rough answer is better than none.
+- Cover different question types: specs, compatibility, comparisons, troubleshooting, pricing
+- Include questions you expect to succeed AND ones that might fail — failures are the most valuable output
+- 20-50 questions gives good coverage
+
+**Run the explorer:**
+
+```bash
+agent-context-explorer \
+  --mcp-url https://api.sanity.io/vX/agent-context/PROJECT_ID/DATASET/SLUG \
+  --questions ./questions.json \
+  --auth-token $SANITY_API_READ_TOKEN \
+  --anthropic-api-key $ANTHROPIC_API_KEY
+```
+
+The explorer produces a `dataset-knowledge.md` file documenting:
+
+- Which document types and fields are reliably populated
+- Working query patterns for different question categories
+- **Traps** — data gaps, null fields, locale duplicates, and other hazards that cause wrong answers
+- Trust boundaries — what was explored vs. unknown territory
+
+**Then optimize your system prompt** using the `optimize-agent-prompt` skill (also in this repository). It teaches you how to integrate `dataset-knowledge.md` findings into a production-quality system prompt that follows the "speak on behalf of, not about" principle — agents represent your brand, they don't narrate database internals to users.
+
+Install both skills at once:
+
+```bash
+npx skills add sanity-io/agent-context
+```
 
 ## GROQ with Semantic Search
 

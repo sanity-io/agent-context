@@ -10,7 +10,7 @@ This is a monorepo for Sanity Agent Context—tools for building AI agents with 
 2. **Context MCP** (external service) - Reads agent context documents and exposes tools to AI agents
 3. **Agent Implementation** - Your app that connects to Context MCP and uses the tools
 
-This repo contains the Studio plugin, an agent skill for building integrations, and a demo app.
+This repo contains the Studio plugin, agent skills for building and optimizing integrations, and a demo app.
 
 ## Repository Structure
 
@@ -19,7 +19,8 @@ This repo contains the Studio plugin, an agent skill for building integrations, 
 ├── packages/
 │   └── agent-context/        # @sanity/agent-context npm package
 ├── skills/
-│   └── create-agent-with-sanity-context/  # Agent skill for end users
+│   ├── create-agent-with-sanity-context/  # Build an agent with Agent Context
+│   └── optimize-agent-prompt/             # Optimize system prompts using dataset-knowledge.md
 ├── sandboxes/
 │   └── dev-studio/           # Development sandbox for testing plugin
 ├── examples/

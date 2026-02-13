@@ -1,6 +1,6 @@
 ---
 name: create-agent-with-sanity-context
-description: Build AI agents with structured access to Sanity content via Context MCP. Covers Studio setup, agent implementation, and advanced patterns like client-side tools and custom rendering.
+description: Build AI agents with structured access to Sanity content via Agent Context. Covers Studio setup, agent implementation, dataset exploration, prompt optimization, and advanced patterns like client-side tools and custom rendering.
 ---
 
 # Build an Agent with Sanity Context
@@ -124,6 +124,14 @@ The reference covers:
 Track and analyze agent conversations using Sanity Functions. Useful for analytics, debugging, and understanding user interactions.
 
 See [references/conversation-classification.md](references/conversation-classification.md).
+
+### Step 4: Explore and Optimize (Recommended)
+
+Once the agent works, install `@sanity/agent-context-explorer` and run the `agent-context-explorer` CLI to discover what your dataset contains, then use the `optimize-agent-prompt` skill to build a production-quality system prompt:
+
+```bash
+npx skills add https://github.com/sanity-io/agent-context --skill optimize-agent-prompt
+```
 
 ## GROQ with Semantic Search
 

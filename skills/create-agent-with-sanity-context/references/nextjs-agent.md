@@ -4,21 +4,20 @@ This is a reference implementation using Next.js and Vercel AI SDK. Use it as a 
 
 > **Reference Implementation**: See [ecommerce/\_index.md](ecommerce/_index.md) for file navigation, then explore [ecommerce/app/](ecommerce/app/).
 
-## Core Concepts (Apply to Any Stack)
+## Contents
 
-These patterns transfer regardless of framework:
-
-1. **MCP Connection**: HTTP transport to `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug`
-2. **Authentication**: Bearer token using Sanity API read token
-3. **Tool Discovery**: Get available tools from MCP client, pass to LLM
-4. **System Prompt**: Domain-specific instructions that shape agent behavior
-5. **Streaming**: Stream responses for better UX (optional but recommended)
+- [Install Dependencies](#1-install-dependencies)
+- [Environment Variables](#2-environment-variables)
+- [Chat API Route](#3-create-the-chat-api-route)
+- [Customizing the System Prompt](#4-customizing-the-system-prompt)
+- [Frontend Chat Component](#5-frontend-chat-component)
+- [Testing the Agent](#6-testing-the-agent)
+- [Advanced Patterns](#advanced-patterns)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## Reference Implementation: Next.js + AI SDK
-
-### 1. Install Dependencies
+## 1. Install Dependencies
 
 ```bash
 npm install @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/react ai
@@ -30,7 +29,7 @@ pnpm add @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/react ai
 
 Do NOT guess versions—check the reference `package.json` or use `npm info <package> version` to get the latest. AI SDK packages update frequently.
 
-### 2. Environment Variables
+## 2. Environment Variables
 
 See [ecommerce/.env.example](ecommerce/.env.example) for the template.
 
@@ -51,7 +50,7 @@ SANITY_CONTEXT_MCP_URL=https://api.sanity.io/:apiVersion/agent-context/your-proj
 ANTHROPIC_API_KEY=your-anthropic-key
 ```
 
-### 3. Create the Chat API Route
+## 3. Create the Chat API Route
 
 See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for the complete implementation.
 
@@ -92,7 +91,7 @@ const result = streamText({
 })
 ```
 
-### 4. Customizing the System Prompt
+## 4. Customizing the System Prompt
 
 The system prompt shapes how your agent behaves. The reference implementation uses an inline system prompt defined as a constant in the API route.
 
@@ -101,128 +100,9 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 - **`SYSTEM_PROMPT_TEMPLATE`**: The system prompt constant with template variables
 - **`buildSystemPrompt`**: Function that interpolates runtime variables (`{{documentTitle}}`, `{{documentLocation}}`)
 
-#### Structure of an Effective System Prompt
+**For system prompt structure and examples**, see [system-prompts.md](system-prompts.md).
 
-```ts
-const getSystemPrompt = () => {
-  return `
-You are [role description].
-
-## Your Capabilities
-- [What the agent can do with the available tools]
-- [Boundaries and limitations]
-
-## How to Respond
-- [Tone and style guidelines]
-- [Formatting preferences]
-
-## Tool Usage
-- Use initial_context first to understand available content
-- Use groq_query to find specific content
-- Use schema_explorer when you need field details
-`
-}
-```
-
-#### Example: E-commerce Assistant
-
-```ts
-const getSystemPrompt = () => {
-  return `
-You are a helpful shopping assistant for an online store.
-
-## Your Capabilities
-- Search products by name, category, price, or features
-- Compare products and make recommendations
-- Answer questions about product details, availability, and specifications
-
-## How to Respond
-- Be friendly and helpful
-- When showing products, include name, price, and key features
-- If you can't find what the user wants, suggest alternatives
-
-## Tool Usage
-- Start with initial_context to understand product types
-- Use groq_query with filters like _type == "product" && price < 100
-- Combine structural filters with semantic search for best results
-`
-}
-```
-
-#### Example: Documentation Helper
-
-```ts
-const getSystemPrompt = () => {
-  return `
-You are a documentation assistant that helps users find information.
-
-## Your Capabilities
-- Search documentation articles and guides
-- Explain concepts and provide examples
-- Link related documentation together
-
-## How to Respond
-- Be concise but thorough
-- Include code examples when relevant
-- Point users to related articles they might find helpful
-
-## Tool Usage
-- Use semantic search to find conceptually related content
-- Filter by category or topic when the user specifies
-`
-}
-```
-
-#### Example: Support Agent
-
-```ts
-const getSystemPrompt = () => {
-  return `
-You are a customer support agent with access to help articles and FAQs.
-
-## Your Capabilities
-- Find relevant help articles for user issues
-- Provide step-by-step instructions
-- Escalate complex issues appropriately
-
-## How to Respond
-- Be empathetic and patient
-- Provide clear, actionable steps
-- Confirm the user's issue is resolved before ending
-
-## Tool Usage
-- Search FAQs first for common questions
-- Use help articles for detailed procedures
-`
-}
-```
-
-#### Example: Content Curator
-
-```ts
-const getSystemPrompt = () => {
-  return `
-You are a content curator that helps users discover relevant content.
-
-## Your Capabilities
-- Find articles, posts, and media based on interests
-- Create personalized recommendations
-- Surface trending or popular content
-
-## How to Respond
-- Present content in an engaging way
-- Explain why each recommendation is relevant
-- Group related content together
-
-## Tool Usage
-- Use semantic search for interest-based discovery
-- Filter by date for recent content
-- Use references to find related content
-`
-}
-```
-
-### 5. Frontend Chat Component
+## 5. Frontend Chat Component
 
 See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) for a complete implementation.
 
@@ -238,7 +118,7 @@ See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/ch
 - [ecommerce/app/src/lib/client-tools.ts](ecommerce/app/src/lib/client-tools.ts) - Tool name constants and `UserContext` type
 - [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts) - Page context and screenshot capture functions
 
-### 6. Testing the Agent
+## 6. Testing the Agent
 
 1. Start your Next.js dev server: `npm run dev`
 2. Open your chat interface or test via curl:
@@ -253,101 +133,6 @@ The agent should:
 
 1. Call `initial_context` to understand available content types
 2. Respond with a summary of what it can help with
-
-### Tips for Iterating on System Prompts
-
-1. **Start simple**: Begin with a basic prompt and add specificity as needed
-2. **Test edge cases**: Try queries that might confuse the agent
-3. **Review tool calls**: Check that the agent uses tools appropriately
-4. **Iterate based on failures**: When the agent fails, update the prompt to handle that case
-5. **Keep it focused**: A specialized agent often performs better than a generalist
-
----
-
-## Adapting to Other Stacks
-
-### The Universal Pattern
-
-Regardless of framework, the integration follows this flow:
-
-```
-1. Create MCP client with HTTP transport
-2. Authenticate with Sanity API token
-3. Get tools from MCP client
-4. Pass tools to your LLM along with system prompt
-5. Handle tool calls and responses
-6. Clean up MCP connection when done
-```
-
-### Different Frameworks
-
-**Express/Node.js**: Same pattern, different route syntax
-
-```ts
-app.post('/api/chat', async (req, res) => {
-  const mcpClient = await createMCPClient({...})
-  // ... same MCP logic
-})
-```
-
-**Remix**: Use action functions
-
-```ts
-export async function action({request}: ActionFunctionArgs) {
-  const mcpClient = await createMCPClient({...})
-  // ... same MCP logic
-}
-```
-
-**Python/FastAPI**: Use MCP Python client
-
-```python
-from mcp import Client
-client = Client(transport=HttpTransport(url=mcp_url, headers={...}))
-tools = await client.get_tools()
-```
-
-### Different AI Libraries
-
-**LangChain**: Wrap MCP tools as LangChain tools
-
-```ts
-const mcpTools = await mcpClient.tools()
-const langchainTools = mcpTools.map(
-  (tool) =>
-    new DynamicTool({
-      name: tool.name,
-      description: tool.description,
-      func: async (input) => mcpClient.callTool(tool.name, JSON.parse(input)),
-    }),
-)
-```
-
-**Direct Anthropic API**: Pass tool definitions directly
-
-```ts
-const tools = await mcpClient.tools()
-const response = await anthropic.messages.create({
-  model: 'claude-sonnet-4-20250514',
-  system: systemPrompt,
-  messages,
-  tools: tools.map((t) => ({
-    name: t.name,
-    description: t.description,
-    input_schema: t.inputSchema,
-  })),
-})
-```
-
-### Questions to Ask Users
-
-When adapting this pattern, understand:
-
-1. **"What framework are you using?"** — Determines route/endpoint structure
-2. **"What AI SDK or library?"** — Determines how tools are passed to the LLM
-3. **"What's the agent's purpose?"** — Shapes the system prompt
-4. **"What content types will it access?"** — Informs the GROQ filter in Studio
-5. **"Streaming or request/response?"** — Affects response handling
 
 ---
 
@@ -432,7 +217,7 @@ Ensure you've:
 
 ### "401 Unauthorized" from MCP
 
-Your `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token at sanity.io/manage with Viewer permissions.
+Your `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token at [sanity.io/manage](https://sanity.io/manage) with Viewer permissions.
 
 ### "No documents found" / Empty results
 

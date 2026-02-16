@@ -137,7 +137,7 @@ export const POST: RequestHandler = async ({request}) => {
 
 ### 4. Customizing the System Prompt
 
-The system prompt shapes how your agent behaves. The example above uses an inline string. For production, consider storing the prompt in Sanity as an `agent.config` document (see the Next.js reference for that pattern).
+The system prompt shapes how your agent behaves. The example above uses an inline string, which is the recommended approach for most use cases.
 
 #### Structure of an Effective System Prompt
 

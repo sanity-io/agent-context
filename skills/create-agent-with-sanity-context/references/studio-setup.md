@@ -55,7 +55,7 @@ The reference implementation organizes agent-related documents in a dedicated se
 
 **Key patterns:**
 
-- **Lines 28-34**: Filter agent-related types (`sanity.agentContext`, `agent.config`) from the default document list
+- **Lines 28-34**: Filter agent-related types (`sanity.agentContext`, `agent.conversation`) from the default document list
 - **Lines 36-52**: Group under an "Agents" section with a divider
 
 This keeps your content types organized separately from agent configuration.

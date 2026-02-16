@@ -57,11 +57,11 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 
 **Key sections:**
 
-- **Lines 13-26**: Client tool definitions (no `execute` function - execution happens client-side)
-- **Lines 28-41**: `buildSystemPrompt` function - template interpolation with runtime variables
-- **Lines 55-74**: MCP client + agent config fetch from Sanity (parallel Promise.all)
-- **Lines 80-83**: Build system prompt from fetched template
-- **Lines 86-100**: `streamText` call combining MCP tools with client tools
+- **Client tool definitions**: Tools without `execute` function - execution happens client-side
+- **`SYSTEM_PROMPT_TEMPLATE`**: Inline system prompt with template variables
+- **`buildSystemPrompt`**: Function that interpolates runtime variables
+- **MCP client creation**: HTTP transport connection to Sanity Context MCP
+- **`streamText` call**: Combining MCP tools with client tools
 
 **MCP Connection Pattern** (lines 57-65):
 
@@ -94,14 +94,12 @@ const result = streamText({
 
 ### 4. Customizing the System Prompt
 
-The system prompt shapes how your agent behaves. The reference implementation stores the system prompt in Sanity as an `agent.config` document, allowing content editors to customize it without code changes.
+The system prompt shapes how your agent behaves. The reference implementation uses an inline system prompt defined as a constant in the API route.
 
 See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts):
 
-- **Lines 28-41**: `buildSystemPrompt` function that interpolates runtime variables (`{{documentTitle}}`, `{{documentLocation}}`)
-- **Lines 68-83**: Fetching the system prompt from Sanity and applying it
-
-See [ecommerce/studio/schemaTypes/documents/agentConfig.ts](ecommerce/studio/schemaTypes/documents/agentConfig.ts) for the schema.
+- **`SYSTEM_PROMPT_TEMPLATE`**: The system prompt constant with template variables
+- **`buildSystemPrompt`**: Function that interpolates runtime variables (`{{documentTitle}}`, `{{documentLocation}}`)
 
 #### Structure of an Effective System Prompt
 
@@ -406,7 +404,7 @@ sendAutomaticallyWhen: ({messages}) => {
 
 For e-commerce or content-heavy apps, define custom markdown directives to render rich content.
 
-**System Prompt** (define the syntax): Define custom directives in your system prompt stored in Sanity's `agent.config` document
+**System Prompt** (define the syntax): Define custom directives in your system prompt (see `SYSTEM_PROMPT_TEMPLATE` in the API route)
 
 **Directive parsing**: See [ecommerce/app/src/components/chat/message/remarkDirectives.ts](ecommerce/app/src/components/chat/message/remarkDirectives.ts)
 

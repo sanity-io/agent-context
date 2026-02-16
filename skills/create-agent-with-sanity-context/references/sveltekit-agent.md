@@ -123,10 +123,10 @@ export const POST: RequestHandler = async ({request}) => {
 
 **Key patterns:**
 
-- **Lines 1-11**: Imports — note `createAnthropic` (not bare `anthropic`), imports from `$env/static/private` and `$env/static/public`, `RequestHandler` type from `./$types`
-- **Lines 14-18**: MCP URL construction from env vars
-- **Lines 21-29**: System prompt (inline for simplicity)
-- **Lines 31-66**: `POST` handler — MCP client creation, tool discovery, `streamText` call, and response
+- **Imports**: Note `createAnthropic` (not bare `anthropic`), imports from `$env/static/private` and `$env/static/public`, `RequestHandler` type from `./$types`
+- **MCP URL**: Constructed from env vars
+- **System prompt**: Inline for simplicity
+- **`POST` handler**: MCP client creation, tool discovery, `streamText` call, and response
 
 **SvelteKit-specific details:**
 

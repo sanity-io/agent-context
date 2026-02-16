@@ -1,6 +1,6 @@
 ---
 name: create-agent-with-sanity-context
-description: Build AI agents with structured access to Sanity content via Agent Context. Covers Studio setup, agent implementation, dataset exploration, prompt optimization, and advanced patterns like client-side tools and custom rendering.
+description: Build AI agents with structured access to Sanity content via Agent Context. Use when setting up a Sanity-powered chatbot, connecting an AI assistant to Sanity content, or adding client-side tools to an agent. Covers Studio setup, agent implementation, and advanced patterns.
 ---
 
 # Build an Agent with Sanity Context

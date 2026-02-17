@@ -11,10 +11,12 @@
     "check:types": "tsc --noEmit",
     "deploy": "dotenv -e ../.env -- sanity deploy",
     "deploy-graphql": "dotenv -e ../.env -- sanity graphql deploy",
+    "deploy:blueprints": "dotenv -e ../.env -- sanity blueprints deploy",
     "dev": "dotenv -e ../.env -- sanity dev",
     "dev:functions": "dotenv -e ../.env -- sanity functions dev",
     "dev:functions:logs": "dotenv -e ../.env -- sanity functions logs agent-conversation",
     "extract-schema": "dotenv -e ../.env -- sanity schema extract --path=schema.json",
+    "init:blueprints": "dotenv -e ../.env -- sanity blueprints init",
     "start": "dotenv -e ../.env -- sanity start"
   },
   "prettier": "@sanity/prettier-config",

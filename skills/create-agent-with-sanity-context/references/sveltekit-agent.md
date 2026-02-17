@@ -2,21 +2,20 @@
 
 This is a reference implementation using SvelteKit and Vercel AI SDK. Use it as a pattern guide—adapt the concepts to whatever framework and AI library the user is working with.
 
-## Core Concepts (Apply to Any Stack)
+## Contents
 
-These patterns transfer regardless of framework:
-
-1. **MCP Connection**: HTTP transport to `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug`
-2. **Authentication**: Bearer token using Sanity API read token
-3. **Tool Discovery**: Get available tools from MCP client, pass to LLM
-4. **System Prompt**: Domain-specific instructions that shape agent behavior
-5. **Streaming**: Stream responses for better UX (optional but recommended)
+- [Install Dependencies](#1-install-dependencies)
+- [Environment Variables](#2-environment-variables)
+- [Chat API Route](#3-create-the-chat-api-route)
+- [Customizing the System Prompt](#4-customizing-the-system-prompt)
+- [Frontend Chat Component](#5-frontend-chat-component)
+- [Testing the Agent](#6-testing-the-agent)
+- [SvelteKit-Specific Gotchas](#sveltekit-specific-gotchas)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## Reference Implementation: SvelteKit + AI SDK
-
-### 1. Install Dependencies
+## 1. Install Dependencies
 
 ```bash
 npm install @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/svelte ai
@@ -24,9 +23,9 @@ npm install @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/svelte ai
 pnpm add @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/svelte ai
 ```
 
-Key differences from Next.js: `@ai-sdk/svelte` instead of `@ai-sdk/react`.
+Key difference from Next.js: `@ai-sdk/svelte` instead of `@ai-sdk/react`.
 
-### 2. Environment Variables
+## 2. Environment Variables
 
 SvelteKit splits environment variables into two modules:
 
@@ -50,7 +49,7 @@ PUBLIC_SANITY_API_VERSION=vX
 ANTHROPIC_API_KEY=your-anthropic-key
 ```
 
-### 3. Create the Chat API Route
+## 3. Create the Chat API Route
 
 Create `src/routes/api/chat/+server.ts`:
 
@@ -135,75 +134,13 @@ export const POST: RequestHandler = async ({request}) => {
 - **`stopWhen: stepCountIs(10)`** — AI SDK v6 pattern for limiting tool-call loops (replaces the older `maxSteps`)
 - **`toUIMessageStreamResponse()`** — Returns the UI message stream format that the `Chat` class expects. Using `toDataStreamResponse()` will silently fail.
 
-### 4. Customizing the System Prompt
+## 4. Customizing the System Prompt
 
 The system prompt shapes how your agent behaves. The example above uses an inline string, which is the recommended approach for most use cases.
 
-#### Structure of an Effective System Prompt
+**For system prompt structure and examples**, see [system-prompts.md](system-prompts.md).
 
-```ts
-const SYSTEM_PROMPT = `
-You are [role description].
-
-## Your Capabilities
-- [What the agent can do with the available tools]
-- [Boundaries and limitations]
-
-## How to Respond
-- [Tone and style guidelines]
-- [Formatting preferences]
-
-## Tool Usage
-- Use groq_query to find specific content
-- Use schema_explorer when you need field details
-`
-```
-
-#### Example: E-commerce Assistant
-
-```ts
-const SYSTEM_PROMPT = `
-You are a helpful shopping assistant for an online store.
-
-## Your Capabilities
-- Search products by name, category, price, or features
-- Compare products and make recommendations
-- Answer questions about product details, availability, and specifications
-
-## How to Respond
-- Be friendly and helpful
-- When showing products, include name, price, and key features
-- If you can't find what the user wants, suggest alternatives
-
-## Tool Usage
-- Use groq_query with filters like _type == "product" && price < 100
-- Combine structural filters with semantic search for best results
-`
-```
-
-#### Example: Documentation Helper
-
-```ts
-const SYSTEM_PROMPT = `
-You are a documentation assistant that helps users find information.
-
-## Your Capabilities
-- Search documentation articles and guides
-- Explain concepts and provide examples
-- Link related documentation together
-
-## How to Respond
-- Be concise but thorough
-- Include code examples when relevant
-- Point users to related articles they might find helpful
-
-## Tool Usage
-- Use semantic search to find conceptually related content
-- Filter by category or topic when the user specifies
-`
-```
-
-### 5. Frontend Chat Component
+## 5. Frontend Chat Component
 
 The chat UI requires two files: a page config to disable SSR, and the component itself.
 
@@ -381,7 +318,7 @@ export const ssr = false
 
 > **Tip:** For markdown rendering, add `marked` as a dependency and use `{@html marked(part.text)}` instead of `<p>{part.text}</p>`.
 
-### 6. Testing the Agent
+## 6. Testing the Agent
 
 1. Start your SvelteKit dev server: `npm run dev`
 2. Open `/chat` in your browser at `http://localhost:5173/chat`

@@ -1,6 +1,7 @@
 name: Sync Skill References
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main

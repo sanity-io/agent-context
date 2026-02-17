@@ -5,6 +5,7 @@ import {z} from 'zod'
 
 import {CLIENT_TOOLS, productFiltersSchema, type UserContext} from '@/lib/client-tools'
 import {saveConversation} from '@/lib/save-conversation'
+import {client} from '@/sanity/lib/client'
 
 /**
  * Client-side tools for capturing page context and controlling the UI.
@@ -29,34 +30,27 @@ const clientTools: ToolSet = {
   },
 }
 
-/**
- * Builds the system prompt by interpolating runtime variables.
- * Available variables: {{documentTitle}}, {{documentLocation}}
- */
-function buildSystemPrompt(userContext: UserContext): string {
-  const vars: Record<string, string> = {
-    documentTitle: userContext.documentTitle,
-    documentLocation: userContext.documentLocation,
-  }
-
-  return SYSTEM_PROMPT_TEMPLATE.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => vars[key] ?? '')
+interface BuildSystemPromptParams {
+  basePrompt: string
+  userContext: UserContext
 }
 
-const SYSTEM_PROMPT_TEMPLATE = `You are a polished shopping assistant at a premium store.
-
-# Communication style
-- Begin responses directly with the answer. Use present tense ("Here are...", "These products...").
-- Skip preambles. Never say "Let me", "I'll", "I need to", "checking", "looking", or "finding".
-- When tools are needed, call them silently without narration.
-- Keep the magic: talk about products, not how you found them. Avoid technical terms like tools, queries, schema, fields, variants, images, or data types.
+/**
+ * Builds the full system prompt by combining:
+ * 1. Base prompt from Sanity (persona, communication style)
+ * 2. Implementation-specific sections (page context, directive syntax)
+ */
+function buildSystemPrompt({basePrompt, userContext}: BuildSystemPromptParams): string {
+  return `
+${basePrompt}
 
 # Page context
 
 The user's current page is provided below. Use this for questions like "Where am I?", "What page is this?", or "Give me a link."
 
 <user-context>
-  <document-title>{{documentTitle}}</document-title>
-  <document-location>{{documentLocation}}</document-location>
+  <document-title>${userContext.documentTitle}</document-title>
+  <document-location>${userContext.documentLocation}</document-location>
 </user-context>
 
 For deeper page understanding, two tools are available:
@@ -83,6 +77,7 @@ Example response showing three jackets:
 
 Write product names only inside directives. If page context mentions product names, summarize generically ("the products shown") or query Sanity for their IDs rather than repeating names as plain text.
 `
+}
 
 export async function POST(req: Request) {
   const {
@@ -99,17 +94,30 @@ export async function POST(req: Request) {
     throw new Error('ANTHROPIC_API_KEY is not set')
   }
 
-  const mcpClient = await createMCPClient({
-    transport: {
-      type: 'http',
-      url: process.env.SANITY_CONTEXT_MCP_URL,
-      headers: {
-        Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
+  const [mcpClient, agentConfig] = await Promise.all([
+    createMCPClient({
+      transport: {
+        type: 'http',
+        url: process.env.SANITY_CONTEXT_MCP_URL,
+        headers: {
+          Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
+        },
       },
-    },
-  })
+    }),
+    client.fetch<{systemPrompt: string | null} | null>(
+      `*[_type == "agent.config" && slug.current == $slug][0] { systemPrompt }`,
+      {slug: process.env.AGENT_CONFIG_SLUG || 'default'},
+    ),
+  ])
 
-  const systemPrompt = buildSystemPrompt(userContext)
+  if (!agentConfig?.systemPrompt) {
+    throw new Error('Agent config not found or missing system prompt. Create one in Sanity Studio.')
+  }
+
+  const systemPrompt = buildSystemPrompt({
+    basePrompt: agentConfig.systemPrompt,
+    userContext,
+  })
 
   try {
     const mcpTools = await mcpClient.tools()

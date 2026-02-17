@@ -27,7 +27,7 @@ export default defineConfig({
     structureTool({
       structure: (S: StructureBuilder) => {
         // Document types to group under "Agents"
-        const agentTypes = [AGENT_CONTEXT_SCHEMA_TYPE_NAME, 'agent.conversation']
+        const agentTypes = [AGENT_CONTEXT_SCHEMA_TYPE_NAME, 'agent.config', 'agent.conversation']
 
         // Get all schema types except agent-related types
         const defaultListItems = S.documentTypeListItems().filter(
@@ -46,6 +46,7 @@ export default defineConfig({
                 S.list()
                   .title('Agents')
                   .items([
+                    S.documentTypeListItem('agent.config').title('Agent Configs'),
                     S.documentTypeListItem(AGENT_CONTEXT_SCHEMA_TYPE_NAME).title('Agent Contexts'),
                     S.documentTypeListItem('agent.conversation').title('Agent Conversations'),
                   ]),

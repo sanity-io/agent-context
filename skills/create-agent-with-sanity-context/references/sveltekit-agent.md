@@ -136,9 +136,11 @@ export const POST: RequestHandler = async ({request}) => {
 
 ## 4. Customizing the System Prompt
 
-The system prompt shapes how your agent behaves. The example above uses an inline string, which is the recommended approach for most use cases.
+The system prompt shapes how your agent behaves. You can define prompts entirely inline, or store the base prompt in Sanity and combine with implementation-specific parts in code. The example above uses inline; the Next.js reference implementation uses the hybrid approach.
 
-**For system prompt structure and examples**, see [system-prompts.md](system-prompts.md).
+See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`buildSystemPrompt` function) for the hybrid pattern.
+
+**For more examples**, see [system-prompts.md](system-prompts.md).
 
 ## 5. Frontend Chat Component
 

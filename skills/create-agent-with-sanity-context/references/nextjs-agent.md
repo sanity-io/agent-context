@@ -48,6 +48,9 @@ SANITY_CONTEXT_MCP_URL=https://api.sanity.io/:apiVersion/agent-context/your-proj
 
 # Anthropic API key
 ANTHROPIC_API_KEY=your-anthropic-key
+
+# Agent config slug (for fetching system prompt from Sanity)
+AGENT_CONFIG_SLUG=default
 ```
 
 ## 3. Create the Chat API Route
@@ -57,8 +60,7 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 **Key sections:**
 
 - **Client tool definitions**: Tools without `execute` function - execution happens client-side
-- **`SYSTEM_PROMPT_TEMPLATE`**: Inline system prompt with template variables
-- **`buildSystemPrompt`**: Function that interpolates runtime variables
+- **`buildSystemPrompt`**: Combines base prompt from Sanity with implementation-specific parts
 - **MCP client creation**: HTTP transport connection to Sanity Context MCP
 - **`streamText` call**: Combining MCP tools with client tools
 
@@ -93,14 +95,11 @@ const result = streamText({
 
 ## 4. Customizing the System Prompt
 
-The system prompt shapes how your agent behaves. The reference implementation uses an inline system prompt defined as a constant in the API route.
+The system prompt shapes how your agent behaves. You can define prompts entirely inline, or store the base prompt in Sanity and combine with implementation-specific parts in code. The reference implementation uses the hybrid approach.
 
-See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts):
+See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`buildSystemPrompt` function).
 
-- **`SYSTEM_PROMPT_TEMPLATE`**: The system prompt constant with template variables
-- **`buildSystemPrompt`**: Function that interpolates runtime variables (`{{documentTitle}}`, `{{documentLocation}}`)
-
-**For system prompt structure and examples**, see [system-prompts.md](system-prompts.md).
+**For more examples**, see [system-prompts.md](system-prompts.md).
 
 ## 5. Frontend Chat Component
 
@@ -189,7 +188,7 @@ sendAutomaticallyWhen: ({messages}) => {
 
 For e-commerce or content-heavy apps, define custom markdown directives to render rich content.
 
-**System Prompt** (define the syntax): Define custom directives in your system prompt (see `SYSTEM_PROMPT_TEMPLATE` in the API route)
+**System Prompt** (define the syntax): Define custom directives in your system prompt (see `buildSystemPrompt` in the API route)
 
 **Directive parsing**: See [ecommerce/app/src/components/chat/message/remarkDirectives.ts](ecommerce/app/src/components/chat/message/remarkDirectives.ts)
 

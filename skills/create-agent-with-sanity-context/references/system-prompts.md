@@ -4,12 +4,21 @@ The system prompt shapes how your agent behaves. This guide covers structure and
 
 ## Contents
 
+- [Inline vs. Sanity-Managed Prompts](#inline-vs-sanity-managed-prompts)
 - [Structure of an Effective System Prompt](#structure-of-an-effective-system-prompt)
 - [Example: E-commerce Assistant](#example-e-commerce-assistant)
 - [Example: Documentation Helper](#example-documentation-helper)
 - [Example: Support Agent](#example-support-agent)
 - [Example: Content Curator](#example-content-curator)
 - [Tips for Iterating on System Prompts](#tips-for-iterating-on-system-prompts)
+
+---
+
+## Inline vs. Sanity-Managed Prompts
+
+You can define prompts entirely in code, or store the base prompt in Sanity and combine with implementation-specific parts inline. The reference implementation uses the hybrid approach.
+
+See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`buildSystemPrompt`).
 
 ---
 

@@ -55,7 +55,7 @@ The reference implementation organizes agent-related documents in a dedicated se
 
 **Key patterns:**
 
-- **Lines 28-34**: Filter agent-related types (`sanity.agentContext`, `agent.conversation`) from the default document list
+- **Lines 28-34**: Filter agent-related types (`sanity.agentContext`, `agent.config`, `agent.conversation`) from the default document list
 - **Lines 36-52**: Group under an "Agents" section with a divider
 
 This keeps your content types organized separately from agent configuration.
@@ -111,6 +111,10 @@ https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug
 
 Copy this URL—you'll need it when configuring your agent.
 
+## 6. Create an Agent Config Document (Optional)
+
+The reference implementation stores the base system prompt in a Sanity document (`agent.config`). See [ecommerce/studio/schemaTypes/documents/agentConfig.ts](ecommerce/studio/schemaTypes/documents/agentConfig.ts) for the schema.
+
 ## Environment Variables
 
 See [ecommerce/studio/.env.example](ecommerce/.env.example) for the template.
@@ -126,7 +130,7 @@ SANITY_STUDIO_DATASET=production
 
 The reference implementation includes a complete e-commerce schema. See [ecommerce/studio/schemaTypes/](ecommerce/studio/schemaTypes/):
 
-- **Documents**: [product.ts](ecommerce/studio/schemaTypes/documents/product.ts), [category.ts](ecommerce/studio/schemaTypes/documents/category.ts), [brand.ts](ecommerce/studio/schemaTypes/documents/brand.ts)
+- **Documents**: [product.ts](ecommerce/studio/schemaTypes/documents/product.ts), [category.ts](ecommerce/studio/schemaTypes/documents/category.ts), [brand.ts](ecommerce/studio/schemaTypes/documents/brand.ts), [agentConfig.ts](ecommerce/studio/schemaTypes/documents/agentConfig.ts)
 - **Objects**: [productVariant.ts](ecommerce/studio/schemaTypes/objects/productVariant.ts), [price.ts](ecommerce/studio/schemaTypes/objects/price.ts), [seo.ts](ecommerce/studio/schemaTypes/objects/seo.ts)
 
 These schemas demonstrate patterns for structured content that agents can query effectively.

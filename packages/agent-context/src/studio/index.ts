@@ -4,5 +4,5 @@ export {
   agentContextSchema,
   createAgentContextSchema,
 } from './agent-context-plugin/agentContextSchema'
-export {agentContextPlugin} from './agent-context-plugin/plugin'
 export type {AgentContextPluginOptions} from './agent-context-plugin/plugin'
+export {agentContextPlugin} from './agent-context-plugin/plugin'

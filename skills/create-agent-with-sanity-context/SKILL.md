@@ -176,7 +176,7 @@ See [references/system-prompts.md](references/system-prompts.md) for domain-spec
 Context MCP requires your schema to be available server-side. This happens automatically when your Studio runs, but if it's not working:
 
 1. **Check Studio version**: Ensure you're on Sanity Studio v5.1.0 or later
-2. **Open your Studio**: Simply opening the Studio in a browser triggers schema deployment
+2. **Open your Studio**: Opening the Studio in a browser triggers schema deployment. The Studio must be deployed, not running on localhost.
 3. **Verify deployment**: After opening Studio, retry the MCP connection
 
 ### Escape hatch: Deploy schema via Sanity MCP

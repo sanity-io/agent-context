@@ -2,7 +2,6 @@
 export {
   AGENT_CONTEXT_SCHEMA_TYPE_NAME,
   agentContextSchema,
-  createAgentContextSchema,
 } from './agent-context-plugin/agentContextSchema'
 export type {AgentContextPluginOptions} from './agent-context-plugin/plugin'
 export {agentContextPlugin} from './agent-context-plugin/plugin'

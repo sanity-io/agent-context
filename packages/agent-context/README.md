@@ -21,6 +21,38 @@ export default defineConfig({
 })
 ```
 
+### Custom fields
+
+Pass a `fields` array to append additional fields to the `sanity.agentContext` document type:
+
+```ts
+// sanity.config.ts
+import {defineConfig, defineField} from 'sanity'
+import {agentContextPlugin} from '@sanity/agent-context/studio'
+
+export default defineConfig({
+  // ...
+  plugins: [
+    agentContextPlugin({
+      fields: [
+        defineField({
+          name: 'brand',
+          title: 'Brand',
+          type: 'reference',
+          to: [{type: 'brand'}],
+        }),
+      ],
+    }),
+  ],
+})
+```
+
+The `AgentContextPluginOptions` type is exported for TypeScript consumers:
+
+```ts
+import type {AgentContextPluginOptions} from '@sanity/agent-context/studio'
+```
+
 The plugin also exports `AGENT_CONTEXT_SCHEMA_TYPE_NAME` which can be used to configure where the document type appears in the Studio structure. Example:
 
 ```ts

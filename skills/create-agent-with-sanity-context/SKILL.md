@@ -14,7 +14,7 @@ Give AI agents intelligent access to your Sanity content. Unlike embedding-only 
 - Results respect your content model (categories, tags, references)
 - Semantic search is available when needed, layered on structure
 
-Note: Agent Context understands your schema structure but not your domain. You'll provide domain context (what your content is for, how to use it) through the agent's system prompt.
+Note: Agent Context understands your schema structure but not your domain. You'll provide domain context through two surfaces: dataset-specific knowledge (schema details, query patterns) in the Agent Context Document's instructions field, and agent personality (tone, behavior, guardrails) in your system prompt.
 
 ## What You'll Need
 

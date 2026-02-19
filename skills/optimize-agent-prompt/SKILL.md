@@ -1,6 +1,6 @@
 ---
 name: optimize-agent-prompt
-description: Optimize system prompts for agents using Sanity Agent Context. Load when improving agent responses, integrating dataset exploration results, or tuning how an agent queries and presents Sanity content. Covers prompt structure, dataset knowledge integration, and user-facing tone.
+description: Craft agent personality and behavior for Sanity Agent Context. Load when tuning tone, verbosity, interactivity, guardrails, or response style. Covers system prompt structure and the two-surface architecture (instructions field vs system prompt).
 ---
 
 # Optimize Your Agent's Prompt
@@ -27,6 +27,18 @@ agent-context-explorer \
 ```
 
 The CLI will tell you where the output is written. Paste the contents of `exploration-results.md` into your Agent Context Document's `instructions` field.
+
+## How to Use This Skill
+
+When helping a user optimize their agent's prompt:
+
+1. **Ask about their agent's purpose** — What does it help users do? Who are the users?
+2. **Walk through relevant questions** from the "Questions to Consider" section — don't ask all of them, pick what matters for their use case
+3. **Draft a system prompt** using the structure in "System Prompt Structure" — start with Role Statement, add sections as needed
+4. **Review against Core Principles** — ensure the prompt doesn't expose technical details or duplicate dataset knowledge
+5. **Iterate** — refine based on user feedback
+
+The output is a system prompt the user can paste into their agent's code. Keep it concise — a good system prompt is usually 10-30 lines.
 
 ## Two Prompt Surfaces
 
@@ -56,7 +68,8 @@ Don't duplicate dataset knowledge in your system prompt — that's what the inst
 | Tone of voice                                    | ❌                         | ✅                    |
 | Response length and format                       | ❌                         | ✅                    |
 | "Never mention competitors"                      | ❌                         | ✅                    |
-| "Direct to website for pricing"                  | ✅ (if data gap)           | ✅ (if business rule) |
+| "Pricing not in dataset, check website"          | ✅                         | ❌                    |
+| "Always direct pricing questions to website"     | ❌                         | ✅                    |
 
 ## Questions to Consider
 
@@ -79,7 +92,7 @@ An agent that does one thing well feels more competent than one that tries to do
 A luxury brand might want polished, professional language. A lifestyle brand might want relaxed, conversational tone. Match your brand voice — the agent should sound like it belongs on your team.
 
 **Warm and friendly, or efficient and direct?**
-Friendly agents build rapport ("Great question! Let me help you with that..."). Direct agents respect the user's time ("The Era 100 comes in black and white."). Neither is better — it depends on your brand and use case.
+Friendly agents build rapport ("Great question! Let me help you with that..."). Direct agents respect the user's time ("It comes in black and white."). Neither is better — it depends on your brand and use case.
 
 **First person ("I") or brand voice ("We at [Company]")?**
 First person feels more personal and conversational. Brand voice feels more official. Some agents mix both — "I'd recommend..." for suggestions, "We offer..." for policies.
@@ -107,7 +120,7 @@ Tables? Side-by-side bullets? Narrative explanation? The format affects readabil
 "Are you looking for a portable speaker or a home setup?" helps narrow down options but adds a round-trip. Some users prefer to be guided; others want direct answers. Consider offering both: answer if you can, ask if you need to.
 
 **Should it suggest related things?**
-"The Era 100 pairs well with a Sub for deeper bass" is helpful upselling or annoying noise, depending on context. Consider: when is proactive suggestion welcome vs intrusive?
+"This pairs well with a carrying case" is helpful upselling or annoying noise, depending on context. Consider: when is proactive suggestion welcome vs intrusive?
 
 **Conversational or transactional?**
 Conversational agents remember context and build on previous messages. Transactional agents treat each message independently. Most chat agents should be conversational, but the degree varies.
@@ -198,11 +211,11 @@ The agent represents the brand. It should talk like a knowledgeable team member,
 
 **Bad** (exposing internals):
 
-> "I queried the product type and found the Era 100. Based on the media altText fields, it appears to come in black and white."
+> "I queried the product type and found the X1 Speaker. Based on the media altText fields, it appears to come in black and white."
 
 **Good** (clean answer):
 
-> "The Era 100 comes in black and white."
+> "The X1 Speaker comes in black and white."
 
 ### Handle Gaps Gracefully
 

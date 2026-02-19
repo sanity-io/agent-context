@@ -86,7 +86,9 @@ export function GroqFilterInput(props: StringInputProps) {
   // Filter the type names based on the search query
   const filteredTypeNames = useMemo(() => {
     const types = schema._original?.types || []
-    const typeNames = types.map((type) => type.name).filter((name) => !name.startsWith('sanity.'))
+    const typeNames = types
+      .filter((type) => type.type === 'document' && !type.name.startsWith('sanity.'))
+      .map((type) => type.name)
     if (!searchQuery) return typeNames
 
     return typeNames.filter((name) => name.toLowerCase().includes(searchQuery.toLowerCase()))

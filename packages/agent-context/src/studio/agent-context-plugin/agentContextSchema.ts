@@ -42,20 +42,18 @@ export const agentContextSchema = defineType({
       title: 'Name',
       type: 'string',
       placeholder: 'My Agent Context',
+      description: 'The name of the agent context',
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
+      validation: (Rule) => Rule.required(),
+      description:
+        'The slug of the agent context. This is used to identify the agent context in the MCP URL.',
       options: {
         source: 'name',
       },
-    }),
-    defineField({
-      name: 'instructions',
-      title: 'Instructions',
-      description: 'Instructions for the agent to use the context',
-      type: 'text',
     }),
     defineField({
       name: 'groqFilter',
@@ -66,6 +64,12 @@ export const agentContextSchema = defineType({
       components: {
         input: GroqFilterInput,
       },
+    }),
+    defineField({
+      name: 'instructions',
+      title: 'Instructions',
+      description: 'Custom instructions for how AI agents should work with your content.',
+      type: 'text',
     }),
   ],
 })

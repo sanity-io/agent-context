@@ -34,7 +34,6 @@
     "sanity": "^5.9.0",
     "tailwind-merge": "^3.4.0",
     "turndown": "^7.2.2",
-    "unist": "^0.0.1",
     "unist-util-visit": "^5.1.0",
     "zod": "^4.3.6"
   },

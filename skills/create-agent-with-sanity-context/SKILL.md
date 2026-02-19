@@ -1,6 +1,6 @@
 ---
 name: create-agent-with-sanity-context
-description: Build AI agents with structured access to Sanity content via Agent Context. Covers Studio setup, agent implementation, dataset exploration, prompt optimization, and advanced patterns like client-side tools and custom rendering.
+description: Build AI agents with structured access to Sanity content via Agent Context. Use when setting up a Sanity-powered chatbot, connecting an AI assistant to Sanity content, or adding client-side tools to an agent. Covers Studio setup, agent implementation, and advanced patterns.
 ---
 
 # Build an Agent with Sanity Context
@@ -106,17 +106,20 @@ See [references/studio-setup.md](references/studio-setup.md)
 
 **Already have an agent or MCP client?** You just need to connect it to your Agent Context URL with a Bearer token. The tools will appear automatically.
 
-**Building from scratch?** The reference implementation uses Next.js + Vercel AI SDK with Anthropic, but the pattern works with any LLM provider (OpenAI, local models, etc.). It's comprehensive—covering everything from basic chat to advanced patterns. **Start with the basics and add advanced patterns as needed.**
+**Building from scratch?** The reference implementations use Vercel AI SDK with Anthropic, but the pattern works with any LLM provider (OpenAI, local models, etc.). Start with the basics and add advanced patterns as needed.
 
-See [references/nextjs-agent.md](references/nextjs-agent.md)
+**Framework-specific guides:**
 
-For **SvelteKit**, see [references/sveltekit-agent.md](references/sveltekit-agent.md)
+- **Next.js**: See [references/nextjs-agent.md](references/nextjs-agent.md)
+- **SvelteKit**: See [references/sveltekit-agent.md](references/sveltekit-agent.md)
+- **Other stacks** (Express, Remix, Python, LangChain): See [references/adapting-to-stacks.md](references/adapting-to-stacks.md)
 
-The reference covers:
+**System prompts** (applies to all frameworks): See [references/system-prompts.md](references/system-prompts.md) for structure and domain-specific examples (e-commerce, docs, support, content curation).
+
+The framework guides cover:
 
 - **Core setup** (required): MCP connection, authentication, basic chat route
-- **System prompts** (required): Domain-specific instructions for your agent
-- **Frontend** (optional): React chat component
+- **Frontend** (optional): Chat component for the framework
 - **Advanced patterns** (optional): Client-side tools, auto-continuation, custom rendering
 
 ### Step 3: Conversation Classification (Optional)
@@ -162,11 +165,12 @@ Always use `order(_score desc)` when using `score()` to get best matches first.
 
 The MCP connection pattern is framework and LLM-agnostic. Whether Next.js, Remix, Express, or Python FastAPI—the HTTP transport works the same. Any LLM provider that supports tool calling will work.
 
-See [references/nextjs-agent.md](references/nextjs-agent.md#adapting-to-other-stacks) for:
+See [references/adapting-to-stacks.md](references/adapting-to-stacks.md) for:
 
 - Framework-specific route patterns (Express, Remix, Python)
 - AI library integrations (LangChain, direct API calls)
-- System prompt examples for different domains (e-commerce, docs, support)
+
+See [references/system-prompts.md](references/system-prompts.md) for domain-specific examples (e-commerce, docs, support, content curation).
 
 ## Best Practices
 
@@ -184,7 +188,7 @@ See [references/nextjs-agent.md](references/nextjs-agent.md#adapting-to-other-st
 Agent Context requires your schema to be available server-side. This happens automatically when your Studio runs, but if it's not working:
 
 1. **Check Studio version**: Ensure you're on Sanity Studio v5.1.0 or later
-2. **Open your Studio**: Simply opening the Studio in a browser triggers schema deployment
+2. **Open your Studio**: Opening the Studio in a browser triggers schema deployment. The Studio must be deployed, not running on localhost.
 3. **Verify deployment**: After opening Studio, retry the MCP connection
 
 ### Escape hatch: Deploy schema via Sanity MCP
@@ -207,10 +211,20 @@ This configures the MCP for your AI editor (Claude Code, Cursor, VS Code, etc.).
 >
 > Use this escape hatch when local deployment isn't an option or isn't working.
 
-### Other common issues
+### "401 Unauthorized" from MCP
 
-See [references/nextjs-agent.md](references/nextjs-agent.md#troubleshooting) for:
+Your `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer permissions.
 
-- Token authentication errors
-- Empty results / no documents found
-- Tools not appearing
+### "No documents found" / Empty results
+
+Check your Agent Context's content filter:
+
+- Is the GROQ filter correct?
+- Are the document types spelled correctly?
+- Are there published documents matching the filter?
+
+### Tools not appearing
+
+1. Check that `mcpClient.tools()` returns tools (log it)
+2. Ensure the MCP URL is correct (project ID, dataset, slug)
+3. Verify the agent context document is published

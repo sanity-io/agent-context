@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0](https://github.com/sanity-io/agent-context/compare/agent-context-v0.2.0...agent-context-v0.3.0) (2026-02-18)
+
+### Features
+
+- **packages/agent-context:** add field descriptions ([#72](https://github.com/sanity-io/agent-context/issues/72)) ([0ed40e5](https://github.com/sanity-io/agent-context/commit/0ed40e5c306adc15725d617f6e327279adaa8017))
+
 ## [0.2.0](https://github.com/sanity-io/agent-context/compare/agent-context-v0.1.0...agent-context-v0.2.0) (2026-02-12)
 
 ### Features

@@ -1,1 +1,8 @@
+# Prevent commits to auto-synced reference files
+if git diff --cached --name-only | grep -q "^skills/.*/references/ecommerce/"; then
+  echo "Error: Do not commit changes to skills/*/references/ecommerce/"
+  echo "These files are auto-synced from examples/ecommerce/ via CI."
+  exit 1
+fi
+
 pnpm lint-staged

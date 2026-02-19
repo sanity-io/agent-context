@@ -1,16 +1,26 @@
 name: Sync Skill References
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - "examples/ecommerce/**"
 
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ secrets.ECOSPARK_APP_ID }}
+          private-key: ${{ secrets.ECOSPARK_APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
@@ -26,6 +36,9 @@ jobs:
       - name: Sync skill references
         run: pnpm sync-skill-example
 
+      - name: Format synced files
+        run: pnpm exec prettier --write "skills/create-agent-with-sanity-context/references/ecommerce/"
+
       - name: Check for changes
         id: changes
         run: |
@@ -38,8 +51,11 @@ jobs:
       - name: Create Pull Request
         if: steps.changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8
+        env:
+          # Skip pre-commit hook that blocks commits to skills/*/references/ecommerce/
+          HUSKY: 0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           commit-message: "chore: sync skill references"
           title: "chore: sync skill references"
           body: |

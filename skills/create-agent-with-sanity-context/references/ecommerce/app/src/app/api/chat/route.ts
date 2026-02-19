@@ -30,19 +30,53 @@ const clientTools: ToolSet = {
   },
 }
 
+interface BuildSystemPromptParams {
+  basePrompt: string
+  userContext: UserContext
+}
+
 /**
- * Builds the system prompt from the Sanity document, interpolating runtime variables.
- * Available variables: {{documentTitle}}, {{documentLocation}}
+ * Builds the full system prompt by combining:
+ * 1. Base prompt from Sanity (persona, communication style)
+ * 2. Implementation-specific sections (page context, directive syntax)
  */
-function buildSystemPrompt(props: {template: string; userContext: UserContext}) {
-  const {template, userContext} = props
+function buildSystemPrompt({basePrompt, userContext}: BuildSystemPromptParams): string {
+  return `
+${basePrompt}
 
-  const vars: Record<string, string> = {
-    documentTitle: userContext.documentTitle,
-    documentLocation: userContext.documentLocation,
-  }
+# Page context
 
-  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => vars[key] ?? '')
+The user's current page is provided below. Use this for questions like "Where am I?", "What page is this?", or "Give me a link."
+
+<user-context>
+  <document-title>${userContext.documentTitle}</document-title>
+  <document-location>${userContext.documentLocation}</document-location>
+</user-context>
+
+For deeper page understanding, two tools are available:
+
+- **get_page_context**: Returns the page as markdown (headings, links, lists). Use for "What's on this page?", "What products are shown?", "Summarize this page."
+- **get_page_screenshot**: Returns a visual screenshot. Use only when you need to see images, colors, or layout—for questions like "What color is this?", "Does this look right?", "Show me what you see."
+
+Choose the minimum level needed: user-context first, then get_page_context, then get_page_screenshot.
+
+# Displaying products
+
+Render products using document directives so the UI can display rich cards. Query Sanity to get the document _id and _type, then use this syntax:
+
+Block format (for product lists):
+::document{id="<_id>" type="<_type>"}
+
+Inline format (within a sentence):
+:document{id="<_id>" type="<_type>"}
+
+Example response showing three jackets:
+::document{id="product-abc123" type="product"}
+::document{id="product-def456" type="product"}
+::document{id="product-ghi789" type="product"}
+
+Write product names only inside directives. If page context mentions product names, summarize generically ("the products shown") or query Sanity for their IDs rather than repeating names as plain text.
+`
 }
 
 export async function POST(req: Request) {
@@ -61,7 +95,6 @@ export async function POST(req: Request) {
   }
 
   const [mcpClient, agentConfig] = await Promise.all([
-    // Create the MCP client
     createMCPClient({
       transport: {
         type: 'http',
@@ -71,13 +104,9 @@ export async function POST(req: Request) {
         },
       },
     }),
-
-    // Get the agent config from Sanity
     client.fetch<{systemPrompt: string | null} | null>(
       `*[_type == "agent.config" && slug.current == $slug][0] { systemPrompt }`,
-      {
-        slug: process.env.AGENT_CONFIG_SLUG || 'default',
-      },
+      {slug: process.env.AGENT_CONFIG_SLUG || 'default'},
     ),
   ])
 
@@ -86,7 +115,7 @@ export async function POST(req: Request) {
   }
 
   const systemPrompt = buildSystemPrompt({
-    template: agentConfig.systemPrompt,
+    basePrompt: agentConfig.systemPrompt,
     userContext,
   })
 

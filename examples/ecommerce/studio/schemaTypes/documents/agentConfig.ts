@@ -24,8 +24,9 @@ export const agentConfig = defineType({
     defineField({
       name: 'systemPrompt',
       title: 'System Prompt',
-      type: 'markdown',
-      description: 'Instructions for how the agent should behave.',
+      type: 'text',
+      description:
+        'Base instructions for agent behavior (tone, communication style). Implementation-specific instructions are added automatically.',
     }),
   ],
   preview: {

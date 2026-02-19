@@ -44,7 +44,7 @@ NEXT_PUBLIC_SANITY_DATASET=production
 # Sanity API token with read access
 SANITY_API_READ_TOKEN=your-read-token
 
-# Context MCP URL (from your Agent Context document)
+# Agent Context URL (from your Agent Context document)
 SANITY_CONTEXT_MCP_URL=https://api.sanity.io/:apiVersion/agent-context/your-project-id/production/your-slug
 
 # Anthropic API key
@@ -86,7 +86,7 @@ const result = streamText({
   system: systemPrompt,
   messages: await convertToModelMessages(messages),
   tools: {
-    ...mcpTools, // Context MCP tools (groq_query, initial_context, etc.)
+    ...mcpTools, // Agent Context tools (groq_query, initial_context, etc.)
     ...clientTools, // Client-side tools (page context, screenshot)
   },
 })

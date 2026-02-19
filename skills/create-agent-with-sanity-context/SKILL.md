@@ -5,7 +5,7 @@ description: Build AI agents with structured access to Sanity content via Agent 
 
 # Build an Agent with Sanity Context
 
-Give AI agents intelligent access to your Sanity content. Unlike embedding-only approaches, Context MCP is schema-aware—agents can reason over your content structure, query with real field values, follow references, and combine structural filters with semantic search.
+Give AI agents intelligent access to your Sanity content. Unlike embedding-only approaches, Agent Context is schema-aware—agents can reason over your content structure, query with real field values, follow references, and combine structural filters with semantic search.
 
 **What this enables:**
 
@@ -14,7 +14,7 @@ Give AI agents intelligent access to your Sanity content. Unlike embedding-only 
 - Results respect your content model (categories, tags, references)
 - Semantic search is available when needed, layered on structure
 
-Note: Context MCP understands your schema structure but not your domain. You'll provide domain context (what your content is for, how to use it) through the agent's system prompt.
+Note: Agent Context understands your schema structure but not your domain. You'll provide domain context (what your content is for, how to use it) through the agent's system prompt.
 
 ## What You'll Need
 
@@ -27,11 +27,11 @@ Before starting, gather these credentials:
 | **Sanity API read token** | Create at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens. See [HTTP Auth docs](https://www.sanity.io/docs/content-lake/http-auth#k967e449638bc) |
 | **LLM API key**           | From your LLM provider (Anthropic, OpenAI, etc.) — any provider works                                                                                                  |
 
-## How Context MCP Works
+## How Agent Context Works
 
 An MCP server that gives AI agents structured access to Sanity content. The core integration pattern:
 
-1. **MCP Connection**: HTTP transport to the Context MCP URL
+1. **MCP Connection**: HTTP transport to the Agent Context URL
 2. **Authentication**: Bearer token using Sanity API read token
 3. **Tool Discovery**: Get available tools from MCP client, pass to LLM
 4. **System Prompt**: Domain-specific instructions that shape agent behavior
@@ -59,11 +59,11 @@ The slug-based URL uses the GROQ filter defined in your agent context document t
 
 A complete integration has **three distinct components** that may live in different places:
 
-| Component                   | What it is                                                      | Examples                                                                        |
-| --------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **1. Studio Setup**         | Configure the context plugin and create agent context documents | Sanity Studio (separate repo or embedded)                                       |
-| **2. Agent Implementation** | Code that connects to Context MCP and handles LLM interactions  | Next.js API route, Express server, Python service, or any MCP-compatible client |
-| **3. Frontend (Optional)**  | UI for users to interact with the agent                         | Chat widget, search interface, CLI—or none for backend services                 |
+| Component                   | What it is                                                       | Examples                                                                        |
+| --------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **1. Studio Setup**         | Configure the context plugin and create agent context documents  | Sanity Studio (separate repo or embedded)                                       |
+| **2. Agent Implementation** | Code that connects to Agent Context and handles LLM interactions | Next.js API route, Express server, Python service, or any MCP-compatible client |
+| **3. Frontend (Optional)**  | UI for users to interact with the agent                          | Chat widget, search interface, CLI—or none for backend services                 |
 
 **Studio setup and agent implementation are required.** Frontend is optional—many agents run as backend services or integrate into existing UIs.
 
@@ -104,7 +104,7 @@ See [references/studio-setup.md](references/studio-setup.md)
 
 ### Step 2: Build the Agent (Adapt to user's stack)
 
-**Already have an agent or MCP client?** You just need to connect it to your Context MCP URL with a Bearer token. The tools will appear automatically.
+**Already have an agent or MCP client?** You just need to connect it to your Agent Context URL with a Bearer token. The tools will appear automatically.
 
 **Building from scratch?** The reference implementation uses Next.js + Vercel AI SDK with Anthropic, but the pattern works with any LLM provider (OpenAI, local models, etc.). It's comprehensive—covering everything from basic chat to advanced patterns. **Start with the basics and add advanced patterns as needed.**
 
@@ -127,15 +127,27 @@ See [references/conversation-classification.md](references/conversation-classifi
 
 ### Step 4: Explore and Optimize (Recommended)
 
-Once the agent works, install `@sanity/agent-context-explorer` and run the `agent-context-explorer` CLI to discover what your dataset contains, then use the `optimize-agent-prompt` skill to build a production-quality system prompt:
+Once the agent works:
 
-```bash
-npx skills add https://github.com/sanity-io/agent-context --skill optimize-agent-prompt
-```
+1. **Run the explorer** to discover what your dataset contains — schema, working query patterns, and limitations:
+
+   ```bash
+   npm install -g @sanity/agent-context-explorer
+
+   agent-context-explorer \
+     --mcp-url https://api.sanity.io/vX/agent-context/PROJECT_ID/DATASET/SLUG \
+     --questions ./questions.json \
+     --sanity-token $SANITY_API_READ_TOKEN \
+     --anthropic-api-key $ANTHROPIC_API_KEY
+   ```
+
+2. **Paste `exploration-results.md`** into your Agent Context Document's `instructions` field — this gives your agent dataset-specific knowledge
+
+3. **Craft your agent's personality** using the `optimize-agent-prompt` skill — this helps you design tone, verbosity, interactivity, and guardrails for your system prompt
 
 ## GROQ with Semantic Search
 
-Context MCP supports `text::embedding()` for semantic ranking:
+Agent Context supports `text::embedding()` for semantic ranking:
 
 ```groq
 *[_type == "article" && category == "guides"]
@@ -167,9 +179,9 @@ See [references/nextjs-agent.md](references/nextjs-agent.md#adapting-to-other-st
 
 ## Troubleshooting
 
-### Context MCP returns errors or no schema
+### Agent Context returns errors or no schema
 
-Context MCP requires your schema to be available server-side. This happens automatically when your Studio runs, but if it's not working:
+Agent Context requires your schema to be available server-side. This happens automatically when your Studio runs, but if it's not working:
 
 1. **Check Studio version**: Ensure you're on Sanity Studio v5.1.0 or later
 2. **Open your Studio**: Simply opening the Studio in a browser triggers schema deployment

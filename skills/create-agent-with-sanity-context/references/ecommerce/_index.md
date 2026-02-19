@@ -1,6 +1,6 @@
 # Ecommerce Reference Implementation
 
-Complete working example of a Next.js e-commerce site with AI shopping assistant powered by Sanity Context MCP.
+Complete working example of a Next.js e-commerce site with AI shopping assistant powered by Sanity Agent Context.
 
 > **Auto-synced** from `examples/ecommerce/`. Do not edit directly.
 

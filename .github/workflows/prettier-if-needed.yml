@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   run:
@@ -32,6 +32,17 @@ jobs:
       - name: Run Prettier
         run: pnpm format:all
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: actions/create-github-app-token@v2
+        id: app-token
         with:
-          commit_message: "chore(prettier): fix unformatted files"
+          app-id: ${{ secrets.ECOSPARK_APP_ID }}
+          private-key: ${{ secrets.ECOSPARK_APP_PRIVATE_KEY }}
+
+      - uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v8
+        with:
+          body: I ran `pnpm format:all`
+          branch: actions/prettier-if-needed
+          commit-message: "chore(prettier): fix unformatted files"
+          sign-commits: true
+          title: "chore(prettier): fix unformatted files"
+          token: ${{ steps.app-token.outputs.token }}

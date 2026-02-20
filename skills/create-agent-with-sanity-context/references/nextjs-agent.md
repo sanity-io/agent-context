@@ -186,20 +186,26 @@ sendAutomaticallyWhen: ({messages}) => {
 
 ### Custom Rendering (Product Directives)
 
-For e-commerce or content-heavy apps, define custom markdown directives to render rich content.
+For e-commerce or content-heavy apps, define custom markdown directives to render rich content using `@sanity/agent-directives`.
+
+**Install**: `pnpm add @sanity/agent-directives`
 
 **System Prompt** (define the syntax): Define custom directives in your system prompt (see `buildSystemPrompt` in the API route)
 
-**Directive parsing**: See [ecommerce/app/src/components/chat/message/remarkDirectives.ts](ecommerce/app/src/components/chat/message/remarkDirectives.ts)
+**Directive rendering**: See [ecommerce/app/src/components/chat/message/TextPart.tsx](ecommerce/app/src/components/chat/message/TextPart.tsx)
 
-- Lines 64-131: `remarkDirectives()` plugin that transforms directive syntax to React components
-- Handles both inline (`:product{...}`) and block (`::product{...}`) formats
-- Validates directive names and filters incomplete directives during streaming
+- Uses `remarkAgentDirectives` plugin from `@sanity/agent-directives/react`
+- Directive names are converted to PascalCase (`::document{...}` → `Document` component)
+- Handles both inline (`:document{...}`) and block (`::document{...}`) formats
+
+**Document component**: See [ecommerce/app/src/components/chat/message/Document.tsx](ecommerce/app/src/components/chat/message/Document.tsx)
+
+- Routes directives by `type` to specific components (e.g., `Product`)
 
 **Product component**: See [ecommerce/app/src/components/chat/message/Product.tsx](ecommerce/app/src/components/chat/message/Product.tsx)
 
-- Lines 16-21: Inline rendering as a link
-- Lines 24-35: Block rendering with image thumbnail
+- Inline: renders as a link
+- Block: renders with image thumbnail
 
 ---
 

@@ -1,5 +1,5 @@
 import {DatabaseIcon} from '@sanity/icons'
-import {defineField, defineType} from 'sanity'
+import {defineArrayMember, defineField, defineType} from 'sanity'
 
 import {AgentContextDocumentInput} from './agent-context-document-input/AgentContextDocumentInput'
 import {GroqFilterInput} from './groq-filter-input/GroqFilterInput'
@@ -69,7 +69,35 @@ export const agentContextSchema = defineType({
       name: 'instructions',
       title: 'Instructions',
       description: 'Custom instructions for how AI agents should work with your content.',
-      type: 'text',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'block',
+          styles: [
+            {title: 'Normal', value: 'normal'},
+            {title: 'Heading 1', value: 'h1'},
+            {title: 'Heading 2', value: 'h2'},
+            {title: 'Heading 3', value: 'h3'},
+            {title: 'Heading 4', value: 'h4'},
+            {title: 'Heading 5', value: 'h5'},
+            {title: 'Heading 6', value: 'h6'},
+            {title: 'Blockquote', value: 'blockquote'},
+          ],
+          marks: {
+            decorators: [
+              {title: 'Bold', value: 'strong'},
+              {title: 'Italic', value: 'em'},
+              {title: 'Code', value: 'code'},
+              {title: 'Strikethrough', value: 'strike-through'},
+            ],
+            annotations: [],
+          },
+          lists: [
+            {title: 'Bullet', value: 'bullet'},
+            {title: 'Numbered', value: 'number'},
+          ],
+        }),
+      ],
     }),
   ],
 })

@@ -8,7 +8,9 @@ interface MessageProps {
   message: UIMessage
 }
 
-export function Message({message}: MessageProps) {
+export function Message(props: MessageProps) {
+  const {message} = props
+
   const isUser = message.role === 'user'
   const parts = message.parts ?? []
 

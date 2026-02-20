@@ -1,26 +1,36 @@
+import {remarkAgentDirectives} from '@sanity/agent-directives/react'
 import Link from 'next/link'
 import ReactMarkdown, {type Components} from 'react-markdown'
-import remarkDirective from 'remark-directive'
 
 import {cn} from '@/lib/utils'
 
 import {Document} from './Document'
-import {remarkDirectives} from './remarkDirectives'
 
 interface TextPartProps {
   text: string
   isUser: boolean
 }
 
-type ExtendedComponents = Components & {
-  Document: typeof Document
+/**
+ * Wrapper for consecutive directives - renders children in a flex column
+ */
+function DirectivesStack({children}: {children?: React.ReactNode}) {
+  return <div className="flex flex-col gap-2">{children}</div>
 }
 
-export function TextPart({text, isUser}: TextPartProps) {
+type ExtendedComponents = Components & {
+  Document: typeof Document
+  DirectivesStack: typeof DirectivesStack
+}
+
+export function TextPart(props: TextPartProps) {
+  const {text, isUser} = props
+
   if (!text.trim()) return null
 
   const components: ExtendedComponents = {
     Document,
+    DirectivesStack,
 
     a(props) {
       const {href = '', children} = props
@@ -54,7 +64,7 @@ export function TextPart({text, isUser}: TextPartProps) {
   }
 
   return (
-    <ReactMarkdown remarkPlugins={[remarkDirective, remarkDirectives]} components={components}>
+    <ReactMarkdown remarkPlugins={[remarkAgentDirectives]} components={components}>
       {text}
     </ReactMarkdown>
   )

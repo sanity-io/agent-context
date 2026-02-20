@@ -7,7 +7,10 @@ import {useEffect, useState} from 'react'
 import {client} from '@/sanity/lib/client'
 import {urlFor} from '@/sanity/lib/image'
 
-import type {DocumentProps} from './Document'
+interface ProductProps {
+  id: string
+  isInline?: boolean
+}
 
 const QUERY = `
   *[_type == "product" && _id == $id][0] {
@@ -23,7 +26,7 @@ interface ProductData {
   image: {asset: {_ref: string}} | null
 }
 
-export function Product(props: DocumentProps) {
+export function Product(props: ProductProps) {
   const {isInline} = props
 
   const [product, setProduct] = useState<ProductData | null>(null)

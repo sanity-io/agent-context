@@ -46,12 +46,12 @@ describe('agentContextSchema', () => {
       expect(groqFilterField?.type).toBe('string')
     })
 
-    it('should include the instructions field', () => {
-      const agentContextInstructionsField = agentContextSchema.fields.find(
+    it('should include the instructions field as Portable Text array', () => {
+      const instructionsField = agentContextSchema.fields.find(
         (field) => field.name === 'instructions',
       )
-      expect(agentContextInstructionsField).toBeDefined()
-      expect(agentContextInstructionsField?.type).toBe('text')
+      expect(instructionsField).toBeDefined()
+      expect(instructionsField?.type).toBe('array')
     })
   })
 })

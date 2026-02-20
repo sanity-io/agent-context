@@ -1,5 +1,5 @@
 import {DatabaseIcon} from '@sanity/icons'
-import {defineField, defineType} from 'sanity'
+import {DEFAULT_DECORATORS, defineArrayMember, defineField, defineType} from 'sanity'
 
 import {AgentContextDocumentInput} from './agent-context-document-input/AgentContextDocumentInput'
 import {GroqFilterInput} from './groq-filter-input/GroqFilterInput'
@@ -69,7 +69,16 @@ export const agentContextSchema = defineType({
       name: 'instructions',
       title: 'Instructions',
       description: 'Custom instructions for how AI agents should work with your content.',
-      type: 'text',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'block',
+          marks: {
+            decorators: DEFAULT_DECORATORS.filter((d) => d.value !== 'underline'),
+            annotations: [],
+          },
+        }),
+      ],
     }),
   ],
 })

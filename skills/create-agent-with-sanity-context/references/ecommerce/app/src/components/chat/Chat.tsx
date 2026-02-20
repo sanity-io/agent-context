@@ -21,7 +21,7 @@ import {
 import {CLIENT_TOOLS, type ProductFiltersInput, productFiltersSchema} from '../../lib/client-tools'
 import {ChatInput} from './ChatInput'
 import {Loader} from './Loader'
-import {Message} from './message'
+import {Message} from './message/Message'
 import {ToolCall} from './ToolCall'
 
 // Show loader when waiting for text (not actively streaming text)

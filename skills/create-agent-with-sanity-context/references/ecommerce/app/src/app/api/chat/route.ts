@@ -75,6 +75,8 @@ Example response showing three jackets:
 ::document{id="product-def456" type="product"}
 ::document{id="product-ghi789" type="product"}
 
+Example inline: Check out the :document{id="product-abc123" type="product"} for a timeless look.
+
 Write product names only inside directives. If page context mentions product names, summarize generically ("the products shown") or query Sanity for their IDs rather than repeating names as plain text.
 `
 }

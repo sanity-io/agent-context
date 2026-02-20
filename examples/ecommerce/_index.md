@@ -12,7 +12,7 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 | System prompt from Sanity   | `app/src/app/api/chat/route.ts` (lines 28-41, 68-83), `studio/schemaTypes/documents/agentConfig.ts`              |
 | Client-side tool handling   | `app/src/components/chat/Chat.tsx`, `app/src/lib/client-tools.ts`                                                |
 | Page context capture        | `app/src/lib/capture-context.ts`                                                                                 |
-| Custom markdown rendering   | `app/src/components/chat/message/remarkDirectives.ts`, `app/src/components/chat/message/Product.tsx`             |
+| Custom markdown rendering   | `app/src/components/chat/message/TextPart.tsx`                                                                   |
 | Studio plugin setup         | `studio/sanity.config.ts`                                                                                        |
 | Schema design patterns      | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                                         |
 | Sanity client/queries       | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                                        |
@@ -41,9 +41,9 @@ app/src/components/chat/
 ├── ToolCall.tsx                  # Debug tool call display
 └── message/
     ├── Message.tsx               # Message rendering
-    ├── TextPart.tsx              # Text with markdown
-    ├── Product.tsx               # Product card directive
-    └── remarkDirectives.ts       # Markdown directive parser
+    ├── TextPart.tsx              # Text with markdown + directive parsing
+    ├── Document.tsx              # Document directive router
+    └── Product.tsx               # Product card component
 ```
 
 ### Sanity Studio
@@ -116,7 +116,7 @@ See `app/src/components/chat/Chat.tsx` lines 69-72
 
 ### Custom Directives
 
-See `app/src/components/chat/message/remarkDirectives.ts`
+See `app/src/components/chat/message/TextPart.tsx` (uses `@sanity/agent-directives`)
 
 ### Conversation Classification (Blueprint + Function)
 

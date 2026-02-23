@@ -107,10 +107,11 @@ Produce both artifacts:
 
 **A. Instructions field content**
 
-- Data inventory and structure
-- Query patterns with examples
-- Critical rules (locale filters, projections, null fields, semantic search)
-- Limitations and "do not attempt" rules
+- Critical rules (locale filters, projections, null fields) — **put first**
+- Schema reference table
+- Query patterns **with copy-paste GROQ examples**
+- Fallback strategy (what to try when queries fail)
+- Known limitations
 
 **B. System prompt**
 

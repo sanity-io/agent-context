@@ -1,144 +1,231 @@
 ---
 name: optimize-agent-prompt
-description: Craft agent personality and behavior for Sanity Agent Context. Load when tuning tone, verbosity, interactivity, guardrails, or response style. Covers system prompt structure and the two-surface architecture (instructions field vs system prompt).
+description: Tune your Sanity Agent Context agent through guided conversation. Transforms exploration data into production-ready instructions and crafts a system prompt tailored to your use case.
 ---
 
-# Optimize Your Agent's Prompt
+# Tune Your Agent
 
-Use this skill to craft your agent's personality and behavior. This covers tone, verbosity, interactivity, guardrails, and how to structure your system prompt — the things that make your agent feel like a helpful team member rather than a database interface.
+Use this skill to turn a basic agent into a high-quality, conversationally strong, data-aware agent. This is an interactive session — you'll provide exploration data, answer questions about your use case, and get back two artifacts:
+
+1. **Instructions field content** — for your Agent Context Document
+2. **System prompt** — for your agent's code
 
 ## Prerequisites
 
 - **A working agent** — built using the `create-agent-with-sanity-context` skill or equivalent
 - **An Agent Context Document** — created in Sanity Studio with the context plugin
-
-Optionally (but recommended):
-
-- **Run the Agent Context Explorer** to generate `exploration-results.md` — this documents your dataset's schema, working query patterns, and limitations
+- **Exploration data** — run the Agent Context Explorer to understand your dataset
 
 ```bash
-npm install -g @sanity/agent-context-explorer
-
-agent-context-explorer \
+npx @sanity/agent-context-explorer \
   --mcp-url https://api.sanity.io/vX/agent-context/PROJECT_ID/DATASET/SLUG \
   --questions ./questions.json \
   --sanity-token $SANITY_API_READ_TOKEN \
   --anthropic-api-key $ANTHROPIC_API_KEY
 ```
 
-The CLI will tell you where the output is written. Paste the contents of `exploration-results.md` into your Agent Context Document's `instructions` field.
+Paste the contents of `exploration-results.md` into this conversation when prompted.
 
-## How to Use This Skill
+## Workflow
 
-When helping a user optimize their agent's prompt:
+### 1. Intake
 
-1. **Ask about their agent's purpose** — What does it help users do? Who are the users?
-2. **Walk through relevant questions** from the "Questions to Consider" section — don't ask all of them, pick what matters for their use case
-3. **Draft a system prompt** using the structure in "System Prompt Structure" — start with Role Statement, add sections as needed
-4. **Review against Core Principles** — ensure the prompt doesn't expose technical details or duplicate dataset knowledge
-5. **Iterate** — refine based on user feedback
+First, gather the inputs:
 
-The output is a system prompt the user can paste into their agent's code. Keep it concise — a good system prompt is usually 10-30 lines.
+- **Exploration data**: Ask the user to paste their `exploration-results.md`
+- **Current system prompt**: If they have one, review it for context
+
+**If the user hasn't run the explorer yet**, help them get started:
+
+1. Ask about their use case and what questions their agent should answer
+2. Generate a `questions.json` file with 8-15 realistic questions and expected answers
+3. The questions should cover the breadth of what the agent will handle — product lookups, comparisons, troubleshooting, edge cases
+4. Include expected answers so the explorer can validate whether the dataset can actually answer them
+
+Example questions.json structure:
+
+```json
+{
+  "questions": [
+    {
+      "question": "What sizes does the Alpine Jacket come in?",
+      "expected_answer": "The Alpine Jacket is available in XS, S, M, L, XL, and XXL."
+    },
+    {
+      "question": "Is the Alpine Jacket waterproof?",
+      "expected_answer": "The Alpine Jacket is water-resistant but not fully waterproof. For heavy rain, consider the StormShield Parka which has a waterproof membrane."
+    }
+  ]
+}
+```
+
+Once they have exploration data, ask about their use case. Pick relevant questions — don't ask all of them:
+
+**Purpose & Audience**
+
+- What does the agent help users do?
+- Who are the users? (customers, internal team, support agents)
+- What's in scope? What's explicitly out of scope?
+
+**Language & Locale**
+
+- What languages/locales should the agent support?
+- Are there locale-specific content rules?
+
+**Tone & Style**
+
+- Formal or casual? Warm or efficient?
+- How verbose? Chat-length or detailed?
+- First person ("I") or brand voice ("We")?
+
+**Behavior**
+
+- When should it ask clarifying questions vs answer directly?
+- Should it proactively suggest related things?
+- How should it handle uncertainty?
+
+**Constraints**
+
+- What should it never discuss? (competitors, pricing, legal advice)
+- What should redirect to humans?
+- Any hard business rules?
+
+### 2. Transform
+
+Using the exploration data and user answers, extract:
+
+- **Data inventory**: What content types exist and what they're for
+- **Query patterns**: Which types/fields to use for which questions, with examples
+- **Critical rules**: Operational rules that prevent wasted queries and context blowups (locale filters, null fields, required projections)
+- **Limitations**: What's NOT in the dataset (pricing, inventory, etc.)
+
+This becomes the instructions field content. **Don't skip critical rules** — these prevent the most common failures.
+
+### 3. Draft
+
+Produce both artifacts:
+
+**A. Instructions field content**
+
+- Critical rules (locale filters, projections, null fields) — **put first**
+- Schema reference table
+- Query patterns **with copy-paste GROQ examples**
+- Fallback strategy (what to try when queries fail)
+- Known limitations
+
+**B. System prompt**
+
+- Role statement
+- Response style (length, format, clarifying behavior)
+- Boundaries and guardrails
+- Working with content (query efficiency)
+- Accuracy rules
+
+Present both to the user clearly, explaining what goes where.
+
+### 4. Validate
+
+Before finalizing, verify the exploration data and drafted instructions cover everything needed:
+
+**Schema Coverage:**
+
+- [ ] All document types from the MCP schema appear in Schema Reference
+- [ ] If types are missing, flag them — user may need to add exploration questions
+
+**Query Pattern Quality:**
+
+- [ ] Each pattern includes a projection (`{ field1, field2 }`) — not full documents
+- [ ] Each pattern includes a slice (`[0...N]`) — limits results
+- [ ] Reference fields use dereference (`->`) not just `._ref`
+
+**Required Sections:**
+
+- [ ] Critical Rules section exists and comes first
+- [ ] Fallback Strategy section exists
+- [ ] Known Limitations section exists
+
+**Content Quality:**
+
+- [ ] Rules use imperative language ("Always...", "Never...")
+- [ ] Patterns are copy-paste ready (no placeholders)
+- [ ] Limitations include what happens when you query them
+
+If gaps exist, ask the user whether to:
+
+- Run more exploration with additional questions
+- Add the missing sections manually based on domain knowledge
+- Ship with documented blind spots
+
+### 5. Iterate
+
+Refine based on feedback. If the user wants to test against tricky questions, help them evaluate the drafts.
+
+---
 
 ## Two Prompt Surfaces
 
-When using Agent Context, you have two places to put instructions:
-
-| Surface                                           | What goes here                                                                             | How it gets to the agent                  |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| **Agent Context Document → `instructions` field** | Dataset-specific knowledge: schema reference, query patterns, limitations, field gotchas   | Injected automatically via the MCP server |
-| **Your agent's system prompt**                    | Agent personality: role, tone, verbosity, response format, guardrails, forbidden behaviors | You control this in your code             |
+| Surface                                           | What goes here                                                        | How it gets to the agent       |
+| ------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------ |
+| **Agent Context Document → `instructions` field** | Dataset knowledge: schema, query patterns, limitations, field gotchas | Injected automatically via MCP |
+| **System prompt**                                 | Agent behavior: role, tone, response style, guardrails                | You control this in code       |
 
 **The key distinction:**
 
 - **Instructions field** = what the agent knows about the data
 - **System prompt** = how the agent behaves and communicates
 
-Don't duplicate dataset knowledge in your system prompt — that's what the instructions field is for. Your system prompt should focus on personality, style, and rules.
+Don't duplicate dataset knowledge in your system prompt — that's what the instructions field is for.
 
 ### Quick Reference
 
-| This concern...                                  | Goes in instructions field | Goes in system prompt |
-| ------------------------------------------------ | -------------------------- | --------------------- |
-| Schema reference (document types, fields)        | ✅                         | ❌                    |
-| Query patterns that work                         | ✅                         | ❌                    |
-| Field naming gotchas                             | ✅                         | ❌                    |
-| Data limitations (null fields, external systems) | ✅                         | ❌                    |
-| Agent role and persona                           | ❌                         | ✅                    |
-| Tone of voice                                    | ❌                         | ✅                    |
-| Response length and format                       | ❌                         | ✅                    |
-| "Never mention competitors"                      | ❌                         | ✅                    |
-| "Pricing not in dataset, check website"          | ✅                         | ❌                    |
-| "Always direct pricing questions to website"     | ❌                         | ✅                    |
+| This concern...                                  | Instructions field | System prompt |
+| ------------------------------------------------ | ------------------ | ------------- |
+| Schema reference (document types, fields)        | ✅                 | ❌            |
+| Query patterns that work                         | ✅                 | ❌            |
+| Field naming gotchas                             | ✅                 | ❌            |
+| Data limitations (null fields, external systems) | ✅                 | ❌            |
+| Agent role and persona                           | ❌                 | ✅            |
+| Tone of voice                                    | ❌                 | ✅            |
+| Response length and format                       | ❌                 | ✅            |
+| "Never mention competitors"                      | ❌                 | ✅            |
+| "Pricing not in dataset, check website"          | ✅                 | ❌            |
+| "Always direct pricing questions to website"     | ❌                 | ✅            |
 
-## Questions to Consider
+---
 
-Think through these as you design your agent's personality. Not all will apply to every agent — pick what's relevant.
+## Instructions Field Structure
 
-### Role & Purpose
+The instructions field content should be ordered for maximum impact — put the most critical guidance first.
 
-**What is your agent's job?**
-A shopping assistant helps users find and compare products. A support agent troubleshoots issues. A product expert answers detailed technical questions. A concierge guides users through complex decisions. The role shapes everything else — tone, proactivity, depth of answers.
+### 1. Critical Rules (FIRST)
 
-**What should it proactively offer?**
-Some agents wait to be asked. Others suggest related products, offer to compare options, or ask if the user needs anything else. More proactive agents feel more helpful but risk being pushy. Consider: should your agent suggest, or just answer?
+**Put this section at the top.** Operational rules that prevent wasted queries and context blowups. Copy these directly from the exploration data's "Critical Rules" section:
 
-**What's the scope?**
-An agent that does one thing well feels more competent than one that tries to do everything. Define what's in scope (product questions, troubleshooting) and what's out (account issues, returns, complaints). Clear scope helps the agent give confident answers within its domain and graceful redirects outside it.
+- Required filters (e.g., locale filters to avoid duplicates)
+- Fields that are always null (don't waste queries on them)
+- When to use semantic search vs structured queries
 
-### Tone & Voice
+Don't generalize or rewrite these — use the exact rules from the exploration.
 
-**How formal or casual?**
-A luxury brand might want polished, professional language. A lifestyle brand might want relaxed, conversational tone. Match your brand voice — the agent should sound like it belongs on your team.
+### 2. Schema Reference
 
-**Warm and friendly, or efficient and direct?**
-Friendly agents build rapport ("Great question! Let me help you with that..."). Direct agents respect the user's time ("It comes in black and white."). Neither is better — it depends on your brand and use case.
+What's in the dataset and what each content type is for. Use the Schema Reference table from the exploration data.
 
-**First person ("I") or brand voice ("We at [Company]")?**
-First person feels more personal and conversational. Brand voice feels more official. Some agents mix both — "I'd recommend..." for suggestions, "We offer..." for policies.
+### 3. Query Patterns
 
-**What personality traits?**
-Is your agent enthusiastic? Calm? Authoritative? Playful? A few personality traits, consistently applied, make the agent feel like a character rather than a tool.
+How to find things effectively. Copy the working patterns from the exploration data — these are tested and known to work. Ensure all examples include projections and slices.
 
-### Response Style
+### 4. Known Limitations
 
-**How verbose?**
-Chat-length responses (1-2 sentences) feel snappy and conversational. Paragraph-length responses provide more context but can overwhelm. Consider: are users on mobile? Skimming quickly? Or reading carefully?
+What's NOT available — this prevents hallucinations. Copy from the exploration data's "Known Limitations" section.
 
-**Use formatting (lists, headers) or plain prose?**
-Lists and headers help users scan long responses. Plain prose feels more natural for short answers. A good rule: short answers in prose, longer answers with structure.
+### 5. About [Brand] (optional)
 
-**Emojis or no?**
-Emojis add warmth and personality but don't fit every brand. If you use them, be consistent — occasional emojis feel random, regular ones feel intentional.
+Brief context about the company/domain. This helps the agent sound knowledgeable but isn't essential for query accuracy. Put it last.
 
-**How should it handle comparisons?**
-Tables? Side-by-side bullets? Narrative explanation? The format affects readability. Pick one approach and be consistent.
-
-### Interactivity
-
-**Should it ask clarifying questions?**
-"Are you looking for a portable speaker or a home setup?" helps narrow down options but adds a round-trip. Some users prefer to be guided; others want direct answers. Consider offering both: answer if you can, ask if you need to.
-
-**Should it suggest related things?**
-"This pairs well with a carrying case" is helpful upselling or annoying noise, depending on context. Consider: when is proactive suggestion welcome vs intrusive?
-
-**Conversational or transactional?**
-Conversational agents remember context and build on previous messages. Transactional agents treat each message independently. Most chat agents should be conversational, but the degree varies.
-
-### Boundaries
-
-**What should it never discuss?**
-Competitor products? Pricing details? Medical or legal advice? Internal processes? Be explicit — agents need clear boundaries to avoid awkward situations.
-
-**What should it redirect to humans?**
-Complaints? Complex returns? Account issues? Anything requiring authentication? Define the handoff points and how the agent should phrase the redirect.
-
-**What topics require extra care?**
-Safety-related questions? Warranty claims? Anything where a wrong answer has consequences? The agent should be more conservative in these areas — better to redirect than guess.
+---
 
 ## System Prompt Structure
-
-A system prompt can include these sections. Not all are required — include what's relevant for your agent.
 
 ### Role Statement
 
@@ -150,56 +237,110 @@ compare options, and answer questions about features and compatibility.
 You're friendly, knowledgeable, and concise.
 ```
 
-### Response Style
+### Your Knowledge Source
 
-How to format and deliver answers.
+Directs the agent to treat MCP tool descriptions as its operating manual. This is critical for instruction compliance.
+
+```
+## Your Knowledge Source
+
+All your knowledge about [domain] comes from the MCP tools. **The MCP server's instructions are your operating manual** — they tell you:
+
+- Which document types to query for which questions
+- Query patterns that actually work (and which don't)
+- Critical rules you must follow (filters, projections, etc.)
+- What data exists and what doesn't
+
+**Before writing any query, check the MCP tool descriptions.** They contain specific guidance that overrides general intuition. If the instructions say to use a specific document type or filter, do it — even if another approach seems reasonable.
+```
+
+### Response Style
 
 ```
 ## How to Respond
+
 - Give direct answers first, then add detail if helpful
 - Keep responses concise — a few sentences for simple questions
-- Use bullet points for comparisons or lists of features
+- Use bullet points for comparisons or feature lists
 - Don't narrate your process ("Let me look that up...")
+```
+
+### Clarifying Questions
+
+When and how to ask for more information.
+
+```
+## When to Ask for Clarification
+
+For broad or ambiguous questions, ask a focused clarifying question rather than dumping everything you know. Example:
+
+User: "What speaker should I get?"
+Good: "To recommend the right speaker, it helps to know: what room is it for, and what's your budget range?"
+Bad: [500-word overview of every speaker in the catalog]
+
+If you can give a useful partial answer, do that AND ask for clarification.
 ```
 
 ### Boundaries
 
-What's out of scope — and where to direct users instead.
-
 ```
 ## What You Can't Help With
+
 - Pricing — direct users to the website
-- Order status or account issues — direct to customer support at support@company.com
+- Order status or account issues — direct to support@company.com
 - Warranty claims — direct to the warranty page
 ```
 
 ### Guardrails
 
-Things the agent should never do.
-
 ```
 ## Never
+
 - Never mention competitor products by name
 - Never make up information — if you don't know, say so
 - Never share internal processes or system details
 - Never promise discounts or special treatment
 ```
 
-### Internal Rules
+### Accuracy
 
-Technical rules the agent follows but doesn't mention to users. These supplement what's in the instructions field — use sparingly.
+Keep this lightweight — the MCP already covers grounding in data. Focus on the persona angle:
 
 ```
-## Internal Rules (never mention to users)
-- If multiple products match, ask the user to clarify rather than guessing
-- For discontinued products, acknowledge they exist but direct to current alternatives
+## Accuracy
+
+Always provide factually correct answers grounded in the content you retrieve. It's OK to say "I'm not sure about that" — better than guessing wrong.
 ```
+
+---
+
+## Behavioral Goals
+
+A well-tuned agent should:
+
+### Ask Clarifying Questions
+
+For broad queries, ask a focused question instead of dumping everything. "What room is this for?" is better than a 500-word product overview.
+
+### Appropriate Length
+
+Short and direct for narrow questions. Structured and scannable for complex ones. Never verbose just to be thorough.
+
+### Honest About Gaps
+
+When the dataset lacks something: acknowledge it simply, redirect helpfully, offer alternatives. "I don't have pricing — you can check on our website. Want me to help compare features instead?"
+
+### Never Leak Internals
+
+Users should never see schema names, document types, field names, or query syntax. The agent knows these things but doesn't expose them.
+
+---
 
 ## Core Principles
 
 ### Speak On Behalf Of, Not About
 
-The agent represents the brand. It should talk like a knowledgeable team member, not like a database administrator. Users don't care about document types, query patterns, or data sources — they want answers.
+The agent represents the brand — not the database. Users want answers, not architecture.
 
 **Bad** (talking about the dataset):
 
@@ -211,15 +352,15 @@ The agent represents the brand. It should talk like a knowledgeable team member,
 
 **Bad** (exposing internals):
 
-> "I queried the product type and found the X1 Speaker. Based on the media altText fields, it appears to come in black and white."
+> "I queried the product type and found 3 results. Based on the media altText fields, it appears to come in black and white."
 
 **Good** (clean answer):
 
-> "The X1 Speaker comes in black and white."
+> "It comes in black and white."
 
 ### Handle Gaps Gracefully
 
-When the agent doesn't have information, it should:
+When the agent doesn't have information:
 
 1. Acknowledge simply — "I don't have that information"
 2. Redirect helpfully — "You can find pricing on our website"
@@ -229,16 +370,20 @@ Never guess. Never make up answers. Never blame the data.
 
 ### Keep Technical Details Internal
 
-The agent needs to know about document types, field names, and query patterns to find answers. But users should never see this machinery. Phrases like "the document type," "this field is null," or "the query returned no results" should never appear in responses.
+The agent needs to know about document types, field names, and query patterns. But users should never see this machinery. Phrases like "the document type," "this field is null," or "the query returned no results" should never appear in responses.
+
+---
 
 ## What NOT to Do
 
-- **Don't duplicate dataset knowledge in your system prompt.** That's what the instructions field is for. Your system prompt handles personality and behavior.
+- **Don't duplicate dataset knowledge in your system prompt.** That's what the instructions field is for.
 
 - **Don't let the agent talk like a database.** No "document types," "fields," "queries," or "data sources" in user-facing responses.
 
 - **Don't use "Context MCP" in customer-facing prompts.** The product name is "Agent Context."
 
-- **Don't skip the exploration step.** Running `agent-context-explorer` reveals gotchas you won't discover until production. The 10 minutes it takes saves hours of debugging.
+- **Don't skip exploration.** Running the explorer reveals gotchas you won't discover until production.
 
 - **Don't be vague about boundaries.** "Don't discuss sensitive topics" is less useful than "Never discuss competitor products, pricing negotiations, or return exceptions."
+
+- **Don't optimize for verbosity.** Longer answers aren't better answers. Teach the agent to be appropriately concise.

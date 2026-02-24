@@ -27,17 +27,17 @@
   },
   "prettier": "@sanity/prettier-config",
   "devDependencies": {
-    "@commitlint/cli": "^20",
-    "@commitlint/config-conventional": "^20",
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
     "@sanity/prettier-config": "^3.0.0",
     "@types/node": "^22.19.11",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.1",
     "pretty-quick": "^4.2.2",
     "tsx": "^4.21.0",
-    "turbo": "^2.7.4",
-    "typescript": "^5"
+    "turbo": "^2.8.10",
+    "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.29.3"
 }

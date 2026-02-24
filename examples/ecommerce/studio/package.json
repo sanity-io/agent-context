@@ -21,28 +21,28 @@
   },
   "prettier": "@sanity/prettier-config",
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.23",
+    "@ai-sdk/anthropic": "^3.0.46",
     "@sanity/agent-context": "workspace:*",
-    "@sanity/client": "^7.14.1",
-    "@sanity/icons": "^3",
-    "@sanity/ui": "^3",
-    "@sanity/vision": "^5.9.0",
-    "ai": "^6.0.50",
+    "@sanity/client": "^7.15.0",
+    "@sanity/icons": "^3.7.4",
+    "@sanity/ui": "^3.1.11",
+    "@sanity/vision": "^5.11.0",
+    "ai": "^6.0.97",
     "easymde": "^2.20.0",
-    "react": "^19",
-    "react-dom": "^19",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0",
-    "sanity": "^5.9.0",
+    "sanity": "^5.11.0",
     "sanity-plugin-markdown": "^8.0.5",
-    "styled-components": "^6.3.8",
+    "styled-components": "^6.3.11",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@sanity/blueprints": "0.10.0",
+    "@sanity/blueprints": "0.12.2",
     "@sanity/functions": "1.2.0",
-    "@types/react": "^19",
+    "@types/react": "^19.2.14",
     "dotenv-cli": "^11.0.0",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }

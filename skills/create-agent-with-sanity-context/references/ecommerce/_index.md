@@ -8,9 +8,9 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 
 | Task                        | Load These Files                                                                                                 |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| MCP connection setup        | `app/src/app/api/chat/route.ts` (lines 55-74)                                                                    |
-| System prompt from Sanity   | `app/src/app/api/chat/route.ts` (lines 28-41, 68-83), `studio/schemaTypes/documents/agentConfig.ts`              |
-| Client-side tool handling   | `app/src/components/chat/Chat.tsx`, `app/src/lib/client-tools.ts`                                                |
+| MCP connection setup        | `app/src/app/api/chat/route.ts` (`createMCPClient`)                                                              |
+| System prompt from Sanity   | `app/src/app/api/chat/route.ts` (`buildSystemPrompt`), `studio/schemaTypes/documents/agentConfig.ts`             |
+| Client-side tool handling   | `app/src/components/chat/Chat.tsx` (`onToolCall`), `app/src/lib/client-tools.ts`                                 |
 | Page context capture        | `app/src/lib/capture-context.ts`                                                                                 |
 | Custom markdown rendering   | `app/src/components/chat/message/TextPart.tsx`                                                                   |
 | Studio plugin setup         | `studio/sanity.config.ts`                                                                                        |
@@ -96,23 +96,23 @@ app/src/app/
 
 ### MCP Connection
 
-See `app/src/app/api/chat/route.ts` lines 55-74
+See `app/src/app/api/chat/route.ts` (`createMCPClient`)
 
 ### Client Tools (No Server Execute)
 
-See `app/src/app/api/chat/route.ts` lines 13-26
+See `app/src/app/api/chat/route.ts` (`CLIENT_TOOLS`)
 
 ### System Prompt from Sanity
 
-See `app/src/app/api/chat/route.ts` lines 28-41 (`buildSystemPrompt`), 68-83 (fetch & apply)
+See `app/src/app/api/chat/route.ts` (`buildSystemPrompt`)
 
 ### Tool Handling on Client
 
-See `app/src/components/chat/Chat.tsx` lines 73-108
+See `app/src/components/chat/Chat.tsx` (`onToolCall`)
 
 ### Auto-continuation
 
-See `app/src/components/chat/Chat.tsx` lines 69-72
+See `app/src/components/chat/Chat.tsx` (`sendAutomaticallyWhen`)
 
 ### Custom Directives
 

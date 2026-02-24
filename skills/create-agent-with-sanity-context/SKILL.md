@@ -185,31 +185,7 @@ See [references/system-prompts.md](references/system-prompts.md) for domain-spec
 
 ### Agent Context returns errors or no schema
 
-Agent Context requires your schema to be available server-side. This happens automatically when your Studio runs, but if it's not working:
-
-1. **Check Studio version**: Ensure you're on Sanity Studio v5.1.0 or later
-2. **Open your Studio**: Opening the Studio in a browser triggers schema deployment. The Studio must be deployed, not running on localhost.
-3. **Verify deployment**: After opening Studio, retry the MCP connection
-
-### Escape hatch: Deploy schema via Sanity MCP
-
-If you're on a **cloud-only platform** (Lovable, v0, Replit) without a local Studio, or if local Studio schema deployment isn't working, you can deploy schemas using the Sanity MCP server's `deploy_schema` tool.
-
-**To install the Sanity MCP** (if you don't have it already):
-
-```bash
-npx sanity@latest mcp configure
-```
-
-This configures the MCP for your AI editor (Claude Code, Cursor, VS Code, etc.). Once connected, ask your AI assistant to use the `deploy_schema` tool to deploy your content types.
-
-> **Recommended approach:** If you have a local Sanity Studio, deploying via the Studio is preferred:
->
-> - Local schema files (in `schemaTypes/`) are the **source of truth**
-> - Using `deploy_schema` directly can create drift between your code and the deployed schema
-> - Edit your local schema files and run `npx sanity schema deploy` instead
->
-> Use this escape hatch when local deployment isn't an option or isn't working.
+Agent Context requires a deployed Studio. See [Deploy Your Studio](references/studio-setup.md#deploy-your-studio) for instructions.
 
 ### "401 Unauthorized" from MCP
 

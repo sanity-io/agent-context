@@ -114,7 +114,7 @@ Copy this URL—you'll need it when configuring your agent.
 
 ## Deploy Your Studio
 
-Agent Context requires a **deployed Studio** (not just running locally).
+Agent Context requires a **deployed Studio** (not just running locally) running **v5.1.0+**.
 
 ```bash
 npx sanity deploy

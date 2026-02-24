@@ -6,18 +6,18 @@ This is a reference implementation using Next.js and Vercel AI SDK. Use it as a 
 
 ## Contents
 
-- [Install Dependencies](#1-install-dependencies)
-- [Environment Variables](#2-environment-variables)
-- [Chat API Route](#3-create-the-chat-api-route)
-- [Customizing the System Prompt](#4-customizing-the-system-prompt)
-- [Frontend Chat Component](#5-frontend-chat-component)
-- [Testing the Agent](#6-testing-the-agent)
+- [Install Dependencies](#install-dependencies)
+- [Environment Variables](#environment-variables)
+- [Chat API Route](#create-the-chat-api-route)
+- [Customizing the System Prompt](#customizing-the-system-prompt)
+- [Frontend Chat Component](#frontend-chat-component)
+- [Testing the Agent](#testing-the-agent)
 - [Advanced Patterns](#advanced-patterns)
 - [Troubleshooting](#troubleshooting)
 
 ---
 
-## 1. Install Dependencies
+## Install Dependencies
 
 ```bash
 npm install @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/react ai
@@ -29,7 +29,7 @@ pnpm add @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/react ai
 
 Do NOT guess versions—check the reference `package.json` or use `npm info <package> version` to get the latest. AI SDK packages update frequently.
 
-## 2. Environment Variables
+## Environment Variables
 
 See [ecommerce/.env.example](ecommerce/.env.example) for the template.
 
@@ -53,7 +53,7 @@ ANTHROPIC_API_KEY=your-anthropic-key
 AGENT_CONFIG_SLUG=default
 ```
 
-## 3. Create the Chat API Route
+## Create the Chat API Route
 
 See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for the complete implementation.
 
@@ -64,7 +64,7 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 - **MCP client creation**: HTTP transport connection to Sanity Context MCP
 - **`streamText` call**: Combining MCP tools with client tools
 
-**MCP Connection Pattern** (lines 57-65):
+**MCP Connection Pattern** (`createMCPClient`):
 
 ```ts
 const mcpClient = await createMCPClient({
@@ -78,7 +78,7 @@ const mcpClient = await createMCPClient({
 })
 ```
 
-**Tool Combination** (lines 86-100):
+**Tool Combination** (`streamText`):
 
 ```ts
 const mcpTools = await mcpClient.tools()
@@ -93,7 +93,7 @@ const result = streamText({
 })
 ```
 
-## 4. Customizing the System Prompt
+## Customizing the System Prompt
 
 The system prompt shapes how your agent behaves. You can define prompts entirely inline, or store the base prompt in Sanity and combine with implementation-specific parts in code. The reference implementation uses the hybrid approach.
 
@@ -101,23 +101,23 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 
 **For more examples**, see [system-prompts.md](system-prompts.md).
 
-## 5. Frontend Chat Component
+## Frontend Chat Component
 
 See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) for a complete implementation.
 
 **Key sections:**
 
-- **Lines 62-109**: `useChat` hook setup with transport, auto-continuation, and tool handling
-- **Lines 73-108**: Client-side tool execution via `onToolCall` callback
-- **Lines 113-129**: Screenshot handling workaround (files sent as follow-up message)
-- **Lines 146-238**: Chat UI rendering with message display and input
+- `useChat` hook setup with transport, auto-continuation, and tool handling
+- Client-side tool execution via `onToolCall` callback
+- Screenshot handling workaround (files sent as follow-up message)
+- Chat UI rendering with message display and input
 
 **Related files:**
 
 - [ecommerce/app/src/lib/client-tools.ts](ecommerce/app/src/lib/client-tools.ts) - Tool name constants and `UserContext` type
 - [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts) - Page context and screenshot capture functions
 
-## 6. Testing the Agent
+## Testing the Agent
 
 1. Start your Next.js dev server: `npm run dev`
 2. Open your chat interface or test via curl:
@@ -143,21 +143,21 @@ These patterns take your agent from basic to production-ready. See the reference
 
 Some tools need to run in the browser (capturing page context, taking screenshots). Define these as tools without execute functions on the server, then handle them on the client.
 
-**Server definition**: See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) lines 13-26
+**Server definition**: See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`clientTools`)
 
-**Client handling**: See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) lines 73-108
+**Client handling**: See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) (`onToolCall`)
 
 **Context capture utilities**: See [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts)
 
-- `captureUserContext()` (lines 20-30): Lightweight context sent with every message
-- `capturePageContext()` (lines 35-68): Page content as markdown using Turndown
-- `captureScreenshot()` (lines 73-93): Visual screenshot using html2canvas
+- `captureUserContext()`: Lightweight context sent with every message
+- `capturePageContext()`: Page content as markdown using Turndown
+- `captureScreenshot()`: Visual screenshot using html2canvas
 
 ### User Context Transport
 
 Include context (current page, user preferences) with every request without the user typing it.
 
-See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) lines 64-66:
+See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) (`DefaultChatTransport`):
 
 ```tsx
 transport: new DefaultChatTransport({
@@ -165,7 +165,7 @@ transport: new DefaultChatTransport({
 }),
 ```
 
-Then access it on the server at [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) lines 44-45:
+Then access it on the server at [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`userContext`):
 
 ```ts
 const {messages, userContext}: {messages: UIMessage[]; userContext: UserContext} = await req.json()
@@ -175,7 +175,7 @@ const {messages, userContext}: {messages: UIMessage[]; userContext: UserContext}
 
 When the LLM makes tool calls, automatically continue the conversation.
 
-See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) lines 69-72:
+See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) (`sendAutomaticallyWhen`):
 
 ```tsx
 sendAutomaticallyWhen: ({messages}) => {
@@ -210,6 +210,10 @@ For e-commerce or content-heavy apps, define custom markdown directives to rende
 ---
 
 ## Troubleshooting
+
+### MCP endpoint returns 500 or schema errors
+
+Agent Context requires a deployed Studio. See [Deploy Your Studio](studio-setup.md#deploy-your-studio) for instructions.
 
 ### "SANITY_CONTEXT_MCP_URL is not set"
 

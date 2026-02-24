@@ -4,18 +4,18 @@ This is a reference implementation using SvelteKit and Vercel AI SDK. Use it as 
 
 ## Contents
 
-- [Install Dependencies](#1-install-dependencies)
-- [Environment Variables](#2-environment-variables)
-- [Chat API Route](#3-create-the-chat-api-route)
-- [Customizing the System Prompt](#4-customizing-the-system-prompt)
-- [Frontend Chat Component](#5-frontend-chat-component)
-- [Testing the Agent](#6-testing-the-agent)
+- [Install Dependencies](#install-dependencies)
+- [Environment Variables](#environment-variables)
+- [Chat API Route](#create-the-chat-api-route)
+- [Customizing the System Prompt](#customizing-the-system-prompt)
+- [Frontend Chat Component](#frontend-chat-component)
+- [Testing the Agent](#testing-the-agent)
 - [SvelteKit-Specific Gotchas](#sveltekit-specific-gotchas)
 - [Troubleshooting](#troubleshooting)
 
 ---
 
-## 1. Install Dependencies
+## Install Dependencies
 
 ```bash
 npm install @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/svelte ai
@@ -25,7 +25,7 @@ pnpm add @ai-sdk/anthropic @ai-sdk/mcp @ai-sdk/svelte ai
 
 Key difference from Next.js: `@ai-sdk/svelte` instead of `@ai-sdk/react`.
 
-## 2. Environment Variables
+## Environment Variables
 
 SvelteKit splits environment variables into two modules:
 
@@ -49,7 +49,7 @@ PUBLIC_SANITY_API_VERSION=vX
 ANTHROPIC_API_KEY=your-anthropic-key
 ```
 
-## 3. Create the Chat API Route
+## Create the Chat API Route
 
 Create `src/routes/api/chat/+server.ts`:
 
@@ -134,7 +134,7 @@ export const POST: RequestHandler = async ({request}) => {
 - **`stopWhen: stepCountIs(10)`** — AI SDK v6 pattern for limiting tool-call loops (replaces the older `maxSteps`)
 - **`toUIMessageStreamResponse()`** — Returns the UI message stream format that the `Chat` class expects. Using `toDataStreamResponse()` will silently fail.
 
-## 4. Customizing the System Prompt
+## Customizing the System Prompt
 
 The system prompt shapes how your agent behaves. You can define prompts entirely inline, or store the base prompt in Sanity and combine with implementation-specific parts in code. The example above uses inline; the Next.js reference implementation uses the hybrid approach.
 
@@ -142,7 +142,7 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 
 **For more examples**, see [system-prompts.md](system-prompts.md).
 
-## 5. Frontend Chat Component
+## Frontend Chat Component
 
 The chat UI requires two files: a page config to disable SSR, and the component itself.
 
@@ -320,7 +320,7 @@ export const ssr = false
 
 > **Tip:** For markdown rendering, add `marked` as a dependency and use `{@html marked(part.text)}` instead of `<p>{part.text}</p>`.
 
-## 6. Testing the Agent
+## Testing the Agent
 
 1. Start your SvelteKit dev server: `npm run dev`
 2. Open `/chat` in your browser at `http://localhost:5173/chat`
@@ -366,9 +366,9 @@ Ensure the file importing from `$env/static/private` is in a SvelteKit server co
 
 The `Chat` class requires browser APIs. Add a `+page.ts` file alongside your `+page.svelte` with `export const ssr = false`.
 
-### MCP endpoint returns 500
+### MCP endpoint returns 500 or schema errors
 
-Your Sanity Studio must be **deployed** (not just running locally). Run `sanity deploy` from your studio directory. Simply deploying the schema with `sanity schema deploy` is not sufficient — the Studio itself must be registered with Sanity's cloud.
+Agent Context requires a deployed Studio. See [Deploy Your Studio](studio-setup.md#deploy-your-studio) for instructions.
 
 ### "Module not found: @ai-sdk/mcp"
 

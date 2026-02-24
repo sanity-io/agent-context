@@ -4,7 +4,21 @@ Configure the Sanity Context plugin in your Studio and create agent context docu
 
 > **Reference Implementation**: See [ecommerce/\_index.md](ecommerce/_index.md) for file navigation, then explore [ecommerce/studio/](ecommerce/studio/).
 
-## 1. Install the Package
+## Contents
+
+- [Install the Package](#install-the-package)
+- [Add the Plugin](#add-the-plugin)
+- [Customize Structure Tool](#customize-structure-tool-optional)
+- [Create an Agent Context Document](#create-an-agent-context-document)
+- [Get the MCP URL](#get-the-mcp-url)
+- [Deploy Your Studio](#deploy-your-studio)
+- [Create an Agent Config Document](#create-an-agent-config-document-optional)
+- [Environment Variables](#environment-variables)
+- [Schema Reference](#schema-reference)
+
+---
+
+## Install the Package
 
 ```bash
 npm install @sanity/agent-context
@@ -14,27 +28,20 @@ pnpm add @sanity/agent-context
 
 **IMPORTANT: Always check [ecommerce/studio/package.json](ecommerce/studio/package.json) for current working versions.** Key dependencies:
 
-| Package                 | Version | Notes                                         |
-| ----------------------- | ------- | --------------------------------------------- |
-| `@sanity/agent-context` | latest  | Use `latest` or check npm for current version |
-| `sanity`                | ^5.8.0  | Sanity Studio v5.1+                           |
-| `@sanity/vision`        | ^5.8.0  | Must match Sanity version                     |
-| `react`                 | ^19     | React 19                                      |
-| `react-dom`             | ^19     | React 19                                      |
+| Package                 | Notes                                     |
+| ----------------------- | ----------------------------------------- |
+| `@sanity/agent-context` | Use `latest` or check npm for version     |
+| `sanity`                | v5.1.0+ required (for server-side schema) |
+| `@sanity/vision`        | Must match Sanity version                 |
+| `react`, `react-dom`    | React 19                                  |
 
 Do NOT guess versions—check the reference `package.json` or use `npm info <package> version` to get the latest.
 
-## 2. Add the Plugin
+## Add the Plugin
 
-See [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for a complete example.
+See [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for a complete example (look for: imports, `plugins` array, `schema.types`).
 
-**Key parts:**
-
-- **Lines 1-7**: Import the plugin, structure tool types, and markdown plugin
-- **Lines 25-58**: Plugin configuration with custom structure (groups agent types under "Agents" section)
-- **Lines 60-62**: Schema registration
-
-**Minimal setup** (without custom structure):
+**Minimal setup:**
 
 ```ts
 import {defineConfig} from 'sanity'
@@ -49,26 +56,20 @@ export default defineConfig({
 
 This registers the `sanity.agentContext` document type in your Studio.
 
-## 3. Customize Structure Tool (Optional)
+## Customize Structure Tool (Optional)
 
-The reference implementation organizes agent-related documents in a dedicated section. See [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts):
+To organize agent-related documents in a dedicated section, see [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for an example.
 
-**Key patterns:**
+## Create an Agent Context Document
 
-- **Lines 28-34**: Filter agent-related types (`sanity.agentContext`, `agent.config`, `agent.conversation`) from the default document list
-- **Lines 36-52**: Group under an "Agents" section with a divider
+In your Studio, create a new `Agent Context` document (type: `sanity.agentContext`) with:
 
-This keeps your content types organized separately from agent configuration.
-
-## 4. Create an Agent Context Document
-
-In your Studio, create a new `Agent Context` document with:
-
-| Field              | Description                                               |
-| ------------------ | --------------------------------------------------------- |
-| **Name**           | Display name for the context (e.g., "Product Assistant")  |
-| **Slug**           | URL-friendly identifier, auto-generated from name         |
-| **Content Filter** | GROQ filter that scopes what content the agent can access |
+| Field          | Schema field   | Description                                               |
+| -------------- | -------------- | --------------------------------------------------------- |
+| Name           | `name`         | Display name (e.g., "Product Assistant")                  |
+| Slug           | `slug`         | URL identifier, auto-generated from name                  |
+| Content Filter | `groqFilter`   | GROQ filter scoping what content the agent can access     |
+| Instructions   | `instructions` | Custom instructions for how agents work with your content |
 
 ### Content Filter Examples
 
@@ -101,7 +102,7 @@ The filter UI provides two modes:
 - **Types tab**: Simple UI to select document types
 - **GROQ tab**: Manual entry for complex filters
 
-## 5. Get the MCP URL
+## Get the MCP URL
 
 Once your Agent Context document has a slug, the MCP URL appears at the top of the document form:
 
@@ -111,7 +112,19 @@ https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug
 
 Copy this URL—you'll need it when configuring your agent.
 
-## 6. Create an Agent Config Document (Optional)
+## Deploy Your Studio
+
+Agent Context requires a **deployed Studio** (not just running locally) running **v5.1.0+**.
+
+```bash
+npx sanity deploy
+```
+
+After deploying, open the Studio in your browser to trigger schema deployment.
+
+> **Note:** `sanity schema deploy` is not sufficient — use `sanity deploy`.
+
+## Create an Agent Config Document (Optional)
 
 The reference implementation stores the base system prompt in a Sanity document (`agent.config`). See [ecommerce/studio/schemaTypes/documents/agentConfig.ts](ecommerce/studio/schemaTypes/documents/agentConfig.ts) for the schema.
 
@@ -137,4 +150,4 @@ These schemas demonstrate patterns for structured content that agents can query 
 
 ## Next Steps
 
-With your Studio configured and agent context created, proceed to [nextjs-agent.md](nextjs-agent.md) to build the agent.
+With your Studio configured, deployed, and agent context created, return to the main skill to build your agent implementation.

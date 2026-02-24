@@ -65,7 +65,7 @@ See the reference implementation files:
 | Blueprint config         | [ecommerce/studio/sanity.blueprint.ts](ecommerce/studio/sanity.blueprint.ts)                                               |
 | Classification function  | [ecommerce/studio/functions/agent-conversation/index.ts](ecommerce/studio/functions/agent-conversation/index.ts)           |
 | Save conversation helper | [ecommerce/app/src/lib/save-conversation.ts](ecommerce/app/src/lib/save-conversation.ts)                                   |
-| Usage in chat route      | [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (lines 109-113)                         |
+| Usage in chat route      | [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`saveConversation`)                    |
 | Package versions         | [ecommerce/studio/package.json](ecommerce/studio/package.json)                                                             |
 
 ## Troubleshooting

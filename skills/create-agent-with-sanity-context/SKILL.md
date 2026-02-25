@@ -14,7 +14,12 @@ Give AI agents intelligent access to your Sanity content. Unlike embedding-only 
 - Results respect your content model (categories, tags, references)
 - Semantic search is available when needed, layered on structure
 
-Note: Agent Context understands your schema structure but not your domain. You'll provide domain context through two surfaces: dataset-specific knowledge (schema details, query patterns) in the Agent Context Document's instructions field, and agent personality (tone, behavior, guardrails) in your system prompt.
+Note: Agent Context understands your schema structure but not your domain. You provide domain context through two surfaces: dataset-specific knowledge (query patterns, schema quirks, known limitations) in the Agent Context Document's instructions field, and agent personality (tone, behavior, guardrails) in the system prompt. These are separate concerns — see the `dial-your-context` and `shape-your-agent` skills.
+
+**Three actors in this workflow:**
+- **You** — the agent executing this skill, helping the user set things up
+- **The user** — the human you're working with, who knows their domain and data
+- **The production agent** — the agent being built, which will serve end users
 
 ## What You'll Need
 
@@ -41,7 +46,11 @@ An MCP server that gives AI agents structured access to Sanity content. The core
 - `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — Access all content in the dataset
 - `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — Access filtered content (requires agent context document with that slug)
 
-The slug-based URL uses the GROQ filter defined in your agent context document to scope what content the agent can access. Use this for production agents that should only see specific content types.
+The slug-based URL uses the `groqFilter` defined in the agent context document — a full GROQ expression that scopes what content the production agent can access (e.g., `_type in ["product", "article"] && lang == "en"`). Use this for production agents that should only see specific content types.
+
+**URL query params** (useful for testing and development):
+- `?instructions=<content>` — Override the instructions field (use `?instructions=""` for a blank slate)
+- `?groqFilter=<expression>` — Override the content filter
 
 **The integration is simple**: Connect to the MCP URL, get tools, use them. The reference implementation shows one way to do this—adapt to your stack and LLM provider.
 
@@ -130,23 +139,23 @@ See [references/conversation-classification.md](references/conversation-classifi
 
 ### Step 4: Explore and Optimize (Recommended)
 
-Once the agent works:
+Once the production agent works:
 
-1. **Run the explorer** to discover what your dataset contains — schema, working query patterns, and limitations:
+1. **Tune the Instructions field** using the `dial-your-context` skill — this is an interactive session where you explore the user's dataset together, verify findings, and produce concise Instructions that teach the production agent dataset-specific knowledge (query patterns, schema quirks, required filters, known limitations). The skill can also help configure a `groqFilter` to scope what content the production agent sees.
+
+   Alternatively, the user can bootstrap exploration by running the explorer CLI:
 
    ```bash
-   npm install -g @sanity/agent-context-explorer
-
-   agent-context-explorer \
+   npx @sanity/agent-context-explorer \
      --mcp-url https://api.sanity.io/vX/agent-context/PROJECT_ID/DATASET/SLUG \
      --questions ./questions.json \
      --sanity-token $SANITY_API_READ_TOKEN \
      --anthropic-api-key $ANTHROPIC_API_KEY
    ```
 
-2. **Paste `exploration-results.md`** into your Agent Context Document's `instructions` field — this gives your agent dataset-specific knowledge
+   **Important:** Don't paste raw explorer output directly into the Instructions field. The explorer's compaction step is lossy — roughly 25% of its claims can be incorrect. Always verify findings with the user before including them. The `dial-your-context` skill handles this verification loop.
 
-3. **Craft your agent's personality** using the `optimize-agent-prompt` skill — this helps you design tone, verbosity, interactivity, and guardrails for your system prompt
+2. **Shape the system prompt** (optional) using the `shape-your-agent` skill — if the user controls the production agent's system prompt, this helps define tone, boundaries, and guardrails. Skip this if the user doesn't control the system prompt or if a minimal prompt is sufficient.
 
 ## GROQ with Semantic Search
 
@@ -177,8 +186,9 @@ See [references/system-prompts.md](references/system-prompts.md) for domain-spec
 - **Start simple**: Build the basic integration first, then add advanced patterns as needed
 - **Schema design**: Use descriptive field names—agents rely on schema understanding
 - **GROQ queries**: Always include `_id` in projections so agents can reference documents
-- **Content filters**: Start broad, then narrow based on what the agent actually needs
-- **System prompts**: Be explicit about forbidden behaviors and formatting rules
+- **Content filters**: Use `groqFilter` to scope what the production agent sees — start broad, then narrow based on what it actually needs. The filter is a full GROQ expression (e.g., `_type in ["product", "article"]`)
+- **Instructions field**: Keep it concise — only include what the auto-generated schema doesn't make obvious. Don't duplicate schema information. See the `dial-your-context` skill.
+- **System prompts**: Be explicit about forbidden behaviors and formatting rules. Less is more — an over-engineered prompt can interfere with the Instructions content. See the `shape-your-agent` skill.
 - **Package versions**: NEVER guess package versions. Always check the reference `package.json` files or use `npm info <package> version`. AI SDK and Sanity packages update frequently—outdated versions will cause errors.
 
 ## Troubleshooting

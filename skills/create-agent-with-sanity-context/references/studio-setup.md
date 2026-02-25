@@ -64,14 +64,14 @@ To organize agent-related documents in a dedicated section, see [ecommerce/studi
 
 There are two ways to create and edit Agent Context documents:
 
-1. **Via Sanity MCP (recommended)**: Create, copy, and edit documents directly. When modifying a document that's already in use, create a duplicate so you don't interfere with production.
+1. **Via Sanity MCP (recommended)**: You can create, copy, and edit Agent Context documents directly using the Sanity MCP. When modifying a document that's already in use by a production agent, create a duplicate first so you don't interfere with the live setup. This is how the `dial-your-context` skill writes instructions and filters during a tuning session.
 
    ```bash
    # Install if needed
    npx sanity@latest mcp configure
    ```
 
-2. **Via Sanity Studio**: Create and edit documents manually through the Studio UI.
+2. **Via Sanity Studio**: The user can create and edit documents manually through the Studio UI. Use this when you don't have Sanity MCP access, or when the user prefers to manage documents directly.
 
 An `Agent Context` document (type: `sanity.agentContext`) has these fields:
 

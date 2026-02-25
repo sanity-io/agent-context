@@ -1,0 +1,26 @@
+# Skill reference files in skills/*/references/ecommerce/ are auto-synced from
+# examples/ecommerce/ by sync-skill-references.yml after merge to main.
+# This workflow blocks PRs that try to edit those files directly.
+name: No Manual Skill Reference Edits
+
+on:
+  pull_request:
+    paths:
+      - "skills/create-agent-with-sanity-context/references/ecommerce/**"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # Allow the auto-sync PR to modify these files
+    if: github.head_ref != 'chore/sync-skill-references'
+    steps:
+      - name: Block manual edits
+        run: |
+          echo "::error::Direct edits to skills/create-agent-with-sanity-context/references/ecommerce/ are not allowed."
+          echo ""
+          echo "These files are auto-synced from examples/ecommerce/ via CI."
+          echo "Edit examples/ecommerce/ instead, and the sync will happen automatically after merge."
+          exit 1

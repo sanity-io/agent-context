@@ -2,70 +2,83 @@
 
 > **Alpha**: This project is currently in invite-only alpha. All APIs and interfaces are subject to change.
 
-## What is this?
+## What is Agent Context?
 
-This repository contains packages (studio plugin, an agent skill, and a demo) for building/connecting AI agents to Sanity content via Agent Context MCP tools.
+Agent Context gives AI agents structured, read-only access to your Sanity content through MCP (Model Context Protocol). Agents can understand your schema, query content with GROQ, follow references, and optionally use semantic search - all while respecting content filters you define.
 
-## Getting Started
+## How does it work?
 
-The recommended way to get started is to install the studio plugin and use it with the skill using a frontier model (e.g., Claude Opus 4.5):
+Agent Context connects AI agents to your Sanity content through a hosted MCP server:
 
-1. Install the `@sanity/agent-context` plugin into your Sanity Studio
-2. Install the agent-context skill in your chosen IDE / CLI tool
-3. Prompt using AI with access to your studio e.g. "Help me set up Sanity agent context MCP in this repo using the agent-context skill"
+1. **Agent Context document**: A document in your dataset that configures what content your agent can access (via GROQ filters) and generates a unique MCP URL
+2. **Hosted MCP server**: Sanity hosts the MCP server at the generated URL. When your agent connects, it loads the configuration and exposes tools for schema exploration and content querying
+3. **Your agent**: Connects to the MCP URL with a Sanity read token and uses the exposed tools to reason over your content
 
-### Install the Skill
-
-```bash
-npx skills add https://github.com/sanity-io/agent-context
+```mermaid
+flowchart LR
+  A["Agent"] <--> B["Hosted MCP Server"]
+  B -->|"1. load config"| C["Sanity Dataset"]
+  B -->|"2. query content"| C
 ```
 
-Or manually copy from [`skills/create-agent-with-sanity-context`](./skills/create-agent-with-sanity-context).
+## Get started
 
-## Repository Structure
+### Prerequisites
 
-### Packages
+Before you begin, ensure you have:
 
-| Package                                             | Description                                                  |
-| --------------------------------------------------- | ------------------------------------------------------------ |
-| [`@sanity/agent-context`](./packages/agent-context) | Sanity Studio plugin for managing AI agent context documents |
+- **A Sanity project** with content you want the agent to access
+- **Sanity Studio v5.1.0+** (required for server-side schema)
+- **A Sanity API read token** from [sanity.io/manage](https://sanity.io/manage)
+- **An LLM API key** from Anthropic, OpenAI, or another provider
 
-### Skills
+### Using the skill
 
-| Skill                                                                           | Description                                            |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| [`create-agent-with-sanity-context`](./skills/create-agent-with-sanity-context) | Agent skill for building AI agents with Sanity Context |
+1. Install the skill:
 
-### Sandboxes
+   ```bash
+   npx skills add sanity-io/agent-context --all
+   ```
 
-| Sandbox                                | Description                                |
-| -------------------------------------- | ------------------------------------------ |
-| [`dev-studio`](./sandboxes/dev-studio) | Development sandbox for testing the plugin |
+2. Prompt your AI assistant:
 
-### Examples
+   ```
+   Use the create-agent-with-sanity-context skill to help me build an agent.
+   ```
 
-| Example                             | Description                                                      |
-| ----------------------------------- | ---------------------------------------------------------------- |
-| [`ecommerce`](./examples/ecommerce) | Demo Next.js e-commerce app with AI chat—reference for the skill |
+### Manual setup
 
-## Development
+1. Install and configure the Studio plugin:
 
-```bash
-# Install dependencies
-pnpm install
+   ```bash
+   npm install @sanity/agent-context
+   ```
 
-# Build all packages
-pnpm build
+   ```typescript
+   // sanity.config.ts
+   import {defineConfig} from 'sanity'
+   import {agentContextPlugin} from '@sanity/agent-context/studio'
 
-# Run development mode
-pnpm dev
+   export default defineConfig({
+     // ...existing config
+     plugins: [agentContextPlugin()],
+   })
+   ```
 
-# Run tests
-pnpm test:unit
+2. Create an Agent Context document in your Studio and copy the MCP URL
 
-# Type check
-pnpm check:types
+3. Connect your agent to the MCP (example using Vercel AI SDK):
 
-# Lint
-pnpm check:lint
-```
+   ```typescript
+   import {createMCPClient} from '@ai-sdk/mcp'
+
+   const mcpClient = await createMCPClient({
+     transport: {
+       type: 'http',
+       url: '<CONTEXT_MCP_URL>',
+       headers: {
+         Authorization: `Bearer <SANITY_API_READ_TOKEN>`,
+       },
+     },
+   })
+   ```

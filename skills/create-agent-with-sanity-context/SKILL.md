@@ -17,6 +17,7 @@ Give AI agents intelligent access to your Sanity content. Unlike embedding-only 
 Note: Agent Context understands your schema structure but not your domain. You provide domain context through two surfaces: dataset-specific knowledge (query patterns, schema quirks, known limitations) in the Agent Context Document's instructions field, and agent personality (tone, behavior, guardrails) in the system prompt. These are separate concerns — see the `dial-your-context` and `shape-your-agent` skills.
 
 **Three actors in this workflow:**
+
 - **You** — the agent executing this skill, helping the user set things up
 - **The user** — the human you're working with, who knows their domain and data
 - **The production agent** — the agent being built, which will serve end users
@@ -49,6 +50,7 @@ An MCP server that gives AI agents structured access to Sanity content. The core
 The slug-based URL uses the `groqFilter` defined in the agent context document — a full GROQ expression that scopes what content the production agent can access (e.g., `_type in ["product", "article"] && lang == "en"`). Use this for production agents that should only see specific content types.
 
 **URL query params** (useful for testing and development):
+
 - `?instructions=<content>` — Override the instructions field (use `?instructions=""` for a blank slate)
 - `?groqFilter=<expression>` — Override the content filter
 

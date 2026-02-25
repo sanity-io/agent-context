@@ -12,21 +12,24 @@ An optional, conversational workflow for creating a system prompt for an AI agen
 ## Before You Start
 
 ### What the system prompt is for
+
 The system prompt defines agent **behavior** — who it is, how it talks, what it refuses to do. Think of it as the agent's personality and policy manual.
 
 ### What the system prompt is NOT for
+
 These are handled elsewhere — don't duplicate them:
 
-| Concern | Handled by |
-|---|---|
-| Content schema, field meanings | Instructions field (Dial Your Context) |
+| Concern                            | Handled by                             |
+| ---------------------------------- | -------------------------------------- |
+| Content schema, field meanings     | Instructions field (Dial Your Context) |
 | Query patterns, data relationships | Instructions field (Dial Your Context) |
-| GROQ syntax and guidance | MCP auto-provides |
-| Response formatting rules | MCP auto-provides |
+| GROQ syntax and guidance           | MCP auto-provides                      |
+| Response formatting rules          | MCP auto-provides                      |
 
 Duplicating these in the system prompt creates conflicts. The MCP and Instructions field are purpose-built for data concerns — let them do their job.
 
 ### The golden rule: less is more
+
 Every line in your system prompt competes for the model's attention with the context the MCP provides. An over-engineered prompt can actually degrade answer quality. Start minimal. Add rules only when you have a concrete scenario that needs one.
 
 ---
@@ -53,14 +56,17 @@ These answers drive every decision that follows. A support agent for frustrated 
 Choose concrete positions on each axis:
 
 **Tone:** Professional / Casual / Friendly / Technical
+
 - Bad: "Be friendly and professional"
 - Good: "Use a warm, first-name tone. No corporate jargon. Write like a knowledgeable coworker, not a press release."
 
 **Verbosity:** How much detail by default?
+
 - Bad: "Be concise but thorough"
 - Good: "Lead with a 1-2 sentence answer. Offer to elaborate. Never open with more than 3 sentences before getting to the point."
 
 **Technical level:** Match the audience.
+
 - Bad: "Adjust to the user's level"
 - Good: "Assume the user knows JavaScript and REST APIs. Don't explain what an API key is. Do explain Sanity-specific concepts like GROQ projections."
 
@@ -69,19 +75,23 @@ Choose concrete positions on each axis:
 For each boundary, you need: the **rule**, a **trigger scenario**, and the **desired response**.
 
 **What to refuse:**
+
 - Example: "If asked to write or modify content in the dataset, explain that you're a read-only assistant and point them to the Sanity Studio."
 
 **What to redirect:**
+
 - Example: "For billing or account questions, say: 'I can help with product questions, but for billing please contact support@example.com.'"
 
 **Guardrails:**
+
 - Example: "Never mention competitor products by name. If asked to compare, describe our capabilities without naming alternatives."
 - Example: "Don't quote specific pricing. Say 'Check our pricing page at [url] for current plans.'"
 
 **When information isn't found:**
+
 - Example: "If the query returns no results, say so honestly. Suggest 2-3 related topics you can help with. Never fabricate an answer."
 
-**The cut test:** For every rule, ask: *"Can I describe a real user message that would trigger this?"* If not, cut the rule. Untriggerable rules are dead weight.
+**The cut test:** For every rule, ask: _"Can I describe a real user message that would trigger this?"_ If not, cut the rule. Untriggerable rules are dead weight.
 
 ## Step 4: Draft the Prompt
 
@@ -136,11 +146,13 @@ Test your prompt against real scenarios:
 4. **Check for conflicts with the Instructions field.** If both the system prompt and Instructions field address the same concern, remove it from the system prompt. The Instructions field wins for data concerns.
 
 ### Signs your prompt is too long
+
 - The agent ignores some rules (attention dilution)
 - Answers feel generic or templated (over-constrained)
 - The agent repeats phrasing from the prompt verbatim (parroting)
 
 ### Signs your prompt is too short
+
 - The agent's tone is inconsistent across conversations
 - Users get answers to questions that should be refused
 - The agent speculates when it should say "I don't know"
@@ -150,6 +162,7 @@ Test your prompt against real scenarios:
 ## Quick Reference
 
 ### System prompt checklist
+
 - [ ] Role is defined in one sentence
 - [ ] Tone rules are concrete (not "be professional")
 - [ ] Every boundary has a trigger scenario
@@ -160,12 +173,12 @@ Test your prompt against real scenarios:
 
 ### The separation principle
 
-| Layer | Controls | Example |
-|---|---|---|
-| **System prompt** | Agent behavior | "Never quote exact pricing" |
-| **Instructions field** | Data guidance | "Products are in the 'product' type with a 'price' field" |
-| **MCP** | Query mechanics | GROQ syntax, response formatting |
-| **System prompt** | Communicating uncertainty | "Say 'I don't have that information' and suggest alternatives" |
-| **Instructions field** | Recovery tactics | "If product search returns empty, try support-article type" |
+| Layer                  | Controls                  | Example                                                        |
+| ---------------------- | ------------------------- | -------------------------------------------------------------- |
+| **System prompt**      | Agent behavior            | "Never quote exact pricing"                                    |
+| **Instructions field** | Data guidance             | "Products are in the 'product' type with a 'price' field"      |
+| **MCP**                | Query mechanics           | GROQ syntax, response formatting                               |
+| **System prompt**      | Communicating uncertainty | "Say 'I don't have that information' and suggest alternatives" |
+| **Instructions field** | Recovery tactics          | "If product search returns empty, try support-article type"    |
 
 Each layer has its job. Don't cross the streams.

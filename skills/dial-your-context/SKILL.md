@@ -10,6 +10,7 @@ Help a user create the Instructions field content for their Sanity Agent Context
 ## What you're building
 
 The Agent Context MCP already provides the agent with:
+
 - A compressed schema of all document types and fields
 - A GROQ query tutorial (~194 lines)
 - Response style guidance
@@ -58,10 +59,12 @@ Connect to the user's Sanity Agent Context MCP. Get the project ID, dataset, and
 **Path A (write access):** Create a new draft context doc by copying the existing one (if any) to a new slug like `tuning-draft`. All exploration and iteration happens against this draft — the production agent is untouched.
 
 **Path B (no write access):** Use URL query params throughout the session:
+
 - `?instructions=""` — forces a blank slate (ignores existing instructions)
 - `?groqFilter=<expression>` — applies a filter without writing to the context doc
 
 Check if the context document already has instructions content:
+
 - If yes, present the existing instructions to the user verbatim
 - Ask: "Do you want to keep any of this, or start fresh?"
 - Let the user decide — don't assume existing instructions are wrong
@@ -79,6 +82,7 @@ Verify you can query the dataset by running a simple GROQ query like `*[0..2]._t
 Retrieve the schema (the MCP provides this). Present the document types to the user in a clear list:
 
 > Here are the document types in your dataset:
+>
 > - `article` (14 fields)
 > - `author` (8 fields)
 > - `category` (5 fields)
@@ -106,12 +110,15 @@ The filter is a GROQ expression string, not just a type list. This means you can
 Based on the conversation, propose a filter:
 
 > Based on what you've told me, I'd suggest this filter:
+>
 > ```
 > _type in ["article", "author", "category", "tag"]
 > ```
+>
 > This means the agent won't see `siteSettings`, `redirect`, `migration`, etc. Does that sound right?
 
 **Apply the filter immediately.** Once the user agrees:
+
 - **Path A (write access):** Write the `groqFilter` field to the draft context doc
 - **Path B (URL params):** Add `?groqFilter=<expression>` to all subsequent MCP calls
 
@@ -128,6 +135,7 @@ Ask the user:
 > What questions will people ask the agent that uses this context? Give me 5-20 examples — the more realistic, the better.
 
 Examples might be:
+
 - "Which speakers support Dolby Atmos?"
 - "How do I fix WiFi connection issues?"
 - "What's the return policy for refurbished products?"
@@ -156,19 +164,21 @@ Work through the expected questions one by one (or in logical groups). For each 
    - ❌ Failed or returned unexpected results (investigate, then verify with user)
 
 **Critical: Do not assume.** If a query returns empty results or unexpected data:
+
 - Do NOT conclude "this field is always empty" from a small sample
 - Instead, ask the user **immediately** — don't batch null-field findings: "When I query for X, I get Y. Is that expected? Is the data actually there?"
 - The user confirms or explains the discrepancy
 
 Track your findings in a simple table:
 
-| # | Question | Query | Result | Finding |
-|---|----------|-------|--------|---------|
-| 1 | "Recent articles" | `*[_type == "article"] \| order(publishedAt desc)[0..4]` | ✅ 5 results | Works with schema alone |
-| 2 | "Articles by author" | `*[_type == "article" && references(authorId)]` | ⚠️ Empty | Authors linked via `contributors[].person`, not direct ref |
-| 3 | "Published only" | `*[_type == "article" && status == "published"]` | ❌ No `status` field | User confirms: use `!(_id in path("drafts.**"))` instead |
+| #   | Question             | Query                                                    | Result               | Finding                                                    |
+| --- | -------------------- | -------------------------------------------------------- | -------------------- | ---------------------------------------------------------- |
+| 1   | "Recent articles"    | `*[_type == "article"] \| order(publishedAt desc)[0..4]` | ✅ 5 results         | Works with schema alone                                    |
+| 2   | "Articles by author" | `*[_type == "article" && references(authorId)]`          | ⚠️ Empty             | Authors linked via `contributors[].person`, not direct ref |
+| 3   | "Published only"     | `*[_type == "article" && status == "published"]`         | ❌ No `status` field | User confirms: use `!(_id in path("drafts.**"))` instead   |
 
 **Adapt to scale:**
+
 - Simple dataset (3-5 types, 5 questions): This step might take 10 minutes
 - Complex dataset (50 types, 20 questions): Group related questions, explore systematically, but still verify each finding
 
@@ -184,19 +194,23 @@ Write the Instructions as short, declarative statements organized by category:
 
 ```markdown
 ### Rules
+
 - Always filter drafts: use `!(_id in path("drafts.**"))` — there is no `status` field
 - Always include `[_lang == "en"]` for localized content unless user specifies otherwise
 
 ### Schema notes
+
 - `contributors` on `article` is an array of objects with a `person` reference to `author` — not a direct author reference
 - `hero` on `article` is a reference to `mediaAsset`, not an image field
 - `body` on `page` is a Portable Text array, not a string — use `pt::text(body)` for plain text search
 
 ### Query patterns
+
 - Articles by author: `*[_type == "article" && contributors[].person._ref == $authorId]`
 - Published articles by date: `*[_type == "article" && !(_id in path("drafts.**"))] | order(publishedAt desc)`
 
 ### Known limitations
+
 - `subtitle` field on `article` is unused — ignore it
 - `relatedArticles` is manually curated and often empty for older content
 ```
@@ -204,6 +218,7 @@ Write the Instructions as short, declarative statements organized by category:
 **Keep it tight.** Each line should pass this test: "Would an agent with the schema alone get this wrong?" If you're unsure, test it — try answering 2-3 questions with `?instructions=""` and see what the model gets wrong on its own. That's your empirical baseline for what actually needs to be here. If no, cut it.
 
 **Do not include:**
+
 - General GROQ syntax (the tutorial covers this)
 - Field lists or type descriptions (the schema covers this)
 - Response formatting guidance (the response style section covers this)
@@ -244,6 +259,7 @@ Present the final Instructions content and filter to the user for one last revie
 > Here's the final configuration:
 >
 > **Filter (GROQ expression):**
+>
 > ```
 > _type in ["article", "author", "category", "tag"]
 > ```
@@ -254,12 +270,14 @@ Present the final Instructions content and filter to the user for one last revie
 > Ready to deploy?
 
 **Path A (write access):**
+
 1. Write the `instructions` and `groqFilter` fields to the draft context doc
 2. Verify by querying the draft MCP endpoint — confirm the instructions appear in `## Custom instructions`
 3. **Promote to production:** Either update the production context doc's `instructions` and `groqFilter` fields to match, or update the production agent's MCP URL to point to the new slug
 4. Verify the production endpoint serves the correct instructions
 
 **Path B (no write access):**
+
 1. Provide the final MCP URL with all params baked in:
    ```
    https://api.sanity.io/vX/agent-context/{project}/{dataset}/{slug}?instructions=<URL-encoded>&groqFilter=<URL-encoded>
@@ -278,11 +296,13 @@ Present the final Instructions content and filter to the user for one last revie
 This workflow scales to any dataset size:
 
 **Small dataset (3-5 types, 5 questions):**
+
 - Step 2 might be a 2-minute conversation
 - Step 4 might find zero non-obvious patterns
 - Final Instructions might be 5 lines or even empty (which is fine — it means the schema is self-explanatory)
 
 **Large dataset (50+ types, 20 questions):**
+
 - Step 2 needs more structure — group types by domain area
 - Step 3 is critical — without good questions, you'll explore aimlessly
 - Step 4 should group related questions to avoid redundant exploration

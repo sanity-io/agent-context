@@ -62,7 +62,7 @@ To organize agent-related documents in a dedicated section, see [ecommerce/studi
 
 ## Create an Agent Context Document
 
-In your Studio, create a new `Agent Context` document (type: `sanity.agentContext`) with:
+In the Studio, create a new `Agent Context` document (type: `sanity.agentContext`) with:
 
 | Field          | Schema field   | Description                                               |
 | -------------- | -------------- | --------------------------------------------------------- |
@@ -104,25 +104,39 @@ The filter UI provides two modes:
 
 ## Get the MCP URL
 
-Once your Agent Context document has a slug, the MCP URL appears at the top of the document form:
+Once the Agent Context document has a slug, the MCP URL appears at the top of the document form:
 
 ```
 https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug
 ```
 
-Copy this URL—you'll need it when configuring your agent.
+Copy this URL—you'll need it when configuring the agent.
 
 ## Deploy Your Studio
 
 Agent Context requires a **deployed Studio** (not just running locally) running **v5.1.0+**.
 
+### Sanity-Hosted Studios
+
+For Studios hosted on Sanity infrastructure:
+
 ```bash
 npx sanity deploy
 ```
 
-After deploying, open the Studio in your browser to trigger schema deployment.
+After deploying, the user needs to open the Studio in the browser to trigger schema deployment.
 
-> **Note:** `sanity schema deploy` is not sufficient — use `sanity deploy`.
+### Externally Hosted Studios
+
+For Studios hosted on the user's own infrastructure (requires Sanity CLI **v5.8.0+**):
+
+```bash
+npx sanity deploy --external --schema-required
+```
+
+This registers the Studio's external URL with Sanity and ensures the schema is deployed (which Agent Context requires).
+
+> **Note:** The `--external` flag skips building and uploading the Studio bundle, and only registers the external host URL. The `--schema-required` flag ensures schema deployment happens and fails fast if it fails, which is important since Agent Context relies on the schema store.
 
 ## Create an Agent Config Document (Optional)
 
@@ -150,4 +164,4 @@ These schemas demonstrate patterns for structured content that agents can query 
 
 ## Next Steps
 
-With your Studio configured, deployed, and agent context created, return to the main skill to build your agent implementation.
+With the Studio configured, deployed, and agent context created, return to the main skill to build the agent implementation.

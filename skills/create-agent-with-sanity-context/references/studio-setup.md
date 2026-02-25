@@ -62,7 +62,18 @@ To organize agent-related documents in a dedicated section, see [ecommerce/studi
 
 ## Create an Agent Context Document
 
-In your Studio, create a new `Agent Context` document (type: `sanity.agentContext`) with:
+There are two ways to create and edit Agent Context documents:
+
+1. **Via Sanity MCP (recommended)**: Create, copy, and edit documents directly. When modifying a document that's already in use, create a duplicate so you don't interfere with production.
+
+   ```bash
+   # Install if needed
+   npx sanity@latest mcp configure
+   ```
+
+2. **Via Sanity Studio**: Create and edit documents manually through the Studio UI.
+
+An `Agent Context` document (type: `sanity.agentContext`) has these fields:
 
 | Field          | Schema field   | Description                                               |
 | -------------- | -------------- | --------------------------------------------------------- |

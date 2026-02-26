@@ -1,6 +1,6 @@
 # System Prompts for Sanity Context Agents
 
-The system prompt shapes how your agent behaves. This guide covers structure and examples that apply to any framework.
+The system prompt shapes how the user's agent behaves. This guide covers structure and examples that apply to any framework.
 
 ## Contents
 
@@ -16,7 +16,7 @@ The system prompt shapes how your agent behaves. This guide covers structure and
 
 ## Inline vs. Sanity-Managed Prompts
 
-You can define prompts entirely in code, or store the base prompt in Sanity and combine with implementation-specific parts inline. The reference implementation uses the hybrid approach.
+Prompts can be defined entirely in code, or stored in Sanity and combined with implementation-specific parts inline. The reference implementation uses the hybrid approach.
 
 See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`buildSystemPrompt`).
 
@@ -150,4 +150,4 @@ You are a content curator that helps users discover relevant content.
 3. **Review tool calls**: Check that the agent uses tools appropriately
 4. **Iterate based on failures**: When the agent fails, update the prompt to handle that case
 5. **Keep it focused**: A specialized agent often performs better than a generalist
-6. **Optimize for production**: Use the [optimize-agent-prompt skill](../../optimize-agent-prompt/SKILL.md) with Agent Context Explorer results to build prompts informed by your actual dataset structure
+6. **Optimize for production**: Use the [dial-your-context skill](../../dial-your-context/SKILL.md) to build Instructions field content informed by the user's actual dataset structure, and optionally use the [shape-your-agent skill](../../shape-your-agent/SKILL.md) to craft the system prompt

@@ -128,33 +128,21 @@ Track and analyze agent conversations using Sanity Functions. Useful for analyti
 
 See [references/conversation-classification.md](references/conversation-classification.md).
 
-### Step 4: Explore and Optimize (Recommended)
+### Step 4: Tune Your Agent (Recommended)
 
-Once the agent works:
+Once the agent works, optimize it with two interactive skills:
 
-1. **Run the explorer** to discover what your dataset contains — schema, working query patterns, and limitations:
+1. **Dial your context** using the `dial-your-context` skill — An interactive session that helps the user create the Instructions field content for their Agent Context Document. This gives the agent dataset-specific knowledge: counter-intuitive field names, reference chains, data quality issues, and query patterns that aren't obvious from the schema alone.
 
-   ```bash
-   npm install -g @sanity/agent-context-explorer
-
-   agent-context-explorer \
-     --mcp-url https://api.sanity.io/vX/agent-context/PROJECT_ID/DATASET/SLUG \
-     --questions ./questions.json \
-     --sanity-token $SANITY_API_READ_TOKEN \
-     --anthropic-api-key $ANTHROPIC_API_KEY
-   ```
-
-2. **Paste `exploration-results.md`** into your Agent Context Document's `instructions` field — this gives your agent dataset-specific knowledge
-
-3. **Craft your agent's personality** using the `optimize-agent-prompt` skill — this helps you design tone, verbosity, interactivity, and guardrails for your system prompt
+2. **Shape your agent** using the `shape-your-agent` skill (optional) — If the user controls the system prompt, this conversational workflow helps craft the agent's personality: tone, verbosity, boundaries, and guardrails. Skip this if the user doesn't have access to the system prompt — the Instructions field alone scores 80%+ in our evaluations.
 
 ## GROQ with Semantic Search
 
-Agent Context supports `text::embedding()` for semantic ranking:
+Agent Context supports `text::semanticSimilarity()` for semantic ranking:
 
 ```groq
 *[_type == "article" && category == "guides"]
-  | score(text::embedding("getting started tutorial"))
+  | score(text::semanticSimilarity("getting started tutorial"))
   | order(_score desc)
   { _id, title, summary }[0...10]
 ```

@@ -68,8 +68,7 @@ Check if the context document already has instructions content:
 - If yes, present the existing instructions to the user verbatim
 - Ask: "Do you want to keep any of this, or start fresh?"
 - Let the user decide — don't assume existing instructions are wrong
-
-If the user has already run the `@sanity/agent-context-explorer`, bring that output — you'll verify and refine each finding with the user rather than starting from scratch.
+- If they have existing instructions from a previous session, you'll verify and refine each finding rather than starting from scratch
 
 Verify you can query the dataset by running a simple GROQ query like `*[0..2]._type` to confirm access.
 

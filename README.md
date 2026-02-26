@@ -10,7 +10,7 @@ Instead of vectorizing your content into embeddings and hoping similarity search
 
 ```mermaid
 flowchart LR
-  A["Your agent"] <-->|"MCP"| B["Agent Context\n(hosted by Sanity)"]
+  A["Your agent"] <-->|"MCP"| B["Agent Context <br> (hosted by Sanity)"]
   B --> C["Your content in Sanity"]
 ```
 

@@ -143,18 +143,6 @@ Once the production agent works:
 
 1. **Tune the Instructions field** using the `dial-your-context` skill — this is an interactive session where you explore the user's dataset together, verify findings, and produce concise Instructions that teach the production agent dataset-specific knowledge (query patterns, schema quirks, required filters, known limitations). The skill can also help configure a `groqFilter` to scope what content the production agent sees.
 
-   Alternatively, the user can bootstrap exploration by running the explorer CLI:
-
-   ```bash
-   npx @sanity/agent-context-explorer \
-     --mcp-url https://api.sanity.io/vX/agent-context/PROJECT_ID/DATASET/SLUG \
-     --questions ./questions.json \
-     --sanity-token $SANITY_API_READ_TOKEN \
-     --anthropic-api-key $ANTHROPIC_API_KEY
-   ```
-
-   **Important:** Don't paste raw explorer output directly into the Instructions field. The explorer's compaction step is lossy — roughly 25% of its claims can be incorrect. Always verify findings with the user before including them. The `dial-your-context` skill handles this verification loop.
-
 2. **Shape the system prompt** (optional) using the `shape-your-agent` skill — if the user controls the production agent's system prompt, this helps define tone, boundaries, and guardrails. Skip this if the user doesn't control the system prompt or if a minimal prompt is sufficient.
 
 ## GROQ with Semantic Search

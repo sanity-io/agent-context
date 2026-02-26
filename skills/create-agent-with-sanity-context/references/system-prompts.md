@@ -150,4 +150,4 @@ You are a content curator that helps users discover relevant content.
 3. **Review tool calls**: Check that the agent uses tools appropriately
 4. **Iterate based on failures**: When the agent fails, update the prompt to handle that case
 5. **Keep it focused**: A specialized agent often performs better than a generalist
-6. **Optimize for production**: Use the [optimize-agent-prompt skill](../../optimize-agent-prompt/SKILL.md) with Agent Context Explorer results to build prompts informed by your actual dataset structure
+6. **Optimize for production**: Use the `dial-your-context` skill to create verified Instructions field content, and the `shape-your-agent` skill to refine your system prompt based on your actual dataset structure

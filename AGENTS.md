@@ -20,7 +20,8 @@ This repo contains the Studio plugin, agent skills for building and optimizing i
 │   └── agent-context/        # @sanity/agent-context npm package
 ├── skills/
 │   ├── create-agent-with-sanity-context/  # Build an agent with Agent Context
-│   └── optimize-agent-prompt/             # Optimize system prompts using dataset-knowledge.md
+│   ├── dial-your-context/                 # Tune Instructions field content for your Agent Context MCP
+│   └── shape-your-agent/                  # Craft a system prompt for your agent (optional)
 ├── sandboxes/
 │   └── dev-studio/           # Development sandbox for testing plugin
 ├── examples/

@@ -39,17 +39,25 @@ An MCP server that gives AI agents structured access to Sanity content. The core
 1. **MCP Connection**: HTTP transport to the Agent Context URL
 2. **Authentication**: Bearer token using Sanity API read token
 3. **Tool Discovery**: Get available tools from MCP client, pass to LLM
-4. **System Prompt**: Domain-specific instructions that shape agent behavior
+4. **System Prompt**: Tell the production agent its role, tone, and boundaries
 
 **MCP URL formats:**
 
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — Access all content in the dataset
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — Access filtered content (requires agent context document with that slug)
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — Access all content, no custom configuration
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — Use an Agent Context Document's configuration
 
-The slug-based URL uses the `groqFilter` defined in the agent context document — a full GROQ expression that scopes what content the production agent can access (e.g., `_type in ["product", "article"] && lang == "en"`). Use this for production agents that should only see specific content types.
+**Agent Context Documents** (type `sanity.agentContext`) are created in Sanity Studio and configure the MCP endpoint. They have three fields:
 
-**URL query params** (useful for testing and development):
-- `?instructions=<content>` — Override the instructions field (use `?instructions=""` for a blank slate)
+| Field | Schema field | Purpose |
+|---|---|---|
+| **Slug** | `slug` | Unique URL identifier — becomes the `:slug` in the MCP URL |
+| **Instructions** | `instructions` | Domain-specific guidance for the agent, injected into tool descriptions |
+| **Content Filter** | `groqFilter` | A GROQ expression scoping which documents the agent can access |
+
+This means Studio users can manage agent behavior without touching code — updating instructions or narrowing the content filter takes effect immediately.
+
+**URL query params** override the document's configuration (useful for testing and development):
+- `?instructions=<content>` — Override instructions (use `?instructions=""` for a blank slate)
 - `?groqFilter=<expression>` — Override the content filter
 
 **The integration is simple**: Connect to the MCP URL, get tools, use them. The reference implementation shows one way to do this—adapt to your stack and LLM provider.
@@ -94,7 +102,7 @@ The reference patterns use Next.js + Vercel AI SDK, but adapt to whatever the us
 
 ### Quick Validation (Optional)
 
-Before building an agent, you can validate MCP access directly using the base URL (no slug required):
+Before building the production agent, validate that the MCP endpoint is reachable:
 
 ```bash
 curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET \
@@ -103,19 +111,19 @@ curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_I
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
 ```
 
-This confirms your token works and the MCP endpoint is reachable. The base URL gives access to all content—useful for testing before setting up content filters via agent context documents.
+This confirms the token works and the endpoint is reachable. The base URL (no slug) gives access to all content — use a slug-based URL in production to apply the Agent Context Document's filter and instructions.
 
 ### Step 1: Set up Sanity Studio
 
-Configure the context plugin and create agent context documents to scope what content the agent can access.
+Help the user configure the `@sanity/agent-context` plugin in their Studio and create an Agent Context Document. This document controls what the production agent can see (via `groqFilter`) and what guidance it receives (via `instructions`).
 
 See [references/studio-setup.md](references/studio-setup.md)
 
 ### Step 2: Build the Agent (Adapt to user's stack)
 
-**Already have an agent or MCP client?** You just need to connect it to your Agent Context URL with a Bearer token. The tools will appear automatically.
+**The user already has an agent or MCP client?** They just need to connect it to their Agent Context URL with a Bearer token. The tools will appear automatically.
 
-**Building from scratch?** The reference implementations use Vercel AI SDK with Anthropic, but the pattern works with any LLM provider (OpenAI, local models, etc.). Start with the basics and add advanced patterns as needed.
+**Building from scratch?** Help the user set up the MCP connection and LLM integration. The reference implementations use Vercel AI SDK with Anthropic, but the pattern works with any LLM provider (OpenAI, local models, etc.). Start with the basics and add advanced patterns as needed.
 
 **Framework-specific guides:**
 
@@ -187,11 +195,11 @@ Agent Context requires a deployed Studio. See [Deploy Your Studio](references/st
 
 ### "401 Unauthorized" from MCP
 
-Your `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer permissions.
+The `SANITY_API_READ_TOKEN` is missing or invalid. Help the user generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer permissions.
 
 ### "No documents found" / Empty results
 
-Check your Agent Context's content filter:
+Check the Agent Context Document's content filter (`groqFilter`):
 
 - Is the GROQ filter correct?
 - Are the document types spelled correctly?

@@ -14,7 +14,13 @@ Give AI agents intelligent access to your Sanity content. Unlike embedding-only 
 - Results respect your content model (categories, tags, references)
 - Semantic search is available when needed, layered on structure
 
-Note: Agent Context understands your schema structure but not your domain. You'll provide domain context through two surfaces: dataset-specific knowledge (schema details, query patterns) in the Agent Context Document's instructions field, and agent personality (tone, behavior, guardrails) in your system prompt.
+Agent Context gives agents your schema and teaches them GROQ, but it can't know your domain. You close that gap through the **Instructions field** (dataset-specific query guidance) and optionally the **system prompt** (agent behavior and tone).
+
+**Three actors in this workflow:**
+
+- **You** — the agent executing this skill, helping the user set things up
+- **The user** — the human you're working with, who knows their domain and data
+- **The production agent** — the agent being built, which will serve end users
 
 ## What You'll Need
 
@@ -34,14 +40,27 @@ An MCP server that gives AI agents structured access to Sanity content. The core
 1. **MCP Connection**: HTTP transport to the Agent Context URL
 2. **Authentication**: Bearer token using Sanity API read token
 3. **Tool Discovery**: Get available tools from MCP client, pass to LLM
-4. **System Prompt**: Domain-specific instructions that shape agent behavior
+4. **System Prompt**: Tell the production agent its role, tone, and boundaries
 
 **MCP URL formats:**
 
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — Access all content in the dataset
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — Access filtered content (requires agent context document with that slug)
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — Access all content, no custom configuration
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — Use an Agent Context Document's configuration
 
-The slug-based URL uses the GROQ filter defined in your agent context document to scope what content the agent can access. Use this for production agents that should only see specific content types.
+**Agent Context Documents** (type `sanity.agentContext`) are created in Sanity Studio and configure the MCP endpoint. They have three fields:
+
+| Field              | Schema field   | Purpose                                                                 |
+| ------------------ | -------------- | ----------------------------------------------------------------------- |
+| **Slug**           | `slug`         | Unique URL identifier — becomes the `:slug` in the MCP URL              |
+| **Instructions**   | `instructions` | Domain-specific guidance for the agent, injected into tool descriptions |
+| **Content Filter** | `groqFilter`   | A GROQ expression scoping which documents the agent can access          |
+
+This means Studio users can manage agent behavior without touching code — updating instructions or narrowing the content filter takes effect immediately.
+
+**URL query params** override the document's configuration (useful for testing and development):
+
+- `?instructions=<content>` — Override instructions (use `?instructions=""` for a blank slate)
+- `?groqFilter=<expression>` — Override the content filter
 
 **The integration is simple**: Connect to the MCP URL, get tools, use them. The reference implementation shows one way to do this—adapt to your stack and LLM provider.
 
@@ -85,7 +104,7 @@ The reference patterns use Next.js + Vercel AI SDK, but adapt to whatever the us
 
 ### Quick Validation (Optional)
 
-Before building an agent, you can validate MCP access directly using the base URL (no slug required):
+Before building the production agent, validate that the MCP endpoint is reachable:
 
 ```bash
 curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET \
@@ -94,19 +113,19 @@ curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_I
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
 ```
 
-This confirms your token works and the MCP endpoint is reachable. The base URL gives access to all content—useful for testing before setting up content filters via agent context documents.
+This confirms the token works and the endpoint is reachable. The base URL (no slug) gives access to all content — use a slug-based URL in production to apply the Agent Context Document's filter and instructions.
 
 ### Step 1: Set up Sanity Studio
 
-Configure the context plugin and create agent context documents to scope what content the agent can access.
+Help the user configure the `@sanity/agent-context` plugin in their Studio and create an Agent Context Document. This document controls what the production agent can see (via `groqFilter`) and what guidance it receives (via `instructions`).
 
 See [references/studio-setup.md](references/studio-setup.md)
 
 ### Step 2: Build the Agent (Adapt to user's stack)
 
-**Already have an agent or MCP client?** You just need to connect it to your Agent Context URL with a Bearer token. The tools will appear automatically.
+**The user already has an agent or MCP client?** They just need to connect it to their Agent Context URL with a Bearer token. The tools will appear automatically.
 
-**Building from scratch?** The reference implementations use Vercel AI SDK with Anthropic, but the pattern works with any LLM provider (OpenAI, local models, etc.). Start with the basics and add advanced patterns as needed.
+**Building from scratch?** Help the user set up the MCP connection and LLM integration. The reference implementations use Vercel AI SDK with Anthropic, but the pattern works with any LLM provider (OpenAI, local models, etc.). Start with the basics and add advanced patterns as needed.
 
 **Framework-specific guides:**
 
@@ -130,11 +149,11 @@ See [references/conversation-classification.md](references/conversation-classifi
 
 ### Step 4: Tune Your Agent (Recommended)
 
-Once the agent works, optimize it with two interactive skills:
+Once the production agent works:
 
-1. **Dial your context** using the `dial-your-context` skill — An interactive session that helps the user create the Instructions field content for their Agent Context Document. This gives the agent dataset-specific knowledge: counter-intuitive field names, reference chains, data quality issues, and query patterns that aren't obvious from the schema alone.
+1. **Tune the Instructions field** using the `dial-your-context` skill — an interactive session where you explore the user's dataset together, verify findings, and produce concise Instructions that teach the production agent what the schema alone doesn't make obvious: counter-intuitive field names, second-order reference chains, data quality issues, required filters, and query patterns. The skill can also help configure a `groqFilter` to scope what content the production agent sees.
 
-2. **Shape your agent** using the `shape-your-agent` skill (optional) — If the user controls the system prompt, this conversational workflow helps craft the agent's personality: tone, verbosity, boundaries, and guardrails. Skip this if the user doesn't have access to the system prompt — the Instructions field alone scores 80%+ in our evaluations.
+2. **Shape the system prompt** (optional) using the `shape-your-agent` skill — if the user controls the production agent's system prompt, this helps define tone, boundaries, and guardrails. Skip this if the user doesn't control the system prompt.
 
 ## GROQ with Semantic Search
 
@@ -165,8 +184,9 @@ See [references/system-prompts.md](references/system-prompts.md) for domain-spec
 - **Start simple**: Build the basic integration first, then add advanced patterns as needed
 - **Schema design**: Use descriptive field names—agents rely on schema understanding
 - **GROQ queries**: Always include `_id` in projections so agents can reference documents
-- **Content filters**: Start broad, then narrow based on what the agent actually needs
-- **System prompts**: Be explicit about forbidden behaviors and formatting rules
+- **Content filters**: Use `groqFilter` to scope what the production agent sees — start broad, then narrow based on what it actually needs. The filter is a full GROQ expression (e.g., `_type in ["product", "article"]`)
+- **Instructions field**: Keep it concise — only include what the auto-generated schema doesn't make obvious. Don't duplicate schema information. See the `dial-your-context` skill.
+- **System prompts**: Be explicit about forbidden behaviors and formatting rules. Less is more — an over-engineered prompt can interfere with the Instructions content. See the `shape-your-agent` skill.
 - **Package versions**: NEVER guess package versions. Always check the reference `package.json` files or use `npm info <package> version`. AI SDK and Sanity packages update frequently—outdated versions will cause errors.
 
 ## Troubleshooting
@@ -177,11 +197,11 @@ Agent Context requires a deployed Studio. See [Deploy Your Studio](references/st
 
 ### "401 Unauthorized" from MCP
 
-Your `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer permissions.
+The `SANITY_API_READ_TOKEN` is missing or invalid. Help the user generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer permissions.
 
 ### "No documents found" / Empty results
 
-Check your Agent Context's content filter:
+Check the Agent Context Document's content filter (`groqFilter`):
 
 - Is the GROQ filter correct?
 - Are the document types spelled correctly?

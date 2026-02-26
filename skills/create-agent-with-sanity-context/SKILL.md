@@ -155,11 +155,11 @@ Once the production agent works:
 
 ## GROQ with Semantic Search
 
-Agent Context supports `text::embedding()` for semantic ranking:
+Agent Context supports `text::semanticSimilarity()` for semantic ranking:
 
 ```groq
 *[_type == "article" && category == "guides"]
-  | score(text::embedding("getting started tutorial"))
+  | score(text::semanticSimilarity("getting started tutorial"))
   | order(_score desc)
   { _id, title, summary }[0...10]
 ```

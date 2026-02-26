@@ -145,13 +145,13 @@ Track and analyze agent conversations using Sanity Functions. Useful for analyti
 
 See [references/conversation-classification.md](references/conversation-classification.md).
 
-### Step 4: Explore and Optimize (Recommended)
+### Step 4: Tune Your Agent (Recommended)
 
 Once the production agent works:
 
-1. **Tune the Instructions field** using the `dial-your-context` skill — this is an interactive session where you explore the user's dataset together, verify findings, and produce concise Instructions that teach the production agent dataset-specific knowledge (query patterns, schema quirks, required filters, known limitations). The skill can also help configure a `groqFilter` to scope what content the production agent sees.
+1. **Tune the Instructions field** using the `dial-your-context` skill — an interactive session where you explore the user's dataset together, verify findings, and produce concise Instructions that teach the production agent what the schema alone doesn't make obvious: counter-intuitive field names, second-order reference chains, data quality issues, required filters, and query patterns. The skill can also help configure a `groqFilter` to scope what content the production agent sees.
 
-2. **Shape the system prompt** (optional) using the `shape-your-agent` skill — if the user controls the production agent's system prompt, this helps define tone, boundaries, and guardrails. Skip this if the user doesn't control the system prompt or if a minimal prompt is sufficient.
+2. **Shape the system prompt** (optional) using the `shape-your-agent` skill — if the user controls the production agent's system prompt, this helps define tone, boundaries, and guardrails. Skip this if the user doesn't control the system prompt.
 
 ## GROQ with Semantic Search
 

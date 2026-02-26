@@ -7,7 +7,7 @@ description: Interactive session to craft a system prompt for an AI agent powere
 
 An optional, conversational workflow for creating a system prompt for an AI agent that uses the Sanity Agent Context MCP. This is for users who **control the system prompt** in their agent setup.
 
-> **Don't have access to the system prompt?** Skip this skill entirely. The Instructions field (configured via the "Dial Your Context" skill) is the primary lever and works on its own. A minimal system prompt like "You are a helpful agent." combined with good Instructions field content scores 80%+ in our evaluations.
+> **Don't have access to the system prompt?** Skip this skill entirely. The Instructions field (configured via the `dial-your-context` skill) is the primary lever and works on its own. A minimal system prompt like "You are a helpful agent." combined with good Instructions field content scores 80%+ in our evaluations.
 
 ## Before You Start
 

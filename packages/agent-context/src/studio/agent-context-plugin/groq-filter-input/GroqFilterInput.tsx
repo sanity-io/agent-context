@@ -31,9 +31,19 @@ import {
   unset,
   useSchema,
 } from 'sanity'
+import styled from 'styled-components'
 
-import {isSimpleTypeQuery, listToQuery, queryToList, validateGroq} from './groqUtils'
+import {isSimpleTypeQuery, listToQuery, queryToList, validateGroqFilter} from './groqUtils'
 import {useComposedRefs} from './useComposedRefs'
+
+const GroqFilterTextArea = styled(TextArea)`
+  font-family: monospace;
+
+  &[data-as='textarea'] {
+    resize: vertical;
+    min-height: 100px;
+  }
+`
 
 const TAB_IDS = {
   TYPES_TAB: 'types-tab',
@@ -70,8 +80,8 @@ export function GroqFilterInput(props: StringInputProps) {
   // Check if the current query is simple enough to edit via Types UI
   const isSimple = useMemo(() => isSimpleTypeQuery(value), [value])
 
-  // Validate GROQ syntax
-  const validation = useMemo(() => validateGroq(value), [value])
+  // Validate GROQ filter expression
+  const validation = useMemo(() => validateGroqFilter(value), [value])
 
   // Initialize view based on whether the current query is simple or complex
   const [panel, setPanel] = useState<'types' | 'groq'>(() =>
@@ -137,12 +147,11 @@ export function GroqFilterInput(props: StringInputProps) {
     [filteredTypeNames, selectedTypes],
   )
 
-  useClickOutsideEvent(
-    () => {
-      closeList()
-    },
-    () => [popoverRef.current, inputRef.current, openListButtonRef.current],
-  )
+  useClickOutsideEvent(closeList, () => [
+    popoverRef.current,
+    inputRef.current,
+    openListButtonRef.current,
+  ])
 
   const isListOpen = open || searchQuery !== null
 
@@ -340,21 +349,19 @@ export function GroqFilterInput(props: StringInputProps) {
         tabIndex={-1}
       >
         <Stack space={3}>
-          <TextArea
+          <GroqFilterTextArea
             {...restElementProps}
             onChange={(event) =>
               onChange(event.currentTarget.value ? set(event.currentTarget.value) : unset())
             }
             placeholder='_type in ["author", "post"]'
             value={value || ''}
-            style={{fontFamily: 'monospace'}}
             padding={4}
           />
         </Stack>
       </TabPanel>
 
       {/* ----- Result and validation errors ----- */}
-
       {!validation.valid && (
         <Card padding={3} radius={2} tone="critical" border>
           <Flex align="flex-start" gap={2}>

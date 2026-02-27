@@ -17,7 +17,7 @@ export const queryToList = (query: string): string[] => {
 
   return match[1]
     .split(',')
-    .map((s) => s.trim().replace(/"/g, ''))
+    .map((s) => s.trim().replace(/["']/g, ''))
     .filter(Boolean)
 }
 
@@ -31,18 +31,52 @@ export const isSimpleTypeQuery = (query: string | undefined): boolean => {
 }
 
 /**
- * Validate a GROQ query string using groq-js parser
+ * Validate that input is a GROQ filter expression, not a full query.
+ *
+ * A filter expression is something that can appear inside `*[...]`, like:
+ * - `_type == "post"`
+ * - `_type in ["post", "author"] && published == true`
+ *
+ * This rejects:
+ * - Full queries starting with `*` (e.g., `*[_type == "post"]`)
+ * - Invalid GROQ syntax
  */
-export const validateGroq = (query: string | undefined): {valid: boolean; error?: string} => {
-  if (!query) return {valid: true}
+export const validateGroqFilter = (
+  filter: string | undefined,
+): {valid: boolean; error?: string} => {
+  if (!filter) return {valid: true}
 
+  const trimmed = filter.trim()
+
+  // Quick check: reject if it looks like a full query
+  if (trimmed.startsWith('*')) {
+    return {
+      valid: false,
+      error:
+        'Enter a filter expression, not a full query. Remove the leading "*[" and trailing "]".',
+    }
+  }
+
+  // Parse the filter by wrapping in *[...], following the pattern from context-mcp
+  // A valid filter wrapped this way produces: { type: "Filter", base: {...}, expr: {...} }
   try {
-    parse(query)
+    const tree = parse(`*[${trimmed}]`)
+
+    // After wrapping in *[...], a valid filter expression should parse to a Filter node
+    // with type "Filter" and have an expr property containing the filter expression.
+    // If it doesn't match this structure, it's not a valid filter.
+    if (tree.type !== 'Filter' || !('expr' in tree) || !tree.expr) {
+      return {
+        valid: false,
+        error: 'Enter a filter expression, not a full query.',
+      }
+    }
+
     return {valid: true}
   } catch (e) {
     return {
       valid: false,
-      error: e instanceof Error ? e.message : 'Invalid GROQ syntax',
+      error: e instanceof Error ? e.message : 'Invalid GROQ filter syntax',
     }
   }
 }

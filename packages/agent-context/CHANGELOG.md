@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.2](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.1...agent-context-v0.3.2) (2026-02-27)
+
+### Bug Fixes
+
+- **packages/agent-context:** improve `groqFilter` input and validation ([#96](https://github.com/sanity-io/agent-context/issues/96)) ([b0ca896](https://github.com/sanity-io/agent-context/commit/b0ca8963be82ad9b3c5324383ca0f6bdfabaaf80))
+
 ## [0.3.1](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.0...agent-context-v0.3.1) (2026-02-20)
 
 ### Bug Fixes

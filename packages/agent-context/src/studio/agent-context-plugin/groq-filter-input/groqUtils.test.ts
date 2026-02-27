@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 
-import {isSimpleTypeQuery, listToQuery, queryToList, validateGroq} from './groqUtils'
+import {isSimpleTypeQuery, listToQuery, queryToList, validateGroqFilter} from './groqUtils'
 
 describe('groqUtils', () => {
   describe('listToQuery', () => {
@@ -22,6 +22,11 @@ describe('groqUtils', () => {
 
     it('should handle queries with extra whitespace', () => {
       expect(queryToList('_type  in  ["author" , "book"]')).toEqual(['author', 'book'])
+    })
+
+    it('should handle single quotes', () => {
+      expect(queryToList("_type in ['author']")).toEqual(['author'])
+      expect(queryToList("_type in ['author', 'book']")).toEqual(['author', 'book'])
     })
 
     it('should return empty array for non-matching queries', () => {
@@ -49,19 +54,29 @@ describe('groqUtils', () => {
     })
   })
 
-  describe('validateGroq', () => {
-    it('should return valid for correct GROQ syntax', () => {
-      expect(validateGroq('_type in ["author"]')).toEqual({valid: true})
-      expect(validateGroq('_type == "author" && published')).toEqual({valid: true})
+  describe('validateGroqFilter', () => {
+    it('should return valid for filter expressions', () => {
+      expect(validateGroqFilter('_type in ["author"]')).toEqual({valid: true})
+      expect(validateGroqFilter('_type == "author"')).toEqual({valid: true})
+      expect(validateGroqFilter('_type in ["post", "author"] && published == true')).toEqual({
+        valid: true,
+      })
+      expect(validateGroqFilter('!(_id in path("drafts.**"))')).toEqual({valid: true})
+      expect(validateGroqFilter('_type in ["product"] && lang == "en-us"')).toEqual({valid: true})
     })
 
-    it('should return valid for undefined/empty queries', () => {
-      expect(validateGroq(undefined)).toEqual({valid: true})
-      expect(validateGroq('')).toEqual({valid: true})
+    it('should return valid for undefined/empty filters', () => {
+      expect(validateGroqFilter(undefined)).toEqual({valid: true})
+      expect(validateGroqFilter('')).toEqual({valid: true})
+    })
+
+    it('should reject full queries starting with *', () => {
+      expect(validateGroqFilter('*[_type == "post"]').valid).toBe(false)
+      expect(validateGroqFilter('*[_type == "post"]{ title, body }').valid).toBe(false)
     })
 
     it('should return invalid with error for bad GROQ syntax', () => {
-      const result = validateGroq('_type in ["author"')
+      const result = validateGroqFilter('_type in ["author"')
       expect(result.valid).toBe(false)
       expect(result.error).toBeDefined()
     })

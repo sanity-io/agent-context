@@ -3,6 +3,7 @@ import {defineField, defineType} from 'sanity'
 
 import {AgentContextDocumentInput} from './agent-context-document-input/AgentContextDocumentInput'
 import {GroqFilterInput} from './groq-filter-input/GroqFilterInput'
+import {validateGroqFilter} from './groq-filter-input/groqUtils'
 
 /**
  * The name of the agent context schema type.
@@ -63,6 +64,13 @@ export const agentContextSchema = defineType({
       type: 'string',
       components: {
         input: GroqFilterInput,
+      },
+      validation: (Rule) => {
+        return Rule.custom((value) => {
+          const result = validateGroqFilter(value)
+
+          return result.valid ? true : result.error || 'Invalid GROQ filter'
+        })
       },
     }),
     defineField({

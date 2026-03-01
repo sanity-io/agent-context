@@ -24,7 +24,7 @@
     "@ai-sdk/anthropic": "^3.0.23",
     "@sanity/agent-context": "workspace:*",
     "@sanity/client": "^7.14.1",
-    "@sanity/icons": "^3",
+    "@sanity/icons": "^3.7.4",
     "@sanity/ui": "^3",
     "@sanity/vision": "^5.9.0",
     "ai": "^6.0.50",

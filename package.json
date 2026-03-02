@@ -33,7 +33,7 @@
     "@types/node": "^22.19.11",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.1",
     "pretty-quick": "^4.2.2",
     "tsx": "^4.21.0",
     "turbo": "^2.7.4",

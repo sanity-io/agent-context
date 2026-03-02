@@ -100,9 +100,9 @@ Other skills help you refine: `dial-your-context` (tune the Instructions field) 
 ## Learn more
 
 - [Agent Context documentation](https://www.sanity.io/docs/ai/agent-context)
-- [Getting started guide](https://www.sanity.io/docs/getting-started)
-- [How to serve content to agents](https://www.sanity.io/guides/serving-content-to-ai-agents) (field guide)
+- [Getting started guide](https://www.sanity.io/docs/agent-context/getting-started)
+- [How to serve content to agents (field guide)](https://www.sanity.io/blog/how-to-serve-content-to-agents-a-field-guide)
 - [What is GROQ?](https://www.sanity.io/docs/groq)
-- [Content Lake](https://www.sanity.io/docs/datastore)
-- [Sanity Studio](https://www.sanity.io/docs/sanity-studio)
+- [Content Lake](https://www.sanity.io/content-lake)
+- [Sanity Studio](https://www.sanity.io/studio)
 - [Model Context Protocol](https://modelcontextprotocol.io/)

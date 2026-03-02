@@ -64,7 +64,7 @@
     "react": "^19",
     "react-dom": "^19",
     "sanity": "^5.9.0",
-    "styled-components": "^6.3.8",
+    "styled-components": "^6.3.11",
     "typescript": "^5",
     "vitest": "^4.0.0"
   },

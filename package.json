@@ -27,8 +27,8 @@
   },
   "prettier": "@sanity/prettier-config",
   "devDependencies": {
-    "@commitlint/cli": "^20",
-    "@commitlint/config-conventional": "^20",
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
     "@sanity/prettier-config": "^3.0.0",
     "@types/node": "^22.19.11",
     "husky": "^9.1.7",

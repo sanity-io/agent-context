@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.2...agent-context-v0.3.3) (2026-03-02)
+
+
+### Bug Fixes
+
+* **packages/agent-context:** mcp URL prompt design ([#104](https://github.com/sanity-io/agent-context/issues/104)) ([dbce824](https://github.com/sanity-io/agent-context/commit/dbce824350c28e335297b8b51046d0e6b3286976))
+
 ## [0.3.2](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.1...agent-context-v0.3.2) (2026-02-27)
 
 ### Bug Fixes

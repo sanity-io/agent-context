@@ -46,7 +46,7 @@ Structural filter (`category == "shoes"`) for precision. Semantic ranking (`text
 
 ### Prerequisites
 
-- A [Sanity](https://www.sanity.io/) project with content and a [**deployed Studio**](https://www.sanity.io/docs/deployment) (v5.1.0+)
+- A [Sanity](https://www.sanity.io/) project with content and a [deployed Studio](https://www.sanity.io/docs/deployment) (v5.1.0+)
 - A **Sanity API read token** — create one at [sanity.io/manage](https://sanity.io/manage) (Project → API → Tokens) or via CLI:
   ```bash
   npx sanity tokens add "Agent Context" --role=viewer

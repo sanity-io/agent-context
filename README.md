@@ -4,7 +4,7 @@ Give AI agents structured access to your content. Agent Context is a hosted MCP 
 
 Instead of vectorizing your content into embeddings and hoping similarity search returns the right answer, Agent Context lets agents query your actual data model: filter by fields, traverse references between documents, and combine structured queries with semantic search. Embeddings for exploration, structured queries for precision.
 
-[Read the full documentation →](https://www.sanity.io/docs/agent-context)
+[Read the full documentation →](https://www.sanity.io/docs/ai/agent-context)
 
 ## How it works
 
@@ -49,6 +49,8 @@ Use the create-agent-with-sanity-context skill to help me build an agent.
 ```
 
 The skill walks you through Studio setup, MCP connection, and configuration for your stack (Next.js, SvelteKit, Express, Python, etc).
+
+Other skills help you refine: `dial-your-context` (tune the Instructions field) and `shape-your-agent` (craft a system prompt).
 
 ### Manual setup
 
@@ -97,7 +99,7 @@ The skill walks you through Studio setup, MCP connection, and configuration for 
 
 ## Learn more
 
-- [Agent Context documentation](https://www.sanity.io/docs/agent-context)
+- [Agent Context documentation](https://www.sanity.io/docs/ai/agent-context)
 - [Getting started guide](https://www.sanity.io/docs/getting-started)
 - [How to serve content to agents](https://www.sanity.io/guides/serving-content-to-ai-agents) (field guide)
 - [What is GROQ?](https://www.sanity.io/docs/groq)

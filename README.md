@@ -1,6 +1,6 @@
 # Sanity Agent Context
 
-Give AI agents structured access to your content. Agent Context is a hosted MCP endpoint that connects AI agents to your Sanity Content Lake, where content is stored as structured, queryable data (not pages or blobs of HTML).
+Give AI agents structured access to your content. Agent Context is a hosted [MCP](https://modelcontextprotocol.io/) endpoint that connects AI agents to your [Sanity Content Lake](https://www.sanity.io/content-lake), where content is stored as structured, queryable data (not pages or blobs of HTML).
 
 Instead of vectorizing your content into embeddings and hoping similarity search returns the right answer, Agent Context lets agents query your actual data model: filter by fields, traverse references between documents, and combine structured queries with semantic search. Embeddings for exploration, structured queries for precision.
 
@@ -14,7 +14,7 @@ flowchart LR
   B --> C["Your content in Sanity"]
 ```
 
-You create an Agent Context document in Sanity Studio. This document controls what content your agent can access and generates a unique MCP URL. Your agent connects to that URL with an API token.
+You create an Agent Context document in [Sanity Studio](https://www.sanity.io/studio). This document controls what content your agent can access and generates a unique MCP URL. Your agent connects to that URL with an API token.
 
 Agent Context exposes three MCP tools:
 
@@ -24,12 +24,33 @@ Agent Context exposes three MCP tools:
 | `groq_query`      | Runs [GROQ](https://www.sanity.io/docs/groq) queries with optional semantic search |
 | `schema_explorer` | Returns the full schema for a specific content type                                |
 
+With these tools, your agent can:
+
+- Look up exact prices, inventory, or metadata (not approximate text matches)
+- Filter products by category, size, color, or any field in your schema
+- Follow references between documents (a product's brand, a brand's products)
+- Combine structured filters with semantic search ("trail running shoes under $150")
+
+Here's a combined query in GROQ:
+
+```groq
+*[_type == "product" && category == "shoes"]
+  | score(text::semanticSimilarity("lightweight trail runner for rocky terrain"))
+  | order(_score desc)
+  { _id, title, price, category }[0...5]
+```
+
+Structural filter (`category == "shoes"`) for precision. Semantic ranking (`text::semanticSimilarity()`) for discovery.
+
 ## Get started
 
 ### Prerequisites
 
-- A Sanity project with content and a **deployed Studio** (v5.1.0+)
-- A **Sanity API read token** — create one at [sanity.io/manage](https://sanity.io/manage) (Project → API → Tokens)
+- A [Sanity](https://www.sanity.io/) project with content and a [**deployed Studio**](https://www.sanity.io/docs/deployment) (v5.1.0+)
+- A **Sanity API read token** — create one at [sanity.io/manage](https://sanity.io/manage) (Project → API → Tokens) or via CLI:
+  ```bash
+  npx sanity tokens add "Agent Context" --role=viewer
+  ```
 - An **LLM API key** (Anthropic, OpenAI, or another provider)
 
 New to Sanity? [Start here](https://www.sanity.io/docs/getting-started).
@@ -73,7 +94,7 @@ Other skills help you refine: `dial-your-context` (tune the Instructions field) 
 
 2. Create an Agent Context document in Studio and copy the MCP URL.
 
-3. Connect your agent using any MCP-compatible framework. Example with Vercel AI SDK:
+3. Connect your agent using any MCP-compatible framework. Example with [Vercel AI SDK](https://sdk.vercel.ai/):
 
    ```ts
    import {createMCPClient} from '@ai-sdk/mcp'
@@ -91,6 +112,17 @@ Other skills help you refine: `dial-your-context` (tune the Instructions field) 
 
 ## Troubleshooting
 
+**Validate the connection** — Test that your token and endpoint work:
+
+```bash
+curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET \
+  -H "Authorization: Bearer $SANITY_API_READ_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
+```
+
+If this returns a list of tools, you're connected. The MCP URL (including API version) is shown in your Agent Context document in Studio.
+
 **401 Unauthorized** — Your `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens.
 
 **No schema or empty results** — Agent Context requires a deployed Studio. Run `npx sanity deploy`. If you've set a content filter, ensure it matches published documents.
@@ -100,7 +132,6 @@ Other skills help you refine: `dial-your-context` (tune the Instructions field) 
 ## Learn more
 
 - [Agent Context documentation](https://www.sanity.io/docs/ai/agent-context)
-- [Getting started guide](https://www.sanity.io/docs/agent-context/getting-started)
 - [How to serve content to agents (field guide)](https://www.sanity.io/blog/how-to-serve-content-to-agents-a-field-guide)
 - [What is GROQ?](https://www.sanity.io/docs/groq)
 - [Content Lake](https://www.sanity.io/content-lake)

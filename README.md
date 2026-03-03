@@ -115,13 +115,13 @@ Other skills help you refine: `dial-your-context` (tune the Instructions field) 
 **Validate the connection** — Test that your token and endpoint work:
 
 ```bash
-curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET \
+curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET/YOUR_SLUG \
   -H "Authorization: Bearer $SANITY_API_READ_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
 ```
 
-If this returns a list of tools, you're connected. The MCP URL (including API version) is shown in your Agent Context document in Studio.
+If this returns a list of tools, you're connected. The full MCP URL is shown in your Agent Context document in Studio.
 
 **401 Unauthorized** — Your `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens.
 

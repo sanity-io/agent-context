@@ -1,0 +1,43 @@
+# Development
+
+```bash
+pnpm install       # Install dependencies
+pnpm build         # Build all packages
+pnpm dev           # Run development mode
+pnpm test:unit     # Run tests
+pnpm check:types   # Type check
+pnpm check:lint    # Lint
+```
+
+# Releases
+
+This repo uses [Release Please](https://github.com/googleapis/release-please) with [Conventional Commits](https://www.conventionalcommits.org/).
+
+## Release flow
+
+1. **Merge your PR to `main`** — use conventional commit prefixes:
+   - `feat:` — new feature (minor version bump)
+   - `fix:` — bug fix (patch version bump)
+   - `feat!:` or `fix!:` — breaking change (major version bump)
+
+2. **Release Please opens/updates a release PR** — this PR accumulates changes and updates the changelog
+
+3. **Prettier workflow may open a formatting PR** — if the release PR has unformatted files (e.g., changelog), a `chore(prettier)` PR targeting the release branch will be opened automatically. Merge it first.
+
+4. **Merge the release PR** — this triggers the npm publish
+
+# Skills
+
+## Reference implementation syncing
+
+The `create-agent-with-sanity-context` skill includes reference files from the ecommerce example so AI agents can learn from working code. To keep these in sync:
+
+- **Source of truth**: `examples/ecommerce/`
+- **Synced copy**: `skills/create-agent-with-sanity-context/references/ecommerce/`
+
+Direct edits to the `references/ecommerce/` folder are blocked:
+
+- A pre-commit hook prevents local commits
+- A CI check fails PRs that modify these files directly
+
+When changes to `examples/ecommerce/` are merged to `main`, the `sync-skill-references` workflow automatically syncs them and opens a PR. Edit the example, not the references.

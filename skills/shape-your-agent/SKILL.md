@@ -1,6 +1,6 @@
 ---
 name: shape-your-agent
-description: Interactive session to craft a system prompt for an AI agent powered by Sanity Agent Context MCP.
+description: Interactive session to craft a system prompt for an AI agent powered by Sanity Agent Context MCP. Use this skill when users want to define agent personality, set tone/voice, establish boundaries and guardrails, configure refusal behaviors, or control how their agent communicates. Trigger when users mention their agent sounds wrong, needs to refuse certain requests, has the wrong tone, or they want to set communication rules and policies.
 ---
 
 # Shape Your Agent

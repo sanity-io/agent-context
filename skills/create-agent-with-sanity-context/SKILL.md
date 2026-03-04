@@ -1,6 +1,6 @@
 ---
 name: create-agent-with-sanity-context
-description: Build AI agents with structured access to Sanity content via Agent Context. Use when setting up a Sanity-powered chatbot, connecting an AI assistant to Sanity content, or adding client-side tools to an agent. Covers Studio setup, agent implementation, and advanced patterns.
+description: Build AI agents with structured access to Sanity content via Agent Context. Use when setting up a Sanity-powered chatbot, connecting an AI assistant to Sanity content, or adding client-side tools to an agent. Covers Studio setup, agent implementation, and advanced patterns. Always use this skill when users mention building a chatbot with Sanity, creating an AI assistant for their content, setting up Agent Context MCP, integrating Sanity with Claude/GPT/any LLM, making content searchable by AI, implementing semantic search over Sanity data, or connecting their CMS to an AI agent.
 ---
 
 # Build an Agent with Sanity Context
@@ -187,7 +187,7 @@ See [references/system-prompts.md](references/system-prompts.md) for domain-spec
 - **Content filters**: Use `groqFilter` to scope what the production agent sees — start broad, then narrow based on what it actually needs. The filter is a full GROQ expression (e.g., `_type in ["product", "article"]`)
 - **Instructions field**: Keep it concise — only include what the auto-generated schema doesn't make obvious. Don't duplicate schema information. See the `dial-your-context` skill.
 - **System prompts**: Be explicit about forbidden behaviors and formatting rules. Less is more — an over-engineered prompt can interfere with the Instructions content. See the `shape-your-agent` skill.
-- **Package versions**: NEVER guess package versions. Always check the reference `package.json` files or use `npm info <package> version`. AI SDK and Sanity packages update frequently—outdated versions will cause errors.
+- **Package versions**: Always check the reference `package.json` files or use `npm info <package> version` rather than guessing. AI SDK and Sanity packages update frequently, and using outdated versions will cause errors that are hard to debug.
 
 ## Troubleshooting
 

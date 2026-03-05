@@ -132,6 +132,7 @@ If this returns a list of tools, you're connected. The full MCP URL is shown in 
 ## Learn more
 
 - [Agent Context documentation](https://www.sanity.io/docs/ai/agent-context)
+- [Dataset embeddings](https://www.sanity.io/docs/content-lake/dataset-embeddings)
 - [How to serve content to agents (field guide)](https://www.sanity.io/blog/how-to-serve-content-to-agents-a-field-guide)
 - [What is GROQ?](https://www.sanity.io/docs/groq)
 - [Content Lake](https://www.sanity.io/content-lake)

@@ -51,6 +51,18 @@ export default [
         {allowInterfaces: 'with-single-extends'},
       ],
       '@typescript-eslint/consistent-type-imports': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'styled-components',
+              importNames: ['default'],
+              message: 'Please use `import {styled} from "styled-components"` instead.',
+            },
+          ],
+        },
+      ],
     },
   },
   ...sanityTypescript.overrides,

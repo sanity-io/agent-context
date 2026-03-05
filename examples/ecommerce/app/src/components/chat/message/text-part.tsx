@@ -4,7 +4,7 @@ import ReactMarkdown, {type Components} from 'react-markdown'
 
 import {cn} from '@/lib/utils'
 
-import {Document} from './Document'
+import {Document} from './document'
 
 interface TextPartProps {
   text: string

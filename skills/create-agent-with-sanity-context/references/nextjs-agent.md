@@ -103,7 +103,7 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 
 ## Frontend Chat Component
 
-See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) for a complete implementation.
+See [ecommerce/app/src/components/chat/chat.tsx](ecommerce/app/src/components/chat/chat.tsx) for a complete implementation.
 
 **Key sections:**
 
@@ -145,7 +145,7 @@ Some tools need to run in the browser (capturing page context, taking screenshot
 
 **Server definition**: See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`clientTools`)
 
-**Client handling**: See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) (`onToolCall`)
+**Client handling**: See [ecommerce/app/src/components/chat/chat.tsx](ecommerce/app/src/components/chat/chat.tsx) (`onToolCall`)
 
 **Context capture utilities**: See [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts)
 
@@ -157,7 +157,7 @@ Some tools need to run in the browser (capturing page context, taking screenshot
 
 Include context (current page, user preferences) with every request without the user typing it.
 
-See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) (`DefaultChatTransport`):
+See [ecommerce/app/src/components/chat/chat.tsx](ecommerce/app/src/components/chat/chat.tsx) (`DefaultChatTransport`):
 
 ```tsx
 transport: new DefaultChatTransport({
@@ -175,7 +175,7 @@ const {messages, userContext}: {messages: UIMessage[]; userContext: UserContext}
 
 When the LLM makes tool calls, automatically continue the conversation.
 
-See [ecommerce/app/src/components/chat/Chat.tsx](ecommerce/app/src/components/chat/Chat.tsx) (`sendAutomaticallyWhen`):
+See [ecommerce/app/src/components/chat/chat.tsx](ecommerce/app/src/components/chat/chat.tsx) (`sendAutomaticallyWhen`):
 
 ```tsx
 sendAutomaticallyWhen: ({messages}) => {
@@ -192,17 +192,17 @@ For e-commerce or content-heavy apps, define custom markdown directives to rende
 
 **System Prompt** (define the syntax): Define custom directives in your system prompt (see `buildSystemPrompt` in the API route)
 
-**Directive rendering**: See [ecommerce/app/src/components/chat/message/TextPart.tsx](ecommerce/app/src/components/chat/message/TextPart.tsx)
+**Directive rendering**: See [ecommerce/app/src/components/chat/message/text-part.tsx](ecommerce/app/src/components/chat/message/text-part.tsx)
 
 - Uses `remarkAgentDirectives` plugin from `@sanity/agent-directives/react`
 - Directive names are converted to PascalCase (`::document{...}` → `Document` component)
 - Handles both inline (`:document{...}`) and block (`::document{...}`) formats
 
-**Document component**: See [ecommerce/app/src/components/chat/message/Document.tsx](ecommerce/app/src/components/chat/message/Document.tsx)
+**Document component**: See [ecommerce/app/src/components/chat/message/document.tsx](ecommerce/app/src/components/chat/message/document.tsx)
 
 - Routes directives by `type` to specific components (e.g., `Product`)
 
-**Product component**: See [ecommerce/app/src/components/chat/message/Product.tsx](ecommerce/app/src/components/chat/message/Product.tsx)
+**Product component**: See [ecommerce/app/src/components/chat/message/product.tsx](ecommerce/app/src/components/chat/message/product.tsx)
 
 - Inline: renders as a link
 - Block: renders with image thumbnail

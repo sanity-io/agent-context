@@ -10,9 +10,9 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | MCP connection setup        | `app/src/app/api/chat/route.ts` (`createMCPClient`)                                                              |
 | System prompt from Sanity   | `app/src/app/api/chat/route.ts` (`buildSystemPrompt`), `studio/schemaTypes/documents/agentConfig.ts`             |
-| Client-side tool handling   | `app/src/components/chat/Chat.tsx` (`onToolCall`), `app/src/lib/client-tools.ts`                                 |
+| Client-side tool handling   | `app/src/components/chat/chat.tsx` (`onToolCall`), `app/src/lib/client-tools.ts`                                 |
 | Page context capture        | `app/src/lib/capture-context.ts`                                                                                 |
-| Custom markdown rendering   | `app/src/components/chat/message/TextPart.tsx`                                                                   |
+| Custom markdown rendering   | `app/src/components/chat/message/text-part.tsx`                                                                  |
 | Studio plugin setup         | `studio/sanity.config.ts`                                                                                        |
 | Schema design patterns      | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                                         |
 | Sanity client/queries       | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                                        |
@@ -34,16 +34,16 @@ app/src/lib/save-conversation.ts  # Save conversations for classification
 
 ```
 app/src/components/chat/
-├── Chat.tsx                      # Main component: useChat, tool handling
-├── ChatInput.tsx                 # Input field
-├── ChatButton.tsx                # Floating button to open chat
-├── Loader.tsx                    # Loading indicator
-├── ToolCall.tsx                  # Debug tool call display
+├── chat.tsx                      # Main component: useChat, tool handling
+├── chat-input.tsx                # Input field
+├── chat-button.tsx               # Floating button to open chat
+├── loader.tsx                    # Loading indicator
+├── tool-call.tsx                 # Debug tool call display
 └── message/
-    ├── Message.tsx               # Message rendering
-    ├── TextPart.tsx              # Text with markdown + directive parsing
-    ├── Document.tsx              # Document directive router
-    └── Product.tsx               # Product card component
+    ├── message.tsx               # Message rendering
+    ├── text-part.tsx             # Text with markdown + directive parsing
+    ├── document.tsx              # Document directive router
+    └── product.tsx               # Product card component
 ```
 
 ### Sanity Studio
@@ -108,15 +108,15 @@ See `app/src/app/api/chat/route.ts` (`buildSystemPrompt`)
 
 ### Tool Handling on Client
 
-See `app/src/components/chat/Chat.tsx` (`onToolCall`)
+See `app/src/components/chat/chat.tsx` (`onToolCall`)
 
 ### Auto-continuation
 
-See `app/src/components/chat/Chat.tsx` (`sendAutomaticallyWhen`)
+See `app/src/components/chat/chat.tsx` (`sendAutomaticallyWhen`)
 
 ### Custom Directives
 
-See `app/src/components/chat/message/TextPart.tsx` (uses `@sanity/agent-directives`)
+See `app/src/components/chat/message/text-part.tsx` (uses `@sanity/agent-directives`)
 
 ### Conversation Classification (Blueprint + Function)
 

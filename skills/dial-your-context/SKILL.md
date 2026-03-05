@@ -1,6 +1,6 @@
 ---
 name: dial-your-context
-description: Interactive session to create Instructions field content for a Sanity Agent Context MCP
+description: Interactive session to create Instructions field content for a Sanity Agent Context MCP. Use this skill whenever users mention tuning agent context, improving agent responses to Sanity data, configuring MCP instructions, setting up content filters, or when their agent gives wrong results from Sanity queries. Also trigger when users say their agent is confused about schema relationships, needs data-specific guidance, or wants to optimize which content the agent can access.
 ---
 
 # Dial Your Context

@@ -31,7 +31,7 @@ import {
   unset,
   useSchema,
 } from 'sanity'
-import styled from 'styled-components'
+import {styled} from 'styled-components'
 
 import {isSimpleTypeQuery, listToQuery, queryToList, validateGroqFilter} from './groqUtils'
 import {useComposedRefs} from './useComposedRefs'

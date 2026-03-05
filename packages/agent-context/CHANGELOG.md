@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.4](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.3...agent-context-v0.3.4) (2026-03-05)
+
+### Bug Fixes
+
+- **packages/agent-context:** use named import for styled-components ([#114](https://github.com/sanity-io/agent-context/issues/114)) ([b3dcdcd](https://github.com/sanity-io/agent-context/commit/b3dcdcde6906381eb2a0335c78ff1abb3d9816de))
+
 ## [0.3.3](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.2...agent-context-v0.3.3) (2026-03-02)
 
 ### Bug Fixes

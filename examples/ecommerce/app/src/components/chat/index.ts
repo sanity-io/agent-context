@@ -1,2 +1,2 @@
-export {ChatButton} from './ChatButton'
-export {Message} from './message/Message'
+export {ChatButton} from './chat-button'
+export {Message} from './message/message'

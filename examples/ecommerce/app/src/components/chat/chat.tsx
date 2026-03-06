@@ -19,10 +19,10 @@ import {
   captureUserContext,
 } from '../../lib/capture-context'
 import {CLIENT_TOOLS, type ProductFiltersInput, productFiltersSchema} from '../../lib/client-tools'
-import {ChatInput} from './ChatInput'
-import {Loader} from './Loader'
-import {Message} from './message/Message'
-import {ToolCall} from './ToolCall'
+import {ChatInput} from './chat-input'
+import {Loader} from './loader'
+import {Message} from './message/message'
+import {ToolCall} from './tool-call'
 
 // Show loader when waiting for text (not actively streaming text)
 function isWaitingForText(messages: UIMessage[]): boolean {

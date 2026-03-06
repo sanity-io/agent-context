@@ -3,7 +3,7 @@
 import {MessageCircle, X} from 'lucide-react'
 import {useState} from 'react'
 
-import {Chat} from './Chat'
+import {Chat} from './chat'
 
 export function ChatButton() {
   const [isOpen, setIsOpen] = useState(false)

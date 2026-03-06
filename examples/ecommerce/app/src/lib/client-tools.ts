@@ -49,6 +49,5 @@ export const clientTools: ToolSet = {
   [CLIENT_TOOL_NAMES.SET_FILTERS]: {
     description: `Update product listing filters. First use groq_query to get valid filter values (slugs/codes) and confirm products exist.`,
     inputSchema: productFiltersSchema,
-    type: 'dynamic',
   },
 }

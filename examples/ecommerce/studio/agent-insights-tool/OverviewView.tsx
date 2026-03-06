@@ -1,6 +1,6 @@
 import {Box, Card, Flex, Grid, Heading, Spinner, Stack, Text} from '@sanity/ui'
 import {useEffect, useState} from 'react'
-import {useClient} from 'sanity'
+import {DEFAULT_STUDIO_CLIENT_OPTIONS, useClient} from 'sanity'
 
 import {ViewLayout} from './ViewLayout'
 
@@ -45,7 +45,7 @@ function StatCard(props: StatCardProps) {
 }
 
 export function OverviewView() {
-  const client = useClient({apiVersion: '2026-01-01'})
+  const client = useClient(DEFAULT_STUDIO_CLIENT_OPTIONS)
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
 

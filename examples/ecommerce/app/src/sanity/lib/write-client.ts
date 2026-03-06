@@ -1,4 +1,6 @@
-import {createClient} from 'next-sanity'
+import 'server-only'
+
+import {createClient} from '@sanity/client'
 
 if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
   throw new Error('NEXT_PUBLIC_SANITY_PROJECT_ID is required')
@@ -7,10 +9,11 @@ if (!process.env.NEXT_PUBLIC_SANITY_DATASET) {
   throw new Error('NEXT_PUBLIC_SANITY_DATASET is required')
 }
 
-export const client = createClient({
+export const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: '2026-01-01',
-  useCdn: true,
   apiHost: process.env.NEXT_PUBLIC_SANITY_API_HOST,
+  useCdn: false,
+  token: process.env.SANITY_API_WRITE_TOKEN,
 })

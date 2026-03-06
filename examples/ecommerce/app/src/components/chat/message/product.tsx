@@ -2,15 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import {useEffect, useState} from 'react'
+import useSWR from 'swr'
 
 import {client} from '@/sanity/lib/client'
 import {urlFor} from '@/sanity/lib/image'
-
-interface ProductProps {
-  id: string
-  isInline?: boolean
-}
 
 const QUERY = `
   *[_type == "product" && _id == $id][0] {
@@ -26,31 +21,19 @@ interface ProductData {
   image: {asset: {_ref: string}} | null
 }
 
+interface ProductProps {
+  id: string
+  isInline?: boolean
+}
+
 export function Product(props: ProductProps) {
-  const {isInline} = props
+  const {id, isInline} = props
 
-  const [product, setProduct] = useState<ProductData | null>(null)
-  const [error, setError] = useState<Error | null>(null)
-  const [loading, setLoading] = useState(true)
+  const {data: product, isLoading} = useSWR(`product-${id}`, () =>
+    client.fetch<ProductData | null>(QUERY, {id}),
+  )
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true)
-      try {
-        const product = await client.fetch(QUERY, {id: props.id})
-
-        setProduct(product)
-      } catch (error) {
-        setError(error instanceof Error ? error : new Error('Unknown error'))
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProduct()
-  }, [props.id])
-
-  if (loading) {
+  if (isLoading) {
     if (isInline) return null
 
     return (
@@ -62,7 +45,7 @@ export function Product(props: ProductProps) {
     )
   }
 
-  if (error || !product) return null
+  if (!product) return null
 
   if (isInline) {
     return (

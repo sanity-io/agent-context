@@ -1,4 +1,4 @@
-import {createAnthropic} from '@ai-sdk/anthropic'
+import {anthropic} from '@ai-sdk/anthropic'
 import {createClient} from '@sanity/client'
 import {documentEventHandler} from '@sanity/functions'
 import {generateText, Output} from 'ai'
@@ -12,22 +12,16 @@ const classificationSchema = z.object({
     ),
   successRate: z
     .number()
-    .min(0)
-    .max(100)
     .describe(
       '0-100 score: Did the conversation achieve its goal? 100 = user got exactly what they needed, 50 = partially helped, 0 = complete failure.',
     ),
   agentConfusion: z
     .number()
-    .min(0)
-    .max(100)
     .describe(
       '0-100 score: How much did the agent struggle to respond helpfully? 0 = responded confidently (even if redirecting off-topic questions), 100 = completely lost or gave wrong info. Note: gracefully handling off-topic questions is NOT confusion.',
     ),
   userConfusion: z
     .number()
-    .min(0)
-    .max(100)
     .describe(
       '0-100 score: How unclear was the user request? 0 = crystal clear, 100 = completely incomprehensible',
     ),
@@ -53,10 +47,8 @@ async function classifyMessages(
   }
 
   try {
-    const anthropic = createAnthropic({apiKey: process.env.ANTHROPIC_API_KEY})
-
     const {output} = await generateText({
-      model: anthropic('claude-3-5-haiku-latest'),
+      model: anthropic('claude-haiku-4-5'),
       output: Output.object({
         schema: classificationSchema,
       }),
@@ -87,7 +79,7 @@ ${JSON.stringify(messages, null, 2)}
 export const handler = documentEventHandler(async ({context, event}) => {
   const client = createClient({
     ...context.clientOptions,
-    apiVersion: 'vX',
+    apiVersion: '2026-01-01',
   })
   const classification = await classifyMessages(event.data.messages)
   if (!classification) {

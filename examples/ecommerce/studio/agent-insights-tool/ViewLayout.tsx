@@ -20,7 +20,7 @@ export function ViewLayout(props: ViewLayoutProps) {
         </Stack>
       </Card>
 
-      <Box paddingX={5}>
+      <Box paddingX={5} flex={1}>
         <Card border={border} radius={3} overflow="hidden">
           {children}
         </Card>

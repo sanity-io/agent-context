@@ -14,7 +14,7 @@ import {
 } from '@sanity/ui'
 import {type ComponentProps, useEffect, useId, useMemo, useState} from 'react'
 import ReactMarkdown from 'react-markdown'
-import {useClient, useRelativeTime} from 'sanity'
+import {DEFAULT_STUDIO_CLIENT_OPTIONS, useClient, useRelativeTime} from 'sanity'
 import {useRouter} from 'sanity/router'
 
 import {ViewLayout} from './ViewLayout'
@@ -104,7 +104,7 @@ function RateBadge(props: {value: number | undefined; inverted?: boolean}) {
 }
 
 export function ConversationsView() {
-  const client = useClient({apiVersion: '2026-01-01'})
+  const client = useClient(DEFAULT_STUDIO_CLIENT_OPTIONS)
   const router = useRouter()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)

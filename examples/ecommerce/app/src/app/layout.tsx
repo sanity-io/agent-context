@@ -3,7 +3,7 @@ import './globals.css'
 import type {Metadata} from 'next'
 import {Inter} from 'next/font/google'
 
-import {ChatButton} from '@/components/chat'
+import {ChatButton} from '@/components/chat/chat-button'
 import {Header} from '@/components/header'
 
 const inter = Inter({

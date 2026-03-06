@@ -42,9 +42,9 @@ export function AgentInsightsTool() {
               justify="flex-start"
               mode="bleed"
               onClick={() => navigateTo('overview')}
-              selected={currentPath === 'overview'}
+              selected={currentPath === 'overview' || !currentPath}
               text="Overview"
-              tone={currentPath === 'overview' ? 'primary' : undefined}
+              tone={currentPath === 'overview' || !currentPath ? 'primary' : undefined}
             />
 
             <Button

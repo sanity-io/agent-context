@@ -71,11 +71,11 @@ export async function POST(req: Request) {
 
   // Validate required environment variables
   if (!process.env.SANITY_CONTEXT_MCP_URL) {
-    return Response.json({error: 'SANITY_CONTEXT_MCP_URL is not set'}, {status: 500})
+    throw new Error('SANITY_CONTEXT_MCP_URL is not set')
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({error: 'ANTHROPIC_API_KEY is not set'}, {status: 500})
+    throw new Error('ANTHROPIC_API_KEY is not set')
   }
 
   let mcpClient: MCPClient | null = null

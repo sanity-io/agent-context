@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(amount: number | null | undefined): string {
-  if (amount == null) return '$0.00'
+  if (amount == null) return ''
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

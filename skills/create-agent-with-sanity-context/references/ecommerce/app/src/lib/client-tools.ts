@@ -3,6 +3,7 @@
  * No browser-specific code, safe to import anywhere.
  */
 
+import type {ToolSet} from 'ai'
 import {z} from 'zod'
 
 /** User context sent with every message so the agent knows where the user is. */
@@ -30,10 +31,23 @@ export const productFiltersSchema = z.object({
 export type ProductFiltersInput = z.infer<typeof productFiltersSchema>
 
 /** Tool names - single source of truth for definitions (route.ts) and handlers (Chat.tsx). */
-export const CLIENT_TOOLS = {
+export const CLIENT_TOOL_NAMES = {
   PAGE_CONTEXT: 'get_page_context',
   SCREENSHOT: 'get_page_screenshot',
   SET_FILTERS: 'set_product_filters',
 } as const
 
-export type ClientToolName = (typeof CLIENT_TOOLS)[keyof typeof CLIENT_TOOLS]
+export const clientTools: ToolSet = {
+  [CLIENT_TOOL_NAMES.PAGE_CONTEXT]: {
+    description: `Get the current page as markdown (URL, title, text content). Use when you need to know what's visible on the page.`,
+    inputSchema: z.object({}),
+  },
+  [CLIENT_TOOL_NAMES.SCREENSHOT]: {
+    description: `Get a visual screenshot. Use when you need to see images, colors, or layout.`,
+    inputSchema: z.object({}),
+  },
+  [CLIENT_TOOL_NAMES.SET_FILTERS]: {
+    description: `Update product listing filters. First use groq_query to get valid filter values (slugs/codes) and confirm products exist.`,
+    inputSchema: productFiltersSchema,
+  },
+}

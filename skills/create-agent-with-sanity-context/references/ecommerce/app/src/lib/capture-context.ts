@@ -18,13 +18,13 @@ export const AGENT_CHAT_HIDDEN_ATTRIBUTE = 'agent-chat-hidden'
  * This is sent with every message so the agent knows where the user is.
  */
 export function captureUserContext(): UserContext {
-  const metaDescription =
+  const description =
     document.querySelector('meta[name="description"]')?.getAttribute('content') ||
     document.querySelector('meta[property="og:description"]')?.getAttribute('content')
 
   return {
     documentTitle: document.title,
-    documentDescription: metaDescription || undefined,
+    documentDescription: description || undefined,
     documentLocation: window.location.pathname,
   }
 }
@@ -38,19 +38,12 @@ export function capturePageContext() {
     bulletListMarker: '-',
   })
 
-  // Replace images with just alt text (no URLs)
-  turndown.addRule('images', {
-    filter: 'img',
-    replacement: (_content, node) => {
-      const alt = (node as HTMLImageElement).alt
-      return alt ? alt : ''
-    },
-  })
-
-  // Remove scripts, styles, svgs, videos
+  // Remove non-text elements
   turndown.addRule('removeNoise', {
     filter: (node) =>
-      ['SCRIPT', 'STYLE', 'SVG', 'VIDEO', 'AUDIO', 'IFRAME', 'NOSCRIPT'].includes(node.nodeName),
+      ['SCRIPT', 'STYLE', 'SVG', 'VIDEO', 'AUDIO', 'IFRAME', 'NOSCRIPT', 'IMG'].includes(
+        node.nodeName,
+      ),
     replacement: () => '',
   })
 
@@ -70,24 +63,22 @@ export function capturePageContext() {
 /**
  * Screenshot capture for visual context
  */
-export async function captureScreenshot() {
+export async function captureScreenshot(): Promise<string> {
   const canvas = await html2canvas(document.body, {
     ignoreElements: (el) => el.hasAttribute(AGENT_CHAT_HIDDEN_ATTRIBUTE),
   })
 
-  // Resize if needed (Anthropic max is 8000px, we use 4000 for safety + smaller payload)
   const MAX_DIMENSION = 4000
-  let finalCanvas = canvas
 
+  // Resize if needed to prevent payload size limit
   if (canvas.width > MAX_DIMENSION || canvas.height > MAX_DIMENSION) {
     const scale = Math.min(MAX_DIMENSION / canvas.width, MAX_DIMENSION / canvas.height)
-    const resizedCanvas = document.createElement('canvas')
-    resizedCanvas.width = Math.floor(canvas.width * scale)
-    resizedCanvas.height = Math.floor(canvas.height * scale)
-    const ctx = resizedCanvas.getContext('2d')
-    ctx?.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height)
-    finalCanvas = resizedCanvas
+    const resized = document.createElement('canvas')
+    resized.width = Math.floor(canvas.width * scale)
+    resized.height = Math.floor(canvas.height * scale)
+    resized.getContext('2d')?.drawImage(canvas, 0, 0, resized.width, resized.height)
+    return resized.toDataURL('image/jpeg', 0.7)
   }
 
-  return finalCanvas.toDataURL('image/jpeg', 0.7)
+  return canvas.toDataURL('image/jpeg', 0.7)
 }

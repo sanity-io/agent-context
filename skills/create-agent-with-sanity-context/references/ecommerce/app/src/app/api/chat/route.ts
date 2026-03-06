@@ -1,34 +1,13 @@
 import {anthropic} from '@ai-sdk/anthropic'
-import {createMCPClient} from '@ai-sdk/mcp'
-import {convertToModelMessages, stepCountIs, streamText, type ToolSet, type UIMessage} from 'ai'
-import {z} from 'zod'
+import {createMCPClient, type MCPClient} from '@ai-sdk/mcp'
+import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'ai'
 
-import {CLIENT_TOOLS, productFiltersSchema, type UserContext} from '@/lib/client-tools'
+import {clientTools, type UserContext} from '@/lib/client-tools'
 import {saveConversation} from '@/lib/save-conversation'
 import {client} from '@/sanity/lib/client'
 
-/**
- * Client-side tools for capturing page context and controlling the UI.
- * No execute functions - execution happens on the client via onToolCall.
- */
-const clientTools: ToolSet = {
-  [CLIENT_TOOLS.PAGE_CONTEXT]: {
-    description: `Page context as markdown: URL, title, and text content (headings, links, lists). Fast. No visuals.`,
-    inputSchema: z.object({
-      reason: z.string().describe('Why you need page context'),
-    }),
-  },
-  [CLIENT_TOOLS.SCREENSHOT]: {
-    description: `Visual screenshot of the page. You CANNOT see anything visual without this - no images, colors, layout, or appearance.`,
-    inputSchema: z.object({
-      reason: z.string().describe('Why you need a screenshot'),
-    }),
-  },
-  [CLIENT_TOOLS.SET_FILTERS]: {
-    description: `Update the product listing page filters. Only use AFTER you've used groq_query to: 1) get valid filter values (slugs/codes), and 2) confirm matching products exist. Use the exact values from your query. Do not use this tool blindly - you should already know what results the user will see.`,
-    inputSchema: productFiltersSchema,
-  },
-}
+const DEFAULT_MODEL = 'claude-sonnet-4-5'
+const MAX_STEPS = 20
 
 interface BuildSystemPromptParams {
   basePrompt: string
@@ -81,13 +60,16 @@ Write product names only inside directives. If page context mentions product nam
 `
 }
 
-export async function POST(req: Request) {
-  const {
-    messages,
-    userContext,
-    id: chatId,
-  }: {messages: UIMessage[]; userContext: UserContext; id: string} = await req.json()
+interface ChatRequest {
+  messages: UIMessage[]
+  userContext: UserContext
+  id: string
+}
 
+export async function POST(req: Request) {
+  const {messages, userContext, id: chatId}: ChatRequest = await req.json()
+
+  // Validate required environment variables
   if (!process.env.SANITY_CONTEXT_MCP_URL) {
     throw new Error('SANITY_CONTEXT_MCP_URL is not set')
   }
@@ -96,59 +78,74 @@ export async function POST(req: Request) {
     throw new Error('ANTHROPIC_API_KEY is not set')
   }
 
-  const [mcpClient, agentConfig] = await Promise.all([
-    createMCPClient({
-      transport: {
-        type: 'http',
-        url: process.env.SANITY_CONTEXT_MCP_URL,
-        headers: {
-          Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
-        },
-      },
-    }),
-    client.fetch<{systemPrompt: string | null} | null>(
-      `*[_type == "agent.config" && slug.current == $slug][0] { systemPrompt }`,
-      {slug: process.env.AGENT_CONFIG_SLUG || 'default'},
-    ),
-  ])
-
-  if (!agentConfig?.systemPrompt) {
-    throw new Error('Agent config not found or missing system prompt. Create one in Sanity Studio.')
-  }
-
-  const systemPrompt = buildSystemPrompt({
-    basePrompt: agentConfig.systemPrompt,
-    userContext,
-  })
+  let mcpClient: MCPClient | null = null
 
   try {
+    // Initialize MCP client and fetch system prompt from Sanity document
+    const [mcpClientResult, agentConfig] = await Promise.all([
+      createMCPClient({
+        transport: {
+          type: 'http',
+          url: process.env.SANITY_CONTEXT_MCP_URL,
+          headers: {
+            Authorization: `Bearer ${process.env.SANITY_API_READ_TOKEN}`,
+          },
+        },
+      }),
+      client.fetch<{systemPrompt: string | null} | null>(
+        `*[_type == "agent.config" && slug.current == $slug][0] { systemPrompt }`,
+        {slug: process.env.AGENT_CONFIG_SLUG || 'default'},
+      ),
+    ])
+
+    mcpClient = mcpClientResult
+
+    if (!agentConfig?.systemPrompt) {
+      await mcpClient?.close()
+      return Response.json(
+        {error: 'Agent config not found or missing system prompt. Create one in Sanity Studio.'},
+        {status: 500},
+      )
+    }
+
+    const systemPrompt = buildSystemPrompt({
+      basePrompt: agentConfig.systemPrompt,
+      userContext,
+    })
+
     const mcpTools = await mcpClient.tools()
+    const modelId = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL
 
     const result = streamText({
-      model: anthropic('claude-opus-4-5'),
+      model: anthropic(modelId),
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
       tools: {
         ...mcpTools,
         ...clientTools,
       },
-      stopWhen: stepCountIs(20),
+      stopWhen: stepCountIs(MAX_STEPS),
       onFinish: async () => {
-        await mcpClient.close()
+        await mcpClient?.close()
       },
     })
 
     return result.toUIMessageStreamResponse({
       originalMessages: messages,
       onFinish: async ({messages: allMessages}) => {
-        await saveConversation({
-          chatId,
-          messages: allMessages,
-        })
+        try {
+          await saveConversation({chatId, messages: allMessages})
+        } catch (err) {
+          console.error('Failed to save conversation:', err)
+        }
       },
     })
   } catch (error) {
-    await mcpClient.close()
-    throw error
+    await mcpClient?.close()
+
+    return Response.json(
+      {error: error instanceof Error ? error.message : 'An unexpected error occurred'},
+      {status: 500},
+    )
   }
 }

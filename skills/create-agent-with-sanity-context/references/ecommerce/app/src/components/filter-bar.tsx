@@ -27,10 +27,9 @@ export function FilterBar(props: FilterBarProps) {
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
 
-  // Read current filters from URL (multi-value filters are arrays)
+  // Read current filters from URL
   const currentFilters = useMemo<ProductFiltersInput>(() => {
     const sortParam = searchParams.get('sort')
-    const validSort = SORT_OPTIONS.find((s) => s.value === sortParam)
     return {
       category: getArrayParam(searchParams, 'category'),
       color: getArrayParam(searchParams, 'color'),
@@ -38,57 +37,26 @@ export function FilterBar(props: FilterBarProps) {
       brand: getArrayParam(searchParams, 'brand'),
       minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
-      sort: validSort?.value,
+      sort: SORT_OPTIONS.find((s) => s.value === sortParam)?.value,
     }
   }, [searchParams])
 
-  // Normalize empty arrays to undefined for easier checks
-  const normalizeArray = (arr: string[] | undefined): string[] | undefined =>
-    arr && arr.length > 0 ? arr : undefined
-
-  // Update URL with new filters
+  // Update URL with new filters (merges with current)
   const updateFilters = useCallback(
     (updates: Partial<ProductFiltersInput>) => {
+      const merged = {...currentFilters, ...updates}
       const params = new URLSearchParams()
 
-      // Preserve non-updated params
-      const currentCategory = normalizeArray(currentFilters.category)
-      const currentColor = normalizeArray(currentFilters.color)
-      const currentSize = normalizeArray(currentFilters.size)
-      const currentBrand = normalizeArray(currentFilters.brand)
-
-      // Helper to set array params
-      const setArrayParam = (key: string, values: string[] | undefined) => {
-        if (values?.length) {
-          values.forEach((v) => params.append(key, v))
-        }
+      // Array params
+      const arrayKeys = ['category', 'color', 'size', 'brand'] as const
+      for (const key of arrayKeys) {
+        merged[key]?.forEach((v) => params.append(key, v))
       }
 
-      // Apply category
-      const newCategory = 'category' in updates ? normalizeArray(updates.category) : currentCategory
-      setArrayParam('category', newCategory)
-
-      // Apply color
-      const newColor = 'color' in updates ? normalizeArray(updates.color) : currentColor
-      setArrayParam('color', newColor)
-
-      // Apply size
-      const newSize = 'size' in updates ? normalizeArray(updates.size) : currentSize
-      setArrayParam('size', newSize)
-
-      // Apply brand
-      const newBrand = 'brand' in updates ? normalizeArray(updates.brand) : currentBrand
-      setArrayParam('brand', newBrand)
-
-      // Apply single-value params
-      const newMinPrice = 'minPrice' in updates ? updates.minPrice : currentFilters.minPrice
-      if (newMinPrice !== undefined) params.set('minPrice', String(newMinPrice))
-
-      const newMaxPrice = 'maxPrice' in updates ? updates.maxPrice : currentFilters.maxPrice
-      if (newMaxPrice !== undefined) params.set('maxPrice', String(newMaxPrice))
-
-      const newSort = 'sort' in updates ? updates.sort : currentFilters.sort
-      if (newSort) params.set('sort', newSort)
+      // Single-value params
+      if (merged.minPrice) params.set('minPrice', String(merged.minPrice))
+      if (merged.maxPrice) params.set('maxPrice', String(merged.maxPrice))
+      if (merged.sort) params.set('sort', merged.sort)
 
       startTransition(() => {
         const query = params.toString()

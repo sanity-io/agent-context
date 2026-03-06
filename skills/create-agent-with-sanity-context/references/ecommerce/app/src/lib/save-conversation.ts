@@ -1,5 +1,6 @@
-import {createClient} from '@sanity/client'
 import {type UIMessage} from 'ai'
+
+import {writeClient} from '@/sanity/lib/write-client'
 
 interface ConversationMessage {
   role: string
@@ -30,17 +31,7 @@ export async function saveConversation(input: SaveConversationInput): Promise<vo
     }))
     .filter((message) => message.content.trim() !== '')
 
-  // Save to Sanity
-  const client = createClient({
-    projectId: process.env.SANITY_STUDIO_PROJECT_ID!,
-    dataset: process.env.SANITY_STUDIO_DATASET!,
-    apiVersion: '2026-01-01',
-    apiHost: process.env.SANITY_STUDIO_API_HOST || 'https://api.sanity.io',
-    useCdn: false,
-    token: process.env.SANITY_API_WRITE_TOKEN,
-  })
-
-  await client.createOrReplace(
+  await writeClient.createOrReplace(
     {
       _type: 'agent.conversation',
       _id: chatId,

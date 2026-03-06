@@ -14,12 +14,8 @@ export function Header() {
             Products
           </Link>
 
-          <button className="relative" aria-label="Cart" type="button">
+          <button aria-label="Cart" type="button">
             <ShoppingBag className="h-5 w-5" />
-
-            <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-[10px] text-white">
-              0
-            </span>
           </button>
         </nav>
       </div>

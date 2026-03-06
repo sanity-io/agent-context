@@ -1,28 +1,22 @@
 'use client'
 
 import {useChat} from '@ai-sdk/react'
-import {
-  DefaultChatTransport,
-  getToolName,
-  isToolUIPart,
-  lastAssistantMessageIsCompleteWithToolCalls,
-  type UIMessage,
-} from 'ai'
+import {DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage} from 'ai'
 import {MessageCircle, X} from 'lucide-react'
-import {useRouter, useSearchParams} from 'next/navigation'
-import {Suspense, useCallback, useEffect, useRef, useState} from 'react'
+import {useRouter} from 'next/navigation'
+import {useCallback, useEffect, useRef, useState} from 'react'
 
 import {
   AGENT_CHAT_HIDDEN_ATTRIBUTE,
   capturePageContext,
   captureScreenshot,
   captureUserContext,
-} from '../../lib/capture-context'
-import {CLIENT_TOOLS, type ProductFiltersInput, productFiltersSchema} from '../../lib/client-tools'
+} from '@/lib/capture-context'
+import {CLIENT_TOOL_NAMES, type ProductFiltersInput, productFiltersSchema} from '@/lib/client-tools'
+
 import {ChatInput} from './chat-input'
 import {Loader} from './loader'
 import {Message} from './message/message'
-import {ToolCall} from './tool-call'
 
 // Show loader when waiting for text (not actively streaming text)
 function isWaitingForText(messages: UIMessage[]): boolean {
@@ -40,21 +34,9 @@ interface ChatProps {
   onClose: () => void
 }
 
-export function Chat(props: ChatProps) {
-  return (
-    <Suspense fallback={null}>
-      <ChatInner {...props} />
-    </Suspense>
-  )
-}
-
-function ChatInner(props: ChatProps) {
-  const {onClose} = props
-
+export function Chat({onClose}: ChatProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [input, setInput] = useState('')
-  const debug = searchParams.get('debug') === 'true'
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Queue for screenshot to send after tool output
@@ -86,7 +68,7 @@ function ChatInner(props: ChatProps) {
       body: () => ({userContext: captureUserContext()}),
     }),
     // Auto-continue for regular tools, but skip when screenshot is pending
-    // as we send the screenshout manually after the tool output is received.
+    // as we send the screenshot manually after the tool output is received.
     sendAutomaticallyWhen: ({messages}) => {
       if (pendingScreenshotRef.current) return false
       return lastAssistantMessageIsCompleteWithToolCalls({messages})
@@ -94,69 +76,32 @@ function ChatInner(props: ChatProps) {
     onToolCall: async ({toolCall}) => {
       if (toolCall.dynamic) return
 
+      const respond = (output: unknown): void => {
+        addToolOutput({tool: toolCall.toolName, toolCallId: toolCall.toolCallId, output})
+      }
+
       switch (toolCall.toolName) {
-        case CLIENT_TOOLS.PAGE_CONTEXT: {
-          addToolOutput({
-            tool: CLIENT_TOOLS.PAGE_CONTEXT,
-            toolCallId: toolCall.toolCallId,
-            output: capturePageContext(),
-          })
+        case CLIENT_TOOL_NAMES.PAGE_CONTEXT:
+          respond(capturePageContext())
           return
-        }
 
-        case CLIENT_TOOLS.SCREENSHOT: {
+        case CLIENT_TOOL_NAMES.SCREENSHOT:
           try {
-            const file = await captureScreenshot()
-
-            pendingScreenshotRef.current = file
-
-            addToolOutput({
-              tool: CLIENT_TOOLS.SCREENSHOT,
-              toolCallId: toolCall.toolCallId,
-              output: `Screenshot captured.`,
-            })
+            pendingScreenshotRef.current = await captureScreenshot()
+            respond('Screenshot captured. It will arrive in the next message.')
           } catch (err) {
-            addToolOutput({
-              tool: CLIENT_TOOLS.SCREENSHOT,
-              toolCallId: toolCall.toolCallId,
-              output: `Failed to capture screenshot: ${err instanceof Error ? err.message : String(err)}`,
-            })
+            respond(`Failed: ${err instanceof Error ? err.message : String(err)}`)
           }
-
           return
-        }
 
-        case CLIENT_TOOLS.SET_FILTERS: {
-          const result = productFiltersSchema.safeParse(toolCall.input)
-          if (!result.success) {
-            addToolOutput({
-              tool: CLIENT_TOOLS.SET_FILTERS,
-              toolCallId: toolCall.toolCallId,
-              output: `Invalid filter input: ${result.error.message}`,
-            })
+        case CLIENT_TOOL_NAMES.SET_FILTERS: {
+          const parsed = productFiltersSchema.safeParse(toolCall.input)
+          if (!parsed.success) {
+            respond(`Invalid input: ${parsed.error.message}`)
             return
           }
-
-          const filters = result.data
-          const newUrl = applyProductFilters(filters)
-
-          // Build a human-readable summary of what was done
-          const changes: string[] = []
-          if (filters.category?.length) changes.push(`category: ${filters.category.join(', ')}`)
-          if (filters.color?.length) changes.push(`color: ${filters.color.join(', ')}`)
-          if (filters.size?.length) changes.push(`size: ${filters.size.join(', ')}`)
-          if (filters.brand?.length) changes.push(`brand: ${filters.brand.join(', ')}`)
-          if (filters.minPrice) changes.push(`min price: $${filters.minPrice}`)
-          if (filters.maxPrice) changes.push(`max price: $${filters.maxPrice}`)
-          if (filters.sort) changes.push(`sort: ${filters.sort}`)
-
-          addToolOutput({
-            tool: CLIENT_TOOLS.SET_FILTERS,
-            toolCallId: toolCall.toolCallId,
-            output: `Filters applied${changes.length > 0 ? `: ${changes.join(', ')}` : ''}. Navigated to ${newUrl}.`,
-          })
-
-          return
+          const url = applyProductFilters(parsed.data)
+          respond(`Filters applied. Navigated to ${url}`)
         }
       }
     },
@@ -234,25 +179,7 @@ function ChatInner(props: ChatProps) {
         ) : (
           <div className="space-y-3">
             {messages.map((message) => (
-              <div key={message.id} className="space-y-2">
-                {/* Tool calls (debug only) - shown before text since they produce the response */}
-                {debug &&
-                  (message.parts ?? []).filter(isToolUIPart).map((part, i) => (
-                    <div key={`${message.id}-tool-${i}`} className="flex justify-start">
-                      <div className="max-w-[80%]">
-                        <ToolCall
-                          toolName={getToolName(part)}
-                          state={part.state}
-                          input={part.input}
-                          output={'output' in part ? part.output : undefined}
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                {/* Message text */}
-                <Message message={message} />
-              </div>
+              <Message key={message.id} message={message} />
             ))}
 
             {showLoader && (
@@ -266,7 +193,7 @@ function ChatInner(props: ChatProps) {
             {error && (
               <div className="flex justify-start">
                 <div className="flex flex-col gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-                  <span>Something went wrong.</span>
+                  <span>{error.message || 'Something went wrong.'}</span>
 
                   <button
                     type="button"

@@ -2,7 +2,7 @@ import {isTextUIPart, type UIMessage} from 'ai'
 
 import {cn} from '@/lib/utils'
 
-import {TextPart} from './TextPart'
+import {TextPart} from './text-part'
 
 interface MessageProps {
   message: UIMessage

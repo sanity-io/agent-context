@@ -15,7 +15,9 @@ interface FilterBarProps {
   filterOptions: FILTER_OPTIONS_QUERY_RESULT
 }
 
-/** Parse URL param to array */
+/**
+ * Parse URL param to array
+ */
 function getArrayParam(searchParams: URLSearchParams, key: string): string[] {
   const values = searchParams.getAll(key)
   return values.length > 0 ? values : []

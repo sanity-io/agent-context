@@ -73,10 +73,6 @@ export const SORT_OPTIONS = [
   {value: 'title-asc', label: 'Name: A to Z'},
 ] as const
 
-/**
- * Build a GROQ filter string from ProductFilters
- * Returns an array of filter conditions to be joined with &&
- */
 function buildProductFilterConditions(filters: ProductFiltersInput): string[] {
   const conditions: string[] = ['_type == "product"', 'defined(slug.current)']
 
@@ -113,9 +109,6 @@ function buildProductFilterConditions(filters: ProductFiltersInput): string[] {
   return conditions
 }
 
-/**
- * Build the order clause from sort option
- */
 function buildProductSortClause(sort?: ProductFiltersInput['sort']): string {
   switch (sort) {
     case 'price-asc':
@@ -130,9 +123,6 @@ function buildProductSortClause(sort?: ProductFiltersInput['sort']): string {
   }
 }
 
-/**
- * Build the complete filtered products query string
- */
 export function buildFilteredProductsQuery(
   filters: ProductFiltersInput,
   pageSize: number = PAGE_SIZE,
@@ -147,9 +137,6 @@ export function buildFilteredProductsQuery(
   `
 }
 
-/**
- * Build the count query for filtered products
- */
 export function buildFilteredProductsCountQuery(filters: ProductFiltersInput): string {
   const conditions = buildProductFilterConditions(filters)
   return /* groq */ `count(*[${conditions.join(' && ')}])`

@@ -8,11 +8,15 @@ import {agentInsightsPlugin} from './agent-insights-tool/agentInsightsPlugin'
 import {schemaTypes} from './schemaTypes'
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID
-const dataset = process.env.SANITY_STUDIO_DATASET || 'production'
+const dataset = process.env.SANITY_STUDIO_DATASET
 const apiHost = process.env.SANITY_STUDIO_API_HOST
 
 if (!projectId) {
   throw new Error('Missing SANITY_STUDIO_PROJECT_ID environment variable')
+}
+
+if (!dataset) {
+  throw new Error('Missing SANITY_STUDIO_DATASET environment variable')
 }
 
 export default defineConfig({

@@ -33,14 +33,16 @@ interface ProductsPageProps {
   }>
 }
 
-/** Convert URL param (string or string[]) to string[] or undefined */
+// Convert URL param (string or string[]) to string[] or undefined
 function toArray(value: string | string[] | undefined): string[] | undefined {
   if (!value) return undefined
   if (Array.isArray(value)) return value.length > 0 ? value : undefined
   return [value]
 }
 
-export default async function ProductsPage({searchParams}: ProductsPageProps) {
+export default async function ProductsPage(props: ProductsPageProps) {
+  const {searchParams} = props
+
   const params = await searchParams
   const currentPage = Number(params.page) || 1
 

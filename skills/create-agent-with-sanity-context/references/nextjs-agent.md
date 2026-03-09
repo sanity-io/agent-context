@@ -114,7 +114,7 @@ See [ecommerce/app/src/components/chat/chat.tsx](ecommerce/app/src/components/ch
 
 **Related files:**
 
-- [ecommerce/app/src/lib/client-tools.ts](ecommerce/app/src/lib/client-tools.ts) - Tool name constants and `UserContext` type
+- [ecommerce/app/src/lib/client-tools.ts](ecommerce/app/src/lib/client-tools.ts) - Tool name constants and `DocumentContext` type
 - [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts) - Page context and screenshot capture functions
 
 ## Testing the Agent
@@ -149,8 +149,8 @@ Some tools need to run in the browser (capturing page context, taking screenshot
 
 **Context capture utilities**: See [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts)
 
-- `captureUserContext()`: Lightweight context sent with every message
-- `capturePageContext()`: Page content as markdown using Turndown
+- `getDocumentContext()`: Lightweight context sent with every message
+- `getPageContent()`: Page content as markdown
 - `captureScreenshot()`: Visual screenshot using html2canvas
 
 ### User Context Transport
@@ -161,14 +161,15 @@ See [ecommerce/app/src/components/chat/chat.tsx](ecommerce/app/src/components/ch
 
 ```tsx
 transport: new DefaultChatTransport({
-  body: () => ({userContext: captureUserContext()}),
+  body: () => ({documentContext: getDocumentContext()}),
 }),
 ```
 
-Then access it on the server at [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`userContext`):
+Then access it on the server at [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`documentContext`):
 
 ```ts
-const {messages, userContext}: {messages: UIMessage[]; userContext: UserContext} = await req.json()
+const {messages, documentContext}: {messages: UIMessage[]; documentContext: DocumentContext} =
+  await req.json()
 ```
 
 ### Auto-Continuation for Tool Calls

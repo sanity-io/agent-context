@@ -8,9 +8,9 @@ import {useCallback, useEffect, useRef, useState} from 'react'
 
 import {
   AGENT_CHAT_HIDDEN_ATTRIBUTE,
-  capturePageContext,
   captureScreenshot,
-  captureUserContext,
+  getDocumentContext,
+  getPageContent,
 } from '@/lib/capture-context'
 import {CLIENT_TOOL_NAMES, type ProductFiltersInput, productFiltersSchema} from '@/lib/client-tools'
 
@@ -18,7 +18,10 @@ import {ChatInput} from './chat-input'
 import {Loader} from './loader'
 import {Message} from './message/message'
 
-// Show loader when waiting for text (not actively streaming text)
+/**
+ * Checks if the last message is waiting for text to be streamed.
+ * Used to show a loader when waiting for text.
+ */
 function isWaitingForText(messages: UIMessage[]): boolean {
   const last = messages[messages.length - 1]
   if (!last || last.role !== 'assistant') return true
@@ -42,7 +45,7 @@ export function Chat({onClose}: ChatProps) {
   // Queue for screenshot to send after tool output
   const pendingScreenshotRef = useRef<string | null>(null)
 
-  /** Apply product filters by navigating to /products with URL params */
+  // Apply product filters by navigating to /products with URL params
   const applyProductFilters = useCallback(
     (filters: ProductFiltersInput): string => {
       const params = new URLSearchParams()
@@ -63,9 +66,8 @@ export function Chat({onClose}: ChatProps) {
   )
 
   const {messages, sendMessage, status, addToolOutput, error, regenerate} = useChat({
-    // Include user context (page title/location) with every request
     transport: new DefaultChatTransport({
-      body: () => ({userContext: captureUserContext()}),
+      body: () => ({documentContext: getDocumentContext()}),
     }),
     // Auto-continue for regular tools, but skip when screenshot is pending
     // as we send the screenshot manually after the tool output is received.
@@ -81,25 +83,30 @@ export function Chat({onClose}: ChatProps) {
       }
 
       switch (toolCall.toolName) {
-        case CLIENT_TOOL_NAMES.PAGE_CONTEXT:
-          respond(capturePageContext())
+        case CLIENT_TOOL_NAMES.PAGE_CONTEXT: {
+          respond(getPageContent())
           return
+        }
 
-        case CLIENT_TOOL_NAMES.SCREENSHOT:
+        case CLIENT_TOOL_NAMES.SCREENSHOT: {
           try {
             pendingScreenshotRef.current = await captureScreenshot()
             respond('Screenshot captured. It will arrive in the next message.')
           } catch (err) {
             respond(`Failed: ${err instanceof Error ? err.message : String(err)}`)
           }
+
           return
+        }
 
         case CLIENT_TOOL_NAMES.SET_FILTERS: {
           const parsed = productFiltersSchema.safeParse(toolCall.input)
+
           if (!parsed.success) {
             respond(`Invalid input: ${parsed.error.message}`)
             return
           }
+
           const url = applyProductFilters(parsed.data)
           respond(`Filters applied. Navigated to ${url}`)
         }
@@ -118,7 +125,7 @@ export function Chat({onClose}: ChatProps) {
     sendMessage({
       files: [
         {
-          type: 'file' as const,
+          type: 'file',
           filename: 'screenshot.jpg',
           mediaType: 'image/jpeg',
           url: screenshot,

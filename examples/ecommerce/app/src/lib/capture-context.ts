@@ -1,44 +1,34 @@
-/**
- * Browser-specific context capture functions for the agent.
- * For types and constants, see ./client-tools.ts
- */
-
 import html2canvas from 'html2canvas-pro'
 import TurndownService from 'turndown'
 
-import type {UserContext} from './client-tools'
+import type {DocumentContext} from './client-tools'
 
-/**
- * Attribute to mark the agent chat element (excluded from capture)
- */
 export const AGENT_CHAT_HIDDEN_ATTRIBUTE = 'agent-chat-hidden'
 
 /**
- * Captures lightweight user context.
- * This is sent with every message so the agent knows where the user is.
+ * Captures the document context (title, description, pathname).
  */
-export function captureUserContext(): UserContext {
+export function getDocumentContext(): DocumentContext {
   const description =
     document.querySelector('meta[name="description"]')?.getAttribute('content') ||
     document.querySelector('meta[property="og:description"]')?.getAttribute('content')
 
   return {
-    documentTitle: document.title,
-    documentDescription: description || undefined,
-    documentLocation: window.location.pathname,
+    title: document.title,
+    description: description || undefined,
+    pathname: window.location.pathname + window.location.search + window.location.hash,
   }
 }
 
 /**
- * Captures page context for the agent as markdown.
+ * Extracts page content as markdown (up to 4000 chars).
  */
-export function capturePageContext() {
+export function getPageContent(): string {
   const turndown = new TurndownService({
     headingStyle: 'atx',
     bulletListMarker: '-',
   })
 
-  // Remove non-text elements
   turndown.addRule('removeNoise', {
     filter: (node) =>
       ['SCRIPT', 'STYLE', 'SVG', 'VIDEO', 'AUDIO', 'IFRAME', 'NOSCRIPT', 'IMG'].includes(
@@ -49,19 +39,13 @@ export function capturePageContext() {
 
   const main = document.querySelector('main') || document.body
   const clone = main.cloneNode(true) as Element
-
-  // Remove agent chat from the clone
   clone.querySelectorAll(`[${AGENT_CHAT_HIDDEN_ATTRIBUTE}]`).forEach((el) => el.remove())
 
-  return {
-    url: window.location.href,
-    title: document.title,
-    content: turndown.turndown(clone.innerHTML).slice(0, 4000),
-  }
+  return turndown.turndown(clone.innerHTML).slice(0, 4000)
 }
 
 /**
- * Screenshot capture for visual context
+ * Captures page screenshot as base64 JPEG.
  */
 export async function captureScreenshot(): Promise<string> {
   const canvas = await html2canvas(document.body, {

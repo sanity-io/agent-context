@@ -30,7 +30,7 @@
     "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.2",
     "@sanity/prettier-config": "^3.0.0",
-    "@types/node": "^22.19.11",
+    "@types/node": "^22.19.15",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",

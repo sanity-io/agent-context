@@ -37,7 +37,7 @@ export const CLIENT_TOOL_NAMES = {
 /**
  * Client-side tools handled in the browser.
  */
-export const clientTools: ToolSet = {
+export const clientTools = {
   [CLIENT_TOOL_NAMES.PAGE_CONTEXT]: {
     description: `Get the current page content as markdown. Use when you need to know what's visible on the page.`,
     inputSchema: z.object({}),
@@ -50,4 +50,4 @@ export const clientTools: ToolSet = {
     description: `Update product listing filters. First use groq_query to get valid filter values (slugs/codes) and confirm products exist.`,
     inputSchema: productFiltersSchema,
   },
-}
+} satisfies ToolSet

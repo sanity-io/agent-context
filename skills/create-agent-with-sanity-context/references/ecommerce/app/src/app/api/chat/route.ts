@@ -2,7 +2,7 @@ import {anthropic} from '@ai-sdk/anthropic'
 import {createMCPClient, type MCPClient} from '@ai-sdk/mcp'
 import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'ai'
 
-import {clientTools, type UserContext} from '@/lib/client-tools'
+import {clientTools, type DocumentContext} from '@/lib/client-tools'
 import {saveConversation} from '@/lib/save-conversation'
 import {client} from '@/sanity/lib/client'
 
@@ -11,71 +11,60 @@ const MAX_STEPS = 20
 
 interface BuildSystemPromptParams {
   basePrompt: string
-  userContext: UserContext
+  documentContext: DocumentContext
 }
 
 /**
- * Builds the full system prompt by combining:
- * 1. Base prompt from Sanity (persona, communication style)
- * 2. Implementation-specific sections (page context, directive syntax)
+ * Combines base prompt from Sanity with page context and tool instructions.
  */
-function buildSystemPrompt({basePrompt, userContext}: BuildSystemPromptParams): string {
+function buildSystemPrompt(props: BuildSystemPromptParams): string {
+  const {basePrompt, documentContext} = props
+
   return `
 ${basePrompt}
 
-# Page context
+# Current page
 
-The user's current page is provided below. Use this for questions like "Where am I?", "What page is this?", or "Give me a link."
+<page-context>
+  <title>${documentContext.title}</title>
+  <description>${documentContext.description || ''}</description>
+  <pathname>${documentContext.pathname}</pathname>
+</page-context>
 
-<user-context>
-  <document-title>${userContext.documentTitle}</document-title>
-  <document-location>${userContext.documentLocation}</document-location>
-</user-context>
-
-For deeper page understanding, two tools are available:
-
-- **get_page_context**: Returns the page as markdown (headings, links, lists). Use for "What's on this page?", "What products are shown?", "Summarize this page."
-- **get_page_screenshot**: Returns a visual screenshot. Use only when you need to see images, colors, or layout—for questions like "What color is this?", "Does this look right?", "Show me what you see."
-
-Choose the minimum level needed: user-context first, then get_page_context, then get_page_screenshot.
+For more detail about what's visible on the page, use these tools:
+- **get_page_context**: page content as markdown
+- **get_page_screenshot**: visual screenshot
 
 # Displaying products
 
-Render products using document directives so the UI can display rich cards. Query Sanity to get the document _id and _type, then use this syntax:
+To display products as rich cards, query Sanity to get the _id and _type, then use this directive syntax:
 
-Block format (for product lists):
-::document{id="<_id>" type="<_type>"}
+- Block: ::document{id="<_id>" type="<_type>"}
+- Inline: :document{id="<_id>" type="<_type>"}
 
-Inline format (within a sentence):
-:document{id="<_id>" type="<_type>"}
-
-Example response showing three jackets:
-::document{id="product-abc123" type="product"}
-::document{id="product-def456" type="product"}
-::document{id="product-ghi789" type="product"}
-
-Example inline: Check out the :document{id="product-abc123" type="product"} for a timeless look.
-
-Write product names only inside directives. If page context mentions product names, summarize generically ("the products shown") or query Sanity for their IDs rather than repeating names as plain text.
+Always use directives for product names so the UI can render them as cards.
 `
 }
 
 interface ChatRequest {
   messages: UIMessage[]
-  userContext: UserContext
+  documentContext: DocumentContext
   id: string
 }
 
 export async function POST(req: Request) {
-  const {messages, userContext, id: chatId}: ChatRequest = await req.json()
+  const {messages, documentContext, id: chatId}: ChatRequest = await req.json()
 
-  // Validate required environment variables
   if (!process.env.SANITY_CONTEXT_MCP_URL) {
     throw new Error('SANITY_CONTEXT_MCP_URL is not set')
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY is not set')
+  }
+
+  if (!process.env.SANITY_API_READ_TOKEN) {
+    throw new Error('SANITY_API_READ_TOKEN is not set')
   }
 
   let mcpClient: MCPClient | null = null
@@ -110,7 +99,7 @@ export async function POST(req: Request) {
 
     const systemPrompt = buildSystemPrompt({
       basePrompt: agentConfig.systemPrompt,
-      userContext,
+      documentContext,
     })
 
     const mcpTools = await mcpClient.tools()

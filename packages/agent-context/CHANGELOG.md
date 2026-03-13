@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.5](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.4...agent-context-v0.3.5) (2026-03-13)
+
+### Bug Fixes
+
+- **deps:** Update dependency groq-js to ^1.29.0 ([#152](https://github.com/sanity-io/agent-context/issues/152)) ([8c1d2d9](https://github.com/sanity-io/agent-context/commit/8c1d2d9aae1c51af3a56c557aa9a68aa2785d9a6))
+
 ## [0.3.4](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.3...agent-context-v0.3.4) (2026-03-05)
 
 ### Bug Fixes

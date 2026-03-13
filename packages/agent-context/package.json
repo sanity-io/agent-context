@@ -50,7 +50,7 @@
   },
   "browserslist": "extends @sanity/browserslist-config",
   "dependencies": {
-    "groq-js": "^1.25.0"
+    "groq-js": "^1.29.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

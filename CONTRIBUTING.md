@@ -26,6 +26,20 @@ This repo uses [Release Please](https://github.com/googleapis/release-please) wi
 
 4. **Merge the release PR** — this triggers the npm publish
 
+5. **Changelog draft is created automatically** — after publish, the workflow generates a changelog draft using the GitHub release and PR descriptions, and sends a Slack notification to review and publish the release in Studio.
+
+### Changelog CLI
+
+You can also manage changelog entries locally:
+
+```bash
+pnpm release-notes preview 0.3.4        # Preview what would be created
+pnpm release-notes create 0.3.4         # Create documents
+pnpm release-notes delete 0.3.4         # Delete documents
+```
+
+Requires a `.env` file in `scripts/release-notes/` — see `.env.example` for the required variables.
+
 # Skills
 
 ## Reference implementation syncing

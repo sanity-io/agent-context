@@ -36,7 +36,7 @@
     "@sanity/id-utils": "^1.0.0",
     "@sanity/prettier-config": "^3.0.0",
     "@types/node": "^22.19.15",
-    "cac": "^6.7.14",
+    "cac": "^7.0.0",
     "chalk": "^5.4.1",
     "dotenv-cli": "^11.0.0",
     "husky": "^9.1.7",

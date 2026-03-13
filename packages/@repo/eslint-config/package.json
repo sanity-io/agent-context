@@ -11,7 +11,7 @@
     "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-react-you-might-not-need-an-effect": "^0.9.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "globals": "^17.3.0",
+    "globals": "^17.4.0",
     "typescript-eslint": "^8.56.1"
   },
   "devDependencies": {

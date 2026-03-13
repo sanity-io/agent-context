@@ -224,8 +224,8 @@ importers:
         specifier: 0.10.0
         version: 0.10.0
       '@sanity/functions':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.2.1
+        version: 1.2.1
       '@types/react':
         specifier: ^19
         version: 19.2.8
@@ -2846,9 +2846,9 @@ packages:
     engines: {node: '>=20.19 <22 || >=22.12'}
     hasBin: true
 
-  '@sanity/functions@1.2.0':
-    resolution: {integrity: sha512-d8iVuruYKsgYI/KFbAVqjtnotnW3DDwgtOir1tqBJYVxxjPxH7JLiho26Kq6HWd/+N0wZHZEv+uz1aQa+T21kQ==}
-    engines: {node: '>=20'}
+  '@sanity/functions@1.2.1':
+    resolution: {integrity: sha512-c7QuFgvgAqJTLmshOUhnqlxjyDCuTLvqFdBTlDHM8D+ZoolW8YYILEla2EVlDYETWo4ZD0fy4uYRUvLoc3ezrg==}
+    engines: {node: '>=20.19'}
 
   '@sanity/generate-help-url@4.0.0':
     resolution: {integrity: sha512-Ooa4xkLT3TLaX+mw/13fq3IeGdnAkx4rbpVASvRVixzBBvvcL6jPqj50fjlCd+EhgB5GRXBCNNAy/hWXwjZEUA==}
@@ -11077,7 +11077,7 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@sanity/functions@1.2.0': {}
+  '@sanity/functions@1.2.1': {}
 
   '@sanity/generate-help-url@4.0.0': {}
 

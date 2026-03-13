@@ -25,7 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "html2canvas-pro": "^1.6.7",
-    "lucide-react": "^0.563.0",
+    "lucide-react": "^0.577.0",
     "next": "16.1.4",
     "next-sanity": "^12.0.14",
     "react": "^19",

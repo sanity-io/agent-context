@@ -40,14 +40,14 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^22.19.15",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/turndown": "^5.0.6",
     "dotenv": "^17.3.1",
     "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.2.1",
     "typescript": "^5"
   }
 }

@@ -29,8 +29,8 @@
   "prettier": "@sanity/prettier-config",
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@commitlint/cli": "^20.4.3",
-    "@commitlint/config-conventional": "^20.4.3",
+    "@commitlint/cli": "^20.4.4",
+    "@commitlint/config-conventional": "^20.4.4",
     "@portabletext/markdown": "^1.0.0",
     "@sanity/client": "^7.3.0",
     "@sanity/id-utils": "^1.0.0",

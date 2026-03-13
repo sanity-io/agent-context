@@ -21,7 +21,7 @@
     "@sanity/agent-directives": "^0.0.15",
     "@sanity/client": "^7.14.1",
     "@sanity/image-url": "^2.0.3",
-    "ai": "^6.0.50",
+    "ai": "^6.0.116",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "html2canvas-pro": "^1.6.7",

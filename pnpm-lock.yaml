@@ -221,8 +221,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/@repo/eslint-config
       '@sanity/blueprints':
-        specifier: 0.10.0
-        version: 0.10.0
+        specifier: 0.13.1
+        version: 0.13.1
       '@sanity/functions':
         specifier: 1.2.1
         version: 1.2.1
@@ -2782,8 +2782,8 @@ packages:
     resolution: {integrity: sha512-MdZ7JzMalB2qjQpgNUHupnY6f+QvkV5cGbqL75ySJbXPpICKPJWLQsrPwJLA0E3ZRCO3MnE6/6zrEayQm8Hhew==}
     engines: {node: '>=20.19 <22 || >=22.12'}
 
-  '@sanity/blueprints@0.10.0':
-    resolution: {integrity: sha512-TweEjiarTWY8Bj3JCpcN0RFz1fdanFPpVEH955KWJGqCCKY3EnyOuv3oEctX4sPAuz1C3xpp3X8D0HhaG+6MEQ==}
+  '@sanity/blueprints@0.13.1':
+    resolution: {integrity: sha512-ecpew4NrUeB5zIQCu0VtgWBeoX2oU+UUyEya1qyt7qqpovsF881gd37CV23kjodJumuOXxOQT4sY2GK+gD+TpQ==}
     engines: {node: '>=20'}
 
   '@sanity/blueprints@0.9.0':
@@ -10832,7 +10832,7 @@ snapshots:
 
   '@sanity/blueprints-parser@0.3.1': {}
 
-  '@sanity/blueprints@0.10.0': {}
+  '@sanity/blueprints@0.13.1': {}
 
   '@sanity/blueprints@0.9.0': {}
 

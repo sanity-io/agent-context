@@ -45,7 +45,7 @@
     "pretty-quick": "^4.2.2",
     "tsx": "^4.21.0",
     "turbo": "^2.7.4",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.29.3"
 }

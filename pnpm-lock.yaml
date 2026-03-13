@@ -60,7 +60,7 @@ importers:
         specifier: ^2.7.4
         version: 2.7.4
       typescript:
-        specifier: ^5
+        specifier: ^5.9.3
         version: 5.9.3
 
   examples/ecommerce/app:
@@ -166,7 +166,7 @@ importers:
         specifier: ^4
         version: 4.1.18
       typescript:
-        specifier: ^5
+        specifier: ^5.9.3
         version: 5.9.3
 
   examples/ecommerce/studio:
@@ -233,7 +233,7 @@ importers:
         specifier: ^11.0.0
         version: 11.0.0
       typescript:
-        specifier: ^5
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/@repo/eslint-config:
@@ -310,7 +310,7 @@ importers:
         specifier: ^6.3.8
         version: 6.3.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       typescript:
-        specifier: ^5
+        specifier: ^5.9.3
         version: 5.9.3
       vitest:
         specifier: ^4.0.0
@@ -344,7 +344,7 @@ importers:
         specifier: ^19
         version: 19.2.8
       typescript:
-        specifier: ^5
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:

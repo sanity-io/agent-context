@@ -65,7 +65,7 @@
     "react-dom": "^19",
     "sanity": "^5.9.0",
     "styled-components": "^6.3.8",
-    "typescript": "^5",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.0"
   },
   "peerDependencies": {

@@ -40,7 +40,7 @@
     "chalk": "^5.4.1",
     "dotenv-cli": "^11.0.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^16.3.3",
     "prettier": "^3.8.1",
     "pretty-quick": "^4.2.2",
     "tsx": "^4.21.0",

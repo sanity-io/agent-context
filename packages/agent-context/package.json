@@ -60,13 +60,13 @@
     "@sanity/ui": "^3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "react": "^19",
     "react-dom": "^19",
     "sanity": "^5.9.0",
     "styled-components": "^6.3.8",
     "typescript": "^5",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "@sanity/icons": "^3",

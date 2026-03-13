@@ -18,7 +18,7 @@
     "@ai-sdk/react": "^3.0.118",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
-    "@sanity/agent-directives": "^0.0.10",
+    "@sanity/agent-directives": "^0.0.15",
     "@sanity/client": "^7.14.1",
     "@sanity/image-url": "^2.0.3",
     "ai": "^6.0.50",

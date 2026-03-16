@@ -1,6 +1,12 @@
 import {anthropic} from '@ai-sdk/anthropic'
 import {createMCPClient, type MCPClient} from '@ai-sdk/mcp'
-import {convertToModelMessages, stepCountIs, streamText, type UIMessage} from 'ai'
+import {
+  convertToModelMessages,
+  type Experimental_DownloadFunction,
+  stepCountIs,
+  streamText,
+  type UIMessage,
+} from 'ai'
 
 import {clientTools, type DocumentContext} from '@/lib/client-tools'
 import {saveConversation} from '@/lib/save-conversation'
@@ -50,6 +56,24 @@ interface ChatRequest {
   messages: UIMessage[]
   documentContext: DocumentContext
   id: string
+}
+
+// The `get_page_screenshot` tool sends screenshots as `data:` URLs, which
+// are not supported by the default downloader. `experimental_download` is used
+// to decode `data:` files for model input. An alternative approach is to upload
+// screenshots first and send an `https://` file URL.
+const downloadDataUrls: Experimental_DownloadFunction = async (items) => {
+  return items.map(({url}) => {
+    if (url.protocol !== 'data:') return null
+
+    const [meta = '', payload = ''] = url.href.slice(5).split(',', 2)
+    const mediaType = meta.split(';')[0] || undefined
+    const data = meta.includes(';base64')
+      ? Buffer.from(payload, 'base64')
+      : Buffer.from(decodeURIComponent(payload), 'utf8')
+
+    return {data: new Uint8Array(data), mediaType}
+  })
 }
 
 export async function POST(req: Request) {
@@ -109,6 +133,7 @@ export async function POST(req: Request) {
       model: anthropic(modelId),
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
+      experimental_download: downloadDataUrls,
       tools: {
         ...mcpTools,
         ...clientTools,

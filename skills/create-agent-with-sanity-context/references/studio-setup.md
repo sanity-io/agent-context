@@ -9,7 +9,7 @@ Configure the Sanity Context plugin in your Studio and create agent context docu
 - [Install the Package](#install-the-package)
 - [Add the Plugin](#add-the-plugin)
 - [Customize Structure Tool](#customize-structure-tool-optional)
-- [Create an Agent Context Document](#create-an-agent-context-document)
+- [Create an Agent Context document](#create-an-agent-context-document)
 - [Get the MCP URL](#get-the-mcp-url)
 - [Deploy Your Studio](#deploy-your-studio)
 - [Create an Agent Config Document](#create-an-agent-config-document-optional)
@@ -60,7 +60,7 @@ This registers the `sanity.agentContext` document type in your Studio.
 
 To organize agent-related documents in a dedicated section, see [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for an example.
 
-## Create an Agent Context Document
+## Create an Agent Context document
 
 There are two ways to create and edit Agent Context documents:
 
@@ -175,4 +175,4 @@ These schemas demonstrate patterns for structured content that agents can query 
 
 ## Next Steps
 
-With the Studio configured, deployed, and agent context created, return to the main skill to build the agent implementation.
+With the Studio configured, deployed, and an Agent Context document created, update the agent's MCP URL to use the slug-based URL to apply the document's configuration.

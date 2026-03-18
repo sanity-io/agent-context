@@ -44,10 +44,10 @@ An MCP server that gives AI agents structured access to Sanity content. The core
 
 **MCP URL formats:**
 
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — Access all content, no custom configuration
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — Use an Agent Context Document's configuration
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — **Base URL.** No document needed, configure via query params or use as-is.
+- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — **Document URL.** Applies the configuration from an Agent Context document.
 
-**Agent Context Documents** (type `sanity.agentContext`) are created in Sanity Studio and configure the MCP endpoint. They have three fields:
+**Agent Context documents** (type `sanity.agentContext`) are created in Sanity Studio and configure the MCP endpoint. They have three fields:
 
 | Field              | Schema field   | Purpose                                                                 |
 | ------------------ | -------------- | ----------------------------------------------------------------------- |
@@ -82,15 +82,15 @@ A complete integration has **three distinct components** that may live in differ
 | --------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | **1. Studio Setup**         | Configure the context plugin and create agent context documents  | Sanity Studio (separate repo or embedded)                                       |
 | **2. Agent Implementation** | Code that connects to Agent Context and handles LLM interactions | Next.js API route, Express server, Python service, or any MCP-compatible client |
-| **3. Frontend (Optional)**  | UI for users to interact with the agent                          | Chat widget, search interface, CLI—or none for backend services                 |
+| **3. Frontend (optional)**  | UI for users to interact with the agent                          | Chat widget, search interface, CLI—or none for backend services                 |
 
-**Studio setup and agent implementation are required.** Frontend is optional—many agents run as backend services or integrate into existing UIs.
+A deployed Studio (v5.1.0+) is always required. Not every integration needs the agent context plugin or document—the base MCP URL works without them, so users can start with just agent implementation and add document configuration later—or vice versa. Frontend depends on the use case (many agents run as backend services or integrate into existing UIs).
 
 Ask the user which part they need help with:
 
 - **Components in different repos** (most common): You may only have access to one component. Complete what you can, then tell the user what steps remain for the other repos.
-- **Co-located components**: All three in the same project—work through them one at a time (Studio → Agent → Frontend).
-- **Already on step 2 or 3**: If you can't find a Studio in the codebase, ask the user if Studio setup is complete.
+- **Co-located components**: All three in the same project—work through them based on what the user wants to tackle first.
+- **No Studio in the codebase?** Ask the user if Studio setup is done elsewhere, or if they want to skip the agent context plugin and document for now—the base URL works without them.
 
 Also understand:
 
@@ -113,15 +113,9 @@ curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_I
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
 ```
 
-This confirms the token works and the endpoint is reachable. The base URL (no slug) gives access to all content — use a slug-based URL in production to apply the Agent Context Document's filter and instructions.
+This confirms the token works and the endpoint is reachable. The base URL (no slug) works without an Agent Context document—add a slug to apply a document's configuration.
 
-### Step 1: Set up Sanity Studio
-
-Help the user configure the `@sanity/agent-context` plugin in their Studio and create an Agent Context Document. This document controls what the production agent can see (via `groqFilter`) and what guidance it receives (via `instructions`).
-
-See [references/studio-setup.md](references/studio-setup.md)
-
-### Step 2: Build the Agent (Adapt to user's stack)
+### Step 1: Build the Agent (Adapt to user's stack)
 
 **The user already has an agent or MCP client?** They just need to connect it to their Agent Context URL with a Bearer token. The tools will appear automatically.
 
@@ -140,6 +134,12 @@ The framework guides cover:
 - **Core setup** (required): MCP connection, authentication, basic chat route
 - **Frontend** (optional): Chat component for the framework
 - **Advanced patterns** (optional): Client-side tools, auto-continuation, custom rendering
+
+### Step 2: Set up Sanity Studio
+
+Help the user configure the `@sanity/agent-context/studio` plugin in their Studio and create an Agent Context document. This document controls what the production agent can see (via `groqFilter`) and what guidance it receives (via `instructions`).
+
+See [references/studio-setup.md](references/studio-setup.md)
 
 ### Step 3: Conversation Classification (Optional)
 
@@ -201,7 +201,7 @@ The `SANITY_API_READ_TOKEN` is missing or invalid. Help the user generate a new 
 
 ### "No documents found" / Empty results
 
-Check the Agent Context Document's content filter (`groqFilter`):
+Check the Agent Context document's content filter (`groqFilter`):
 
 - Is the GROQ filter correct?
 - Are the document types spelled correctly?
@@ -210,5 +210,5 @@ Check the Agent Context Document's content filter (`groqFilter`):
 ### Tools not appearing
 
 1. Check that `mcpClient.tools()` returns tools (log it)
-2. Ensure the MCP URL is correct (project ID, dataset, slug)
-3. Verify the agent context document is published
+2. Ensure the MCP URL is correct (project ID, dataset, and optionally slug)
+3. If using a slug-based URL, verify the agent context document is published

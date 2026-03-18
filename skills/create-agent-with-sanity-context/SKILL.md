@@ -44,8 +44,8 @@ An MCP server that gives AI agents structured access to Sanity content. The core
 
 **MCP URL formats:**
 
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset` — **Base URL.** No document needed, configure via query params or use as-is.
-- `https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug` — **Document URL.** Applies the configuration from an Agent Context document.
+- `https://api.sanity.io/v2026-03-03/agent-context/:projectId/:dataset` — **Base URL.** No document needed, configure via query params or use as-is.
+- `https://api.sanity.io/v2026-03-03/agent-context/:projectId/:dataset/:slug` — **Document URL.** Applies the configuration from an Agent Context document.
 
 **Agent Context documents** (type `sanity.agentContext`) are created in Sanity Studio and configure the MCP endpoint. They have three fields:
 
@@ -115,7 +115,7 @@ This outputs JSON with the token value. If not inside a Sanity project directory
 Then test the endpoint:
 
 ```bash
-curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET \
+curl -X POST https://api.sanity.io/v2026-03-03/agent-context/:projectId/:dataset \
   -H "Authorization: Bearer $SANITY_API_READ_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'

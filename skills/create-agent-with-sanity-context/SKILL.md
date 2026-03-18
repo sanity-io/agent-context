@@ -26,12 +26,12 @@ Agent Context gives agents your schema and teaches them GROQ, but it can't know 
 
 Before starting, gather these credentials:
 
-| Credential                | Where to get it                                                                                                                                                        |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sanity Project ID**     | Your `sanity.config.ts` or [sanity.io/manage](https://sanity.io/manage)                                                                                                |
-| **Dataset name**          | Usually `production` — check your `sanity.config.ts`                                                                                                                   |
-| **Sanity API read token** | Create at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens. See [HTTP Auth docs](https://www.sanity.io/docs/content-lake/http-auth#k967e449638bc) |
-| **LLM API key**           | From your LLM provider (Anthropic, OpenAI, etc.) — any provider works                                                                                                  |
+| Credential                | Where to get it                                                                                                                                                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sanity Project ID**     | Your `sanity.config.ts` or [sanity.io/manage](https://sanity.io/manage)                                                                                                                                                                           |
+| **Dataset name**          | Usually `production` — check your `sanity.config.ts`                                                                                                                                                                                              |
+| **Sanity API read token** | Run `npx sanity tokens add "Agent Context" --role=viewer --yes --json` from the project directory (or pass `--project-id=<id>`). Alternatively, create at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer role. |
+| **LLM API key**           | From your LLM provider (Anthropic, OpenAI, etc.) — any provider works                                                                                                                                                                             |
 
 ## How Agent Context Works
 
@@ -104,7 +104,15 @@ The reference patterns use Next.js + Vercel AI SDK, but adapt to whatever the us
 
 ### Quick Validation (Optional)
 
-Before building the production agent, validate that the MCP endpoint is reachable:
+Before building the production agent, validate that the MCP endpoint is reachable. If the user doesn't have a read token yet, offer to create one from the terminal — detect the `projectId` from `sanity.config.ts` or `sanity.cli.ts` if available:
+
+```bash
+npx sanity tokens add "Agent Context" --role=viewer --yes --json
+```
+
+This outputs JSON with the token value. If not inside a Sanity project directory, pass `--project-id=<id>` explicitly.
+
+Then test the endpoint:
 
 ```bash
 curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET \
@@ -197,7 +205,13 @@ Agent Context requires a deployed Studio. See [Deploy Your Studio](references/st
 
 ### "401 Unauthorized" from MCP
 
-The `SANITY_API_READ_TOKEN` is missing or invalid. Help the user generate a new token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer permissions.
+The `SANITY_API_READ_TOKEN` is missing or invalid. Generate a new token from the terminal:
+
+```bash
+npx sanity tokens add "Agent Context" --role=viewer --yes --json
+```
+
+Or create one at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Viewer role.
 
 ### "No documents found" / Empty results
 

@@ -117,6 +117,16 @@ See [ecommerce/app/src/components/chat/chat.tsx](ecommerce/app/src/components/ch
 - [ecommerce/app/src/lib/client-tools.ts](ecommerce/app/src/lib/client-tools.ts) - Tool name constants and `DocumentContext` type
 - [ecommerce/app/src/lib/capture-context.ts](ecommerce/app/src/lib/capture-context.ts) - Page context and screenshot capture functions
 
+### Markdown Rendering
+
+LLM responses are markdown — without a renderer, users see raw syntax.
+
+```bash
+npm install react-markdown
+```
+
+See [ecommerce/app/src/components/chat/message/text-part.tsx](ecommerce/app/src/components/chat/message/text-part.tsx) for the reference implementation.
+
 ## Testing the Agent
 
 1. Start your Next.js dev server: `npm run dev`

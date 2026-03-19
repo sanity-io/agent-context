@@ -140,8 +140,8 @@ This confirms the token works and the endpoint is reachable. The base URL (no sl
 The framework guides cover:
 
 - **Core setup** (required): MCP connection, authentication, basic chat route
-- **Frontend** (optional): Chat component for the framework
-- **Advanced patterns** (optional): Client-side tools, auto-continuation, custom rendering
+- **Frontend** (optional): Chat component for the framework, including markdown rendering (LLM responses are markdown — a renderer like `react-markdown` or `marked` is needed to display formatted output)
+- **Advanced patterns** (optional): Client-side tools, auto-continuation, custom directive rendering
 
 ### Step 2: Set up Sanity Studio
 

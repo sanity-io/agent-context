@@ -43,8 +43,8 @@ NEXT_PUBLIC_SANITY_DATASET=production
 # Sanity API token with read access
 SANITY_API_READ_TOKEN=your-read-token
 
-# Agent Context URL (from your Agent Context document)
-SANITY_CONTEXT_MCP_URL=https://api.sanity.io/:apiVersion/agent-context/your-project-id/production/your-slug
+# Agent Context MCP URL
+SANITY_CONTEXT_MCP_URL=https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug
 
 # Anthropic API key
 ANTHROPIC_API_KEY=your-anthropic-key
@@ -220,7 +220,7 @@ Agent Context requires a deployed Studio. See [Deploy Your Studio](studio-setup.
 
 Ensure you've:
 
-1. Created an Agent Context document in Studio
+1. Created an Agent Context document in Studio (or use the base URL without a slug)
 2. Given it a slug
 3. Copied the MCP URL from the document
 4. Added it to your `.env.local`
@@ -240,5 +240,5 @@ Check your Agent Context's content filter:
 ### Tools not appearing
 
 1. Check that `mcpClient.tools()` returns tools (log it)
-2. Ensure the MCP URL is correct (project ID, dataset, slug)
-3. Verify the agent context document is published
+2. Ensure the MCP URL is correct (project ID, dataset, and optionally slug)
+3. If using a slug-based URL, verify the agent context document is published

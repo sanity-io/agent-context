@@ -34,7 +34,7 @@ You need one of these to run this session:
 
 **Path A — Write access (recommended):** A Sanity write token or the general Sanity MCP (OAuth). This lets you create a draft context doc, write instructions + filter to it during the session, and promote it to production when done. Production is never touched until you're ready.
 
-**Path B — URL params only:** If no write access is available, you can use `?instructions=` and `?groqFilter=` URL query params on the MCP endpoint to test everything. At the end, provide the final content for the user to enter manually in Sanity Studio.
+**Path B — URL params only:** Use `?instructions=` and `?groqFilter=` URL query params on the MCP endpoint to test everything. At the end, provide the final content for the user to enter manually in Sanity Studio. Works with both base and document URLs.
 
 Both paths are safe — neither modifies the production agent during the session.
 
@@ -52,7 +52,7 @@ Both paths are safe — neither modifies the production agent during the session
 
 **Goal:** Establish MCP access, set up a safe working environment.
 
-Connect to the user's Sanity Agent Context MCP. Get the project ID, dataset, and slug from the user if not already known.
+Connect to the user's Sanity Agent Context MCP. Get the project ID and dataset from the user if not already known. The slug is only needed if they have an existing Agent Context document.
 
 **Set up your working environment:**
 
@@ -281,7 +281,7 @@ Present the final Instructions content and filter to the user for one last revie
    ```
    https://api.sanity.io/vX/agent-context/{project}/{dataset}/{slug}?instructions=<URL-encoded>&groqFilter=<URL-encoded>
    ```
-2. Also provide the raw content separately for the user to paste into their Agent Context Document in Sanity Studio:
+2. Also provide the raw content separately for the user to paste into their Agent Context document in Sanity Studio:
    - **Instructions field:** [final instructions block]
    - **Filter field:** [GROQ expression]
    - Location: Sanity Studio → Agent Context document → Instructions / Filter fields

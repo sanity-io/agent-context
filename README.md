@@ -115,7 +115,7 @@ Other skills help you refine: `dial-your-context` (tune the Instructions field) 
 **Validate the connection** — Test that your token and endpoint work:
 
 ```bash
-curl -X POST https://api.sanity.io/YOUR_API_VERSION/agent-context/YOUR_PROJECT_ID/YOUR_DATASET/YOUR_SLUG \
+curl -X POST https://api.sanity.io/v2026-03-03/agent-context/:projectId/:dataset/:slug \
   -H "Authorization: Bearer $SANITY_API_READ_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'

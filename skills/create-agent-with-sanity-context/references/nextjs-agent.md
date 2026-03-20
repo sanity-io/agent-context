@@ -44,7 +44,7 @@ NEXT_PUBLIC_SANITY_DATASET=production
 SANITY_API_READ_TOKEN=your-read-token
 
 # Agent Context MCP URL
-SANITY_CONTEXT_MCP_URL=https://api.sanity.io/:apiVersion/agent-context/:projectId/:dataset/:slug
+SANITY_CONTEXT_MCP_URL=https://api.sanity.io/v2026-03-03/agent-context/:projectId/:dataset/:slug
 
 # Anthropic API key
 ANTHROPIC_API_KEY=your-anthropic-key

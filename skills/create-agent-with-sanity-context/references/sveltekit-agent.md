@@ -318,7 +318,9 @@ export const ssr = false
 - **`chat.sendMessage({ text })`** — Sends a message to the API route
 - **Parts-based rendering** — Iterate `message.parts` and check `part.type === 'text'` to render text content
 
-> **Tip:** For markdown rendering, add `marked` as a dependency and use `{@html marked(part.text)}` instead of `<p>{part.text}</p>`.
+### Markdown Rendering
+
+LLM responses are markdown — without a renderer, users see raw syntax. Add `marked` as a dependency and use `{@html marked(part.text)}` instead of `<p>{part.text}</p>`.
 
 ## Testing the Agent
 

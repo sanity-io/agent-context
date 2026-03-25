@@ -1,0 +1,98 @@
+import type {SanityClient} from 'sanity'
+
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
+import type {Message} from './saveConversation'
+
+/** @public */
+export interface GetConversationsToClassifyOptions {
+  /** Sanity client with read permissions. */
+  client: SanityClient
+  /** Optional filter by agent ID. */
+  agentId?: string
+  /** Optional maximum number of conversations to return. By default, all matching conversations are returned. */
+  limit?: number
+}
+
+/** @public */
+export interface ConversationToClassify {
+  /** Document ID. */
+  _id: string
+  /** Agent that handled this conversation. */
+  agentId: string
+  /** Unique thread identifier. */
+  threadId: string
+  /** Conversation messages. */
+  messages: Message[]
+}
+
+/**
+ * Finds conversations that need classification or re-classification.
+ *
+ * A conversation needs classification if:
+ * - It has never been classified (`classifiedAt` is not set)
+ * - It has been updated since last classification (`_updatedAt > classifiedAt`)
+ *
+ * Results are ordered by `_updatedAt` ascending (oldest first) to prioritize
+ * conversations that have been waiting longest.
+ *
+ * @example
+ * ```ts
+ * import {getConversationsToClassify, classifyConversation} from '@sanity/agent-context/primitives'
+ *
+ * const conversations = await getConversationsToClassify({
+ *   client: sanityClient,
+ *   limit: 500,
+ * })
+ *
+ * for (const conv of conversations) {
+ *   await classifyConversation({
+ *     client: sanityClient,
+ *     conversationId: conv._id,
+ *     model: openai('gpt-4o-mini'),
+ *     messages: conv.messages,
+ *   })
+ * }
+ * ```
+ *
+ * @returns Array of conversations that need classification.
+ * @public
+ */
+export async function getConversationsToClassify(
+  options: GetConversationsToClassifyOptions,
+): Promise<ConversationToClassify[]> {
+  const {client, agentId, limit} = options
+
+  if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+    throw new Error('getConversationsToClassify: limit must be a positive integer')
+  }
+
+  // Build query with optional limit
+  const sliceClause = limit !== undefined ? `[0...${limit}]` : ''
+
+  const query = `*[
+    _type == $type
+    && (
+      // Never classified
+      !defined(classifiedAt)
+      // Or has updates after last classification
+      || _updatedAt > classifiedAt
+    )
+    // Optional agent filter
+    && ($agentId == null || agentId == $agentId)
+  ] | order(_updatedAt asc)${sliceClause} {
+    _id,
+    agentId,
+    threadId,
+    "messages": messages[] {
+      "role": role,
+      "content": content
+    }
+  }`
+
+  const conversations = await client.fetch<ConversationToClassify[]>(query, {
+    type: CONVERSATION_SCHEMA_TYPE_NAME,
+    agentId: agentId ?? null,
+  })
+
+  return conversations
+}

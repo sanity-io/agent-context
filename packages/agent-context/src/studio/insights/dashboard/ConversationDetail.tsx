@@ -7,6 +7,34 @@ import {CONVERSATION_SCHEMA_TYPE_NAME} from '../schemas/conversationSchema'
 import {SANITY_API_VERSION} from './constants'
 import type {ConversationMessage, CoreMetrics, CustomMetric} from './types'
 
+function formatSentiment(sentiment: string): string {
+  return sentiment.charAt(0).toUpperCase() + sentiment.slice(1)
+}
+
+function formatKey(key: string): string {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim()
+}
+
+function renderMetricValue(metric: CustomMetric): string {
+  if (metric.booleanValue !== undefined) {
+    return metric.booleanValue ? 'Yes' : 'No'
+  }
+  if (metric.numberValue !== undefined) {
+    return metric.numberValue.toString()
+  }
+  return metric.stringValue ?? '-'
+}
+
+function getMetricValueTone(metric: CustomMetric): 'positive' | 'critical' | 'default' {
+  if (metric.booleanValue !== undefined) {
+    return metric.booleanValue ? 'positive' : 'critical'
+  }
+  return 'default'
+}
+
 /**
  * Full conversation document structure.
  */
@@ -166,10 +194,6 @@ function MetricsCard({metrics, classifiedAt}: MetricsCardProps) {
     )
   }
 
-  const formatSentiment = (sentiment: string) => {
-    return sentiment.charAt(0).toUpperCase() + sentiment.slice(1)
-  }
-
   return (
     <Card padding={3} radius={2} tone="primary">
       <Stack space={3}>
@@ -220,31 +244,6 @@ interface CustomMetricsCardProps {
 }
 
 function CustomMetricsCard({customMetrics}: CustomMetricsCardProps) {
-  const formatKey = (key: string) => {
-    // Convert camelCase to Title Case with spaces
-    return key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, (str) => str.toUpperCase())
-      .trim()
-  }
-
-  const renderValue = (metric: CustomMetric) => {
-    if (metric.booleanValue !== undefined) {
-      return metric.booleanValue ? 'Yes' : 'No'
-    }
-    if (metric.numberValue !== undefined) {
-      return metric.numberValue.toString()
-    }
-    return metric.stringValue ?? '-'
-  }
-
-  const getValueTone = (metric: CustomMetric): 'positive' | 'critical' | 'default' => {
-    if (metric.booleanValue !== undefined) {
-      return metric.booleanValue ? 'positive' : 'critical'
-    }
-    return 'default'
-  }
-
   return (
     <Card padding={3} radius={2} tone="transparent" border>
       <Stack space={3}>
@@ -258,7 +257,7 @@ function CustomMetricsCard({customMetrics}: CustomMetricsCardProps) {
               key={metric._key}
               padding={3}
               radius={2}
-              tone={getValueTone(metric)}
+              tone={getMetricValueTone(metric)}
               style={{minWidth: '120px'}}
             >
               <Stack space={2}>
@@ -267,7 +266,7 @@ function CustomMetricsCard({customMetrics}: CustomMetricsCardProps) {
                 </Text>
 
                 <Text size={2} weight="semibold">
-                  {renderValue(metric)}
+                  {renderMetricValue(metric)}
                 </Text>
               </Stack>
             </Card>

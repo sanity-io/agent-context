@@ -1,6 +1,6 @@
 import {ChevronRightIcon} from '@sanity/icons'
 import {Card, Flex, Grid, Heading, Spinner, Stack, Text} from '@sanity/ui'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {useClient} from 'sanity'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../schemas/conversationSchema'
@@ -247,28 +247,12 @@ export function AnalyticsOverview({
             {stats.contentGaps.length > 0 ? (
               <Stack space={2}>
                 {stats.contentGaps.map((gap) => (
-                  <Card
+                  <ContentGapRow
                     key={gap.description}
-                    padding={3}
-                    radius={2}
-                    tone="caution"
-                    as="button"
-                    onClick={() => onContentGapClick(gap.description)}
-                    aria-label={`Filter by content gap: ${gap.description}`}
-                    style={{cursor: 'pointer', textAlign: 'left', width: '100%', border: 'none'}}
-                  >
-                    <Flex align="center" justify="space-between" gap={2}>
-                      <Text size={1}>{gap.description}</Text>
-
-                      <Flex align="center" gap={2}>
-                        <Text size={0} muted>
-                          {`${gap.count} ${gap.count === 1 ? 'conversation' : 'conversations'}`}
-                        </Text>
-
-                        <ChevronRightIcon style={{fontSize: 16, opacity: 0.6}} />
-                      </Flex>
-                    </Flex>
-                  </Card>
+                    description={gap.description}
+                    count={gap.count}
+                    onClick={onContentGapClick}
+                  />
                 ))}
               </Stack>
             ) : (
@@ -377,3 +361,43 @@ function DistributionRow({label, count, total, tone}: DistributionRowProps) {
     </Stack>
   )
 }
+
+interface ContentGapRowProps {
+  description: string
+  count: number
+  onClick: (description: string) => void
+}
+
+const ContentGapRow = memo(function ContentGapRow({
+  description,
+  count,
+  onClick,
+}: ContentGapRowProps) {
+  const handleClick = useCallback(() => {
+    onClick(description)
+  }, [onClick, description])
+
+  return (
+    <Card
+      padding={3}
+      radius={2}
+      tone="caution"
+      as="button"
+      onClick={handleClick}
+      aria-label={`Filter by content gap: ${description}`}
+      style={{cursor: 'pointer', textAlign: 'left', width: '100%', border: 'none'}}
+    >
+      <Flex align="center" justify="space-between" gap={2}>
+        <Text size={1}>{description}</Text>
+
+        <Flex align="center" gap={2}>
+          <Text size={0} muted>
+            {`${count} ${count === 1 ? 'conversation' : 'conversations'}`}
+          </Text>
+
+          <ChevronRightIcon style={{fontSize: 16, opacity: 0.6}} />
+        </Flex>
+      </Flex>
+    </Card>
+  )
+})

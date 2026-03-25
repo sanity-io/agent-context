@@ -64,6 +64,31 @@ export function InsightsDashboard() {
     setContentGapFilter(null)
   }, [])
 
+  const handleOverviewTab = useCallback(() => setActiveTab('overview'), [])
+  const handleConversationsTab = useCallback(() => setActiveTab('conversations'), [])
+
+  const handleDaysBackChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setDaysBack(Math.max(1, parseInt(e.currentTarget.value) || 1))
+  }, [])
+
+  const handleAgentSelectChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleAgentFilterChange(e.currentTarget.value || null)
+    },
+    [handleAgentFilterChange],
+  )
+
+  const handleThreadSelectChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleThreadFilterChange(e.currentTarget.value || null)
+    },
+    [handleThreadFilterChange],
+  )
+
+  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.currentTarget.value as SortOption)
+  }, [])
+
   return (
     <Card sizing="border" style={{height: '100%', overflow: 'hidden'}}>
       <Flex direction="column" style={{height: '100%'}}>
@@ -80,7 +105,7 @@ export function InsightsDashboard() {
                   aria-controls="overview-panel"
                   id="overview-tab"
                   label="Overview"
-                  onClick={() => setActiveTab('overview')}
+                  onClick={handleOverviewTab}
                   selected={activeTab === 'overview'}
                 />
 
@@ -88,7 +113,7 @@ export function InsightsDashboard() {
                   aria-controls="conversations-panel"
                   id="conversations-tab"
                   label="Conversations"
-                  onClick={() => setActiveTab('conversations')}
+                  onClick={handleConversationsTab}
                   selected={activeTab === 'conversations'}
                 />
               </TabList>
@@ -103,7 +128,7 @@ export function InsightsDashboard() {
                   <TextInput
                     type="number"
                     value={daysBack}
-                    onChange={(e) => setDaysBack(Math.max(1, parseInt(e.currentTarget.value) || 1))}
+                    onChange={handleDaysBackChange}
                     style={{width: 60}}
                   />
 
@@ -119,12 +144,7 @@ export function InsightsDashboard() {
                     Agent
                   </Text>
 
-                  <Select
-                    value={agentFilter ?? ''}
-                    onChange={(e) => {
-                      handleAgentFilterChange(e.currentTarget.value || null)
-                    }}
-                  >
+                  <Select value={agentFilter ?? ''} onChange={handleAgentSelectChange}>
                     <option value="">All</option>
 
                     {agentIds.map((id) => (
@@ -143,10 +163,7 @@ export function InsightsDashboard() {
                         Thread
                       </Text>
 
-                      <Select
-                        value={threadFilter ?? ''}
-                        onChange={(e) => handleThreadFilterChange(e.currentTarget.value || null)}
-                      >
+                      <Select value={threadFilter ?? ''} onChange={handleThreadSelectChange}>
                         <option value="">All</option>
 
                         {threadIds.map((id) => (
@@ -162,10 +179,7 @@ export function InsightsDashboard() {
                         Sort
                       </Text>
 
-                      <Select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.currentTarget.value as SortOption)}
-                      >
+                      <Select value={sortBy} onChange={handleSortChange}>
                         {SORT_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}

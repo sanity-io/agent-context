@@ -34,9 +34,22 @@ const messageObjectSchema = {
       type: 'text',
     }),
     defineField({
-      name: 'timestamp',
-      title: 'Timestamp',
-      type: 'datetime',
+      name: 'toolName',
+      title: 'Tool Name',
+      type: 'string',
+      description: 'For tool messages: the name of the tool',
+    }),
+    defineField({
+      name: 'toolType',
+      title: 'Tool Type',
+      type: 'string',
+      description: 'For tool messages: whether this is a call or result',
+      options: {
+        list: [
+          {title: 'Call', value: 'call'},
+          {title: 'Result', value: 'result'},
+        ],
+      },
     }),
   ],
 }

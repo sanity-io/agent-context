@@ -121,7 +121,49 @@ describe('saveConversation', () => {
       expect(commitMock).toHaveBeenCalled()
     })
 
-    it('formats messages with _key and timestamp', async () => {
+    it('includes toolName and toolType when provided', async () => {
+      let patchedData: unknown = null
+      const commitMock = vi.fn().mockResolvedValue(undefined)
+      const patchMock = vi.fn().mockImplementation((_id, patchFn) => {
+        const mockPatcher = {
+          set: (data: unknown) => {
+            patchedData = data
+            return mockPatcher
+          },
+        }
+        patchFn(mockPatcher)
+        return {commit: commitMock}
+      })
+      const createIfNotExistsMock = vi.fn().mockReturnValue({patch: patchMock})
+      const transactionMock = vi.fn().mockReturnValue({createIfNotExists: createIfNotExistsMock})
+
+      const mockClient = {
+        transaction: transactionMock,
+      } as never
+
+      await saveConversation({
+        client: mockClient,
+        agentId: 'agent',
+        threadId: 'thread',
+        messages: [
+          {role: 'tool', content: '{"query":"shoes"}', toolName: 'search', toolType: 'call'},
+          {role: 'user', content: 'Hello'},
+        ],
+      })
+
+      const data = patchedData as {messages: Record<string, unknown>[]}
+      expect(data.messages[0]).toMatchObject({
+        role: 'tool',
+        content: '{"query":"shoes"}',
+        toolName: 'search',
+        toolType: 'call',
+      })
+      // Regular message should not have tool fields
+      expect(data.messages[1]).not.toHaveProperty('toolName')
+      expect(data.messages[1]).not.toHaveProperty('toolType')
+    })
+
+    it('formats messages with _key', async () => {
       let patchedData: unknown = null
       const commitMock = vi.fn().mockResolvedValue(undefined)
       const patchMock = vi.fn().mockImplementation((_id, patchFn) => {
@@ -155,7 +197,6 @@ describe('saveConversation', () => {
             _key: expect.any(String),
             role: 'user',
             content: 'Test message',
-            timestamp: expect.any(String),
           },
         ],
         updatedAt: expect.any(String),

@@ -87,7 +87,7 @@
     "styled-components": "^6.3.8",
     "typescript": "^5",
     "vitest": "^4.0.18",
-    "zod": "^3"
+    "zod": "^4"
   },
   "peerDependencies": {
     "@sanity/icons": "^3",
@@ -97,7 +97,7 @@
     "react-dom": "^19",
     "sanity": "^5",
     "styled-components": "^6",
-    "zod": "^3"
+    "zod": "^4"
   },
   "peerDependenciesMeta": {
     "ai": {

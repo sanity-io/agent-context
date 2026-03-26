@@ -41,110 +41,127 @@ interface OnFinishEvent {
   }
 }
 
-function hasStringProperty<K extends string>(
-  obj: object,
-  key: K,
-): obj is object & Record<K, string> {
-  return key in obj && typeof (obj as Record<K, unknown>)[key] === 'string'
-}
-
-function contentToString(content: unknown): string {
-  if (typeof content === 'string') {
-    return content
-  }
-
-  if (Array.isArray(content)) {
-    return content
-      .map((part) => {
-        if (typeof part === 'string') return part
-        if (typeof part === 'object' && part !== null) {
-          if (hasStringProperty(part, 'text')) {
-            return part.text
-          }
-
-          if (hasStringProperty(part, 'toolName')) {
-            if ('result' in part) {
-              return `[Tool result: ${part.toolName}: ${JSON.stringify((part as {result: unknown}).result)}]`
-            }
-            return `[Tool call: ${part.toolName}]`
-          }
-
-          if ('result' in part) {
-            return `[Tool result: ${JSON.stringify((part as {result: unknown}).result)}]`
-          }
-        }
-        return JSON.stringify(part)
-      })
-      .join('\n')
-  }
-
-  return JSON.stringify(content)
+const VALID_ROLES: Record<string, Message['role']> = {
+  user: 'user',
+  assistant: 'assistant',
+  system: 'system',
+  tool: 'tool',
 }
 
 function normalizeRole(role: string): Message['role'] {
-  switch (role) {
-    case 'user':
-      return 'user'
-    case 'assistant':
-      return 'assistant'
-    case 'system':
-      return 'system'
-    case 'tool':
-      return 'tool'
-    default:
-      return 'assistant'
+  return VALID_ROLES[role] ?? 'assistant'
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function serializeContent(value: unknown, maxLength = 500): string {
+  if (value === undefined || value === null) return ''
+  try {
+    const json = JSON.stringify(value)
+    return json.length > maxLength ? json.slice(0, maxLength) + '...(truncated)' : json
+  } catch {
+    return String(value)
   }
 }
 
+function isToolResult(part: Record<string, unknown>): boolean {
+  return 'result' in part || 'output' in part
+}
+
+function formatTextPart(part: unknown): string {
+  if (typeof part === 'string') return part
+  if (isObject(part) && 'text' in part && typeof part['text'] === 'string') {
+    return part['text']
+  }
+  return JSON.stringify(part)
+}
+
+function contentToString(content: unknown): string {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) return content.map(formatTextPart).join('\n')
+  return formatTextPart(content)
+}
+
 /**
- * IMPORTANT: Do not reuse instances across concurrent requests.
- * Always call sanityInsightsIntegration() fresh for each streamText/generateText call.
+ * Process messages: split tool calls/results into structured Message objects.
  */
+function collectMessages(rawMessages: ModelMessage[]): Message[] {
+  const messages: Message[] = []
+
+  for (const raw of rawMessages) {
+    // Skip tool result messages (role=tool with result/output content)
+    if (raw.role === 'tool' && Array.isArray(raw.content)) {
+      const hasResult = raw.content.some((p) => isObject(p) && isToolResult(p))
+      if (hasResult) continue
+    }
+
+    if (!Array.isArray(raw.content)) {
+      messages.push({role: normalizeRole(raw.role), content: contentToString(raw.content)})
+      continue
+    }
+
+    // Array content: split tool calls from text parts
+    const textParts: unknown[] = []
+    const toolCalls: Record<string, unknown>[] = []
+
+    for (const part of raw.content) {
+      if (isObject(part) && 'toolName' in part && !isToolResult(part)) {
+        toolCalls.push(part)
+      } else {
+        textParts.push(part)
+      }
+    }
+
+    if (textParts.length > 0) {
+      messages.push({
+        role: normalizeRole(raw.role),
+        content: textParts.map(formatTextPart).join('\n'),
+      })
+    }
+
+    for (const call of toolCalls) {
+      const toolName = String(call['toolName'])
+      const args = call['input'] ?? call['args']
+      messages.push({
+        role: 'tool',
+        toolName,
+        toolType: 'call',
+        content: serializeContent(args),
+      })
+    }
+  }
+
+  return messages
+}
+
 function createSanityInsightsIntegration(config: SanityInsightsConfig): TelemetryIntegration {
-  let inputMessages: Message[] | null = null
+  let inputMessages: ModelMessage[] | null = null
 
   return {
     onStart(event: OnStartEvent): void {
       if (inputMessages !== null) {
         console.warn(
           '[sanity-insights] Integration instance reused before previous request completed. ' +
-            'Create a new integration instance for each streamText/generateText call to avoid data corruption.',
+            'Create a new integration instance for each streamText/generateText call.',
         )
       }
-
-      const messages = event.messages ?? []
-      inputMessages = messages.map((m) => ({
-        role: normalizeRole(m.role),
-        content: contentToString(m.content),
-      }))
+      inputMessages = event.messages ?? []
     },
 
     async onFinish(event: OnFinishEvent): Promise<void> {
-      const responseMessages = event.response.messages ?? []
-
-      const formattedResponseMessages: Message[] = responseMessages.map((m) => ({
-        role: normalizeRole(m.role),
-        content: contentToString(m.content),
-      }))
-
-      const capturedInputMessages = inputMessages ?? []
-      const allMessages = [...capturedInputMessages, ...formattedResponseMessages]
+      const allRaw = [...(inputMessages ?? []), ...(event.response.messages ?? [])]
       inputMessages = null
 
-      if (allMessages.length === 0) {
-        return
-      }
+      const messages = collectMessages(allRaw)
+      if (messages.length === 0) return
 
       const agentId = typeof config.agentId === 'function' ? config.agentId() : config.agentId
       const threadId = typeof config.threadId === 'function' ? config.threadId() : config.threadId
 
       try {
-        await saveConversation({
-          client: config.client,
-          agentId,
-          threadId,
-          messages: allMessages,
-        })
+        await saveConversation({client: config.client, agentId, threadId, messages})
       } catch (err) {
         console.error('[sanity-insights] Failed to save conversation:', err)
       }
@@ -154,10 +171,6 @@ function createSanityInsightsIntegration(config: SanityInsightsConfig): Telemetr
 
 /**
  * Creates a telemetry integration that saves conversations to Sanity.
- *
- * Conversations are saved automatically after each AI response. Classification
- * happens separately via scheduled functions - use `npx sanity-agent-context`
- * to set up automated daily classification.
  *
  * @example
  * ```ts

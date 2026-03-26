@@ -34,7 +34,8 @@ export interface ConversationMessage {
   _key: string
   role: 'user' | 'assistant' | 'system' | 'tool'
   content: string | null
-  timestamp: string | null
+  toolName: string | null
+  toolType: 'call' | 'result' | null
 }
 
 /**

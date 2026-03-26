@@ -89,10 +89,14 @@ export async function getConversationsToClassify(
     }
   }`
 
-  const conversations = await client.fetch<ConversationToClassify[]>(query, {
-    type: CONVERSATION_SCHEMA_TYPE_NAME,
-    agentId: agentId ?? null,
-  })
+  const conversations = await client.fetch<ConversationToClassify[]>(
+    query,
+    {
+      type: CONVERSATION_SCHEMA_TYPE_NAME,
+      agentId: agentId ?? null,
+    },
+    {perspective: 'published'},
+  )
 
   return conversations
 }

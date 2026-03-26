@@ -308,15 +308,14 @@ function MessageBubble({message}: MessageBubbleProps) {
 
   const tone = isUser ? 'primary' : isSystem ? 'caution' : isTool ? 'positive' : 'default'
 
-  const formattedTime = message.timestamp ? new Date(message.timestamp).toLocaleTimeString() : null
-
   const toggleExpanded = useCallback(() => {
     setExpanded((prev) => !prev)
   }, [])
 
-  // Truncate content for preview
   const content = message.content ?? ''
-  const previewContent = content.length > 80 ? content.slice(0, 80) + '...' : content
+  const toolHeader = message.toolName
+    ? `[Tool ${message.toolType ?? 'call'}: ${message.toolName}]`
+    : null
 
   return (
     <Card
@@ -332,7 +331,7 @@ function MessageBubble({message}: MessageBubbleProps) {
       <Stack space={2}>
         <Flex align="center" justify="space-between" gap={2}>
           <Flex align="center" gap={1}>
-            {isTool && (
+            {isTool && content && (
               <Button
                 icon={expanded ? ChevronDownIcon : ChevronRightIcon}
                 mode="bleed"
@@ -346,32 +345,20 @@ function MessageBubble({message}: MessageBubbleProps) {
               {message.role}
             </Text>
           </Flex>
-
-          {formattedTime && (
-            <Text size={0} muted>
-              {formattedTime}
-            </Text>
-          )}
         </Flex>
 
-        {isTool && !expanded ? (
-          <Text
-            size={1}
-            muted
-            role="button"
-            tabIndex={0}
-            aria-label="Expand tool message"
-            style={{cursor: 'pointer'}}
-            onClick={toggleExpanded}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                toggleExpanded()
-              }
-            }}
-          >
-            {previewContent}
-          </Text>
+        {toolHeader ? (
+          <Stack space={2}>
+            <Text size={1} weight="semibold">
+              {toolHeader}
+            </Text>
+
+            {expanded && content && (
+              <Text size={1} muted style={{whiteSpace: 'pre-wrap'}}>
+                {content}
+              </Text>
+            )}
+          </Stack>
         ) : (
           <Text size={1} style={{whiteSpace: 'pre-wrap'}}>
             {content}

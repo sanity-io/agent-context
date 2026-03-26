@@ -19,10 +19,14 @@ export interface Message {
   content: string
 
   /**
-   * ISO 8601 timestamp of when the message was sent.
-   * If not provided, the current time will be used.
+   * For tool messages: the name of the tool.
    */
-  timestamp?: string
+  toolName?: string
+
+  /**
+   * For tool messages: whether this is a tool call or a tool result.
+   */
+  toolType?: 'call' | 'result'
 }
 
 /** @public */
@@ -143,7 +147,8 @@ export async function saveConversation(options: SaveConversationOptions): Promis
     _key: generateKey(),
     role: m.role,
     content: m.content,
-    timestamp: m.timestamp ?? now,
+    ...(m.toolName !== undefined && {toolName: m.toolName}),
+    ...(m.toolType !== undefined && {toolType: m.toolType}),
   }))
 
   await client

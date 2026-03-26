@@ -19,7 +19,7 @@
     "@sanity/agent-context": "workspace:*",
     "@sanity/blueprints": "0.14.0",
     "@sanity/functions": "1.2.1",
-    "@sanity/vision": "^5.17.1",
+    "@sanity/vision": "^5.18.0",
     "react": "^19",
     "react-dom": "^19",
     "sanity": "^5.9.0",

@@ -54,11 +54,8 @@ export interface ClassifyConversationOptions<
 const coreMetricsSchema = z.object({
   successScore: z
     .number()
-    .min(1)
-    .max(10)
-    .int()
     .describe(
-      'How successfully the agent addressed user needs. 1=complete failure, 5=partially addressed, 10=perfect resolution',
+      'Integer from 1-10 indicating how successfully the agent addressed user needs. 1=complete failure, 5=partially addressed, 10=perfect resolution',
     ),
   sentiment: z
     .enum(['positive', 'neutral', 'negative'])
@@ -73,7 +70,6 @@ const coreMetricsSchema = z.object({
 interface StoredMessage {
   role: string
   content: string
-  timestamp?: string
 }
 
 interface ConversationDocument {

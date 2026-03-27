@@ -19,15 +19,15 @@
     "@sanity/agent-context": "workspace:*",
     "@sanity/blueprints": "0.14.0",
     "@sanity/functions": "1.2.1",
-    "@sanity/vision": "^5.18.0",
-    "react": "^19",
-    "react-dom": "^19",
-    "sanity": "^5.18.0",
-    "styled-components": "^6.3.8"
+    "@sanity/vision": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "sanity": "catalog:",
+    "styled-components": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@types/react": "^19",
-    "typescript": "^5"
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
   }
 }

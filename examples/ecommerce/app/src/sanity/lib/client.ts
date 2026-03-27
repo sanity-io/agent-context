@@ -12,5 +12,7 @@ export const client = createClient({
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: '2026-01-01',
   useCdn: true,
-  apiHost: process.env.NEXT_PUBLIC_SANITY_API_HOST,
+  ...(process.env.NEXT_PUBLIC_SANITY_API_HOST && {
+    apiHost: process.env.NEXT_PUBLIC_SANITY_API_HOST,
+  }),
 })

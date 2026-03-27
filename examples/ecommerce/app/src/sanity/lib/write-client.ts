@@ -13,7 +13,9 @@ export const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: '2026-01-01',
-  apiHost: process.env.NEXT_PUBLIC_SANITY_API_HOST,
   useCdn: false,
   token: process.env.SANITY_API_WRITE_TOKEN,
+  ...(process.env.NEXT_PUBLIC_SANITY_API_HOST && {
+    apiHost: process.env.NEXT_PUBLIC_SANITY_API_HOST,
+  }),
 })

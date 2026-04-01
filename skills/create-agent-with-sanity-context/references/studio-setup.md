@@ -54,7 +54,13 @@ export default defineConfig({
 })
 ```
 
-This registers the `sanity.agentContext` document type in your Studio.
+This registers the `sanity.agentContext` document type and enables Insights (conversation tracking dashboard) in your Studio.
+
+**Disable Insights** (if you don't need conversation tracking):
+
+```ts
+agentContextPlugin({insights: false})
+```
 
 ## Customize Structure Tool (Optional)
 

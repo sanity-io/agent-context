@@ -78,7 +78,6 @@ import {scheduledEventHandler} from '@sanity/functions'
 ${p.import}
 
 // Maximum conversations to classify per run.
-// Adjust based on your function timeout and API rate limits.
 // Remove the limit parameter to classify all pending conversations.
 const BATCH_SIZE = 50
 
@@ -101,11 +100,8 @@ export default scheduledEventHandler(async ({context}) => {
   })
 
   if (conversations.length === 0) {
-    console.log('[classify-conversations] No conversations to classify')
     return
   }
-
-  console.log(\`[classify-conversations] Found \${conversations.length} conversations to classify\`)
 
   let successCount = 0
   let errorCount = 0
@@ -124,10 +120,6 @@ export default scheduledEventHandler(async ({context}) => {
       console.error(\`[classify-conversations] Failed to classify \${conv._id}:\`, error)
     }
   }
-
-  console.log(
-    \`[classify-conversations] Completed: \${successCount} succeeded, \${errorCount} failed\`,
-  )
 })
 `
 }

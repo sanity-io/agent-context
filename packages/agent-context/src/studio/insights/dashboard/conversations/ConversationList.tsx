@@ -280,7 +280,7 @@ export function ConversationList(props: ConversationListProps) {
                 ref={filterButtonRef}
                 selected={filtersOpen}
                 text="Filters"
-                tone={hasActiveFilters ? 'primary' : 'default'}
+                tone={activeFilterLabels.length > 0 ? 'primary' : 'default'}
               />
             </Popover>
           </Flex>

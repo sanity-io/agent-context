@@ -61,6 +61,7 @@ export function InsightsDashboard() {
                 }
                 id={agentMenuId}
                 popover={{
+                  animate: true,
                   constrainSize: true,
                   placement: 'bottom',
                   fallbackPlacements: ['bottom'],

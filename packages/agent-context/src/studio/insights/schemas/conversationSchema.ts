@@ -1,15 +1,19 @@
 import {defineField, defineType} from 'sanity'
 
-/** @public */
+/**
+ * @public
+ */
 export const CONVERSATION_SCHEMA_TYPE_NAME = 'sanity.agentContextConversation'
 
-/** @internal */
+/**
+ * @internal
+ */
 export const CONVERSATION_SCHEMA_TITLE = 'Agent Conversation'
 
 /**
  * Message object schema for conversation messages
  */
-const messageObjectSchema = {
+const messageObjectSchema = defineField({
   type: 'object',
   name: 'conversationMessage',
   title: 'Message',
@@ -52,39 +56,7 @@ const messageObjectSchema = {
       },
     }),
   ],
-}
-
-/**
- * Custom metric object schema for user-defined metrics
- */
-const customMetricObjectSchema = {
-  type: 'object',
-  name: 'customMetric',
-  title: 'Custom Metric',
-  fields: [
-    defineField({
-      name: 'key',
-      title: 'Key',
-      type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'stringValue',
-      title: 'String Value',
-      type: 'string',
-    }),
-    defineField({
-      name: 'numberValue',
-      title: 'Number Value',
-      type: 'number',
-    }),
-    defineField({
-      name: 'booleanValue',
-      title: 'Boolean Value',
-      type: 'boolean',
-    }),
-  ],
-}
+})
 
 /**
  * Core metrics fields - these fields are fixed and controlled by Sanity.
@@ -119,7 +91,9 @@ const coreMetricsFields = [
   }),
 ]
 
-/** @public */
+/**
+ * @public
+ */
 export const conversationSchema = defineType({
   name: CONVERSATION_SCHEMA_TYPE_NAME,
   title: CONVERSATION_SCHEMA_TITLE,
@@ -170,13 +144,6 @@ export const conversationSchema = defineType({
       type: 'object',
       description: 'Standardized metrics from automated classification',
       fields: coreMetricsFields,
-    }),
-    defineField({
-      name: 'customMetrics',
-      title: 'Custom Metrics',
-      type: 'array',
-      description: 'User-defined metrics from classification',
-      of: [customMetricObjectSchema],
     }),
     defineField({
       name: 'classifiedAt',

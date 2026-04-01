@@ -1,10 +1,9 @@
-import {generateObject, type LanguageModel} from 'ai'
+import {generateText, type LanguageModel, Output} from 'ai'
 import type {SanityClient} from 'sanity'
 import {z} from 'zod'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
 import type {Message} from './saveConversation'
-import {generateKey} from './utils'
 
 /** @public */
 export type Sentiment = 'positive' | 'neutral' | 'negative'
@@ -19,34 +18,20 @@ export interface CoreMetrics {
   contentGaps: string[]
 }
 
-/** @internal */
-export interface StoredCustomMetric {
-  _key: string
-  key: string
-  stringValue?: string
-  numberValue?: number
-  booleanValue?: boolean
-}
-
 /** @public */
-export interface ClassificationResult<TCustom = Record<string, unknown>> {
+export interface ClassificationResult {
   coreMetrics: CoreMetrics
-  customMetrics?: TCustom
   classifiedAt: string
 }
 
 /** @public */
-export interface ClassifyConversationOptions<
-  TCustom extends z.ZodObject<z.ZodRawShape> | undefined = undefined,
-> {
+export interface ClassifyConversationOptions {
   /** Sanity client with read/write permissions. */
   client: SanityClient
   /** Document ID to classify. */
   conversationId: string
   /** AI SDK model for classification (e.g., `openai('gpt-4o-mini')`). */
   model: LanguageModel
-  /** Optional Zod schema for custom metrics. Use `.describe()` for instructions. */
-  customMetrics?: TCustom
   /** Optional messages to classify directly (avoids fetching from Sanity). */
   messages?: Message[]
 }
@@ -89,30 +74,6 @@ export function formatMessagesForPrompt(messages: StoredMessage[]): string {
     .join('\n\n')
 }
 
-/** @internal Exported for testing */
-export function convertCustomMetricsForStorage(
-  metrics: Record<string, unknown>,
-): StoredCustomMetric[] {
-  return Object.entries(metrics).map(([key, value]) => {
-    const item: StoredCustomMetric = {
-      _key: generateKey(),
-      key,
-    }
-
-    if (typeof value === 'boolean') {
-      item.booleanValue = value
-    } else if (typeof value === 'number') {
-      item.numberValue = value
-    } else if (typeof value === 'string') {
-      item.stringValue = value
-    } else if (value !== null && value !== undefined) {
-      item.stringValue = JSON.stringify(value)
-    }
-
-    return item
-  })
-}
-
 /**
  * Classifies a conversation using AI to extract metrics.
  *
@@ -120,7 +81,6 @@ export function convertCustomMetricsForStorage(
  * and stores the classification results back on the document.
  *
  * Core metrics (successScore, sentiment, contentGaps) are always extracted.
- * Custom metrics can be extracted by providing a Zod schema.
  *
  * If classification fails, an error is stored on the document and the error is re-thrown.
  *
@@ -128,32 +88,22 @@ export function convertCustomMetricsForStorage(
  * ```ts
  * import {classifyConversation} from '@sanity/agent-context/primitives'
  * import {openai} from '@ai-sdk/openai'
- * import {z} from 'zod'
  *
- * // Classification with custom metrics
  * await classifyConversation({
  *   client: sanityClient,
  *   conversationId: 'agentconversation-support-bot-thread-123',
  *   model: openai('gpt-4o-mini'),
- *   customMetrics: z.object({
- *     escalationNeeded: z.boolean().describe('Whether the user needed a human agent'),
- *     productMentioned: z.string().optional().describe('Product name if mentioned'),
- *   }),
  * })
  * ```
  *
- * @returns The classification result with core and custom metrics.
+ * @returns The classification result with core metrics.
  * @throws If the conversation doesn't exist, has no messages, or classification fails.
  * @public
  */
-export async function classifyConversation<
-  TCustom extends z.ZodObject<z.ZodRawShape> | undefined = undefined,
->(
-  options: ClassifyConversationOptions<TCustom>,
-): Promise<
-  ClassificationResult<TCustom extends z.ZodObject<z.ZodRawShape> ? z.infer<TCustom> : undefined>
-> {
-  const {client, conversationId, model, customMetrics, messages: providedMessages} = options
+export async function classifyConversation(
+  options: ClassifyConversationOptions,
+): Promise<ClassificationResult> {
+  const {client, conversationId, model, messages: providedMessages} = options
   const now = new Date().toISOString()
 
   let messagesToClassify: StoredMessage[]
@@ -185,24 +135,13 @@ export async function classifyConversation<
     messagesToClassify = conversation.messages
   }
 
-  const combinedSchema = customMetrics
-    ? z.object({
-        coreMetrics: coreMetricsSchema,
-        customMetrics: customMetrics,
-      })
-    : z.object({
-        coreMetrics: coreMetricsSchema,
-      })
-
-  // Build the prompt
   const systemPrompt = `You are analyzing a conversation between a user and an AI assistant.
 Classify the conversation according to the schema provided.
 
 Guidelines:
 - successScore: How well did the assistant resolve the user's needs? 1=complete failure, 5=partially addressed, 10=fully resolved.
 - sentiment: The user's overall emotional tone across the entire conversation.
-- contentGaps: Topics where the assistant lacked information in its knowledge base. Only include gaps where the assistant could not provide information — not refusals, off-topic requests, or tool errors. Be specific (e.g., "international return policy" not "returns"). Empty array if no content gaps.
-${customMetrics ? '\nCustom metrics: Evaluate based on the field descriptions provided in the schema.' : ''}`
+- contentGaps: Topics where the assistant lacked information in its knowledge base. Only include gaps where the assistant could not provide information — not refusals, off-topic requests, or tool errors. Be specific (e.g., "international return policy" not "returns"). Empty array if no content gaps.`
 
   const userPrompt = `Analyze this conversation:
 
@@ -211,42 +150,21 @@ ${formatMessagesForPrompt(messagesToClassify)}
 ---`
 
   try {
-    const result = await generateObject({
+    const schema = z.object({coreMetrics: coreMetricsSchema})
+    const result = await generateText({
       model,
-      schema: combinedSchema,
+      output: Output.object({schema}),
       system: systemPrompt,
       prompt: userPrompt,
     })
 
-    const classification = result.object as {
-      coreMetrics: CoreMetrics
-      customMetrics?: Record<string, unknown>
-    }
+    await client
+      .patch(conversationId)
+      .set({coreMetrics: result.output.coreMetrics, classifiedAt: now})
+      .unset(['classificationError'])
+      .commit()
 
-    const patch: Record<string, unknown> = {
-      coreMetrics: classification.coreMetrics,
-      classifiedAt: now,
-    }
-
-    const classificationCustomMetrics = classification.customMetrics
-    if (classificationCustomMetrics && Object.keys(classificationCustomMetrics).length > 0) {
-      patch['customMetrics'] = convertCustomMetricsForStorage(classificationCustomMetrics)
-    }
-
-    const fieldsToUnset = ['classificationError']
-    if (!classificationCustomMetrics || Object.keys(classificationCustomMetrics).length === 0) {
-      fieldsToUnset.push('customMetrics')
-    }
-
-    await client.patch(conversationId).set(patch).unset(fieldsToUnset).commit()
-
-    return {
-      coreMetrics: classification.coreMetrics,
-      customMetrics: classification.customMetrics,
-      classifiedAt: now,
-    } as ClassificationResult<
-      TCustom extends z.ZodObject<z.ZodRawShape> ? z.infer<TCustom> : undefined
-    >
+    return {coreMetrics: result.output.coreMetrics, classifiedAt: now}
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
 

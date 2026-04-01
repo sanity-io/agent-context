@@ -18,14 +18,14 @@
   "dependencies": {
     "@sanity/agent-context": "workspace:*",
     "@sanity/vision": "^5.9.0",
-    "react": "^19",
-    "react-dom": "^19",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "sanity": "^5.9.0",
     "styled-components": "^6.3.8"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@types/react": "^19",
+    "@types/react": "^19.2.14",
     "typescript": "^5"
   }
 }

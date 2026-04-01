@@ -386,7 +386,7 @@ export function ConversationList(props: ConversationListProps) {
                         onSelect={onSelect}
                       />
 
-                      {!isLast && <MenuDivider />}
+                      {!isLast && <MenuDivider style={{opacity: 0.5}} />}
                     </Fragment>
                   )
                 })}

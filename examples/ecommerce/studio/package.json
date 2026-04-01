@@ -25,7 +25,7 @@
     "@sanity/agent-context": "workspace:*",
     "@sanity/client": "^7.17.0",
     "@sanity/icons": "^3",
-    "@sanity/ui": "^3",
+    "@sanity/ui": "^3.1.14",
     "@sanity/vision": "^5.9.0",
     "ai": "^6.0.116",
     "easymde": "^2.20.0",

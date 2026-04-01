@@ -1,263 +1,159 @@
-import {CommentIcon} from '@sanity/icons'
-import {Box, Card, Flex, Grid, Select, Tab, TabList, TabPanel, Text, TextInput} from '@sanity/ui'
-import {useCallback, useState} from 'react'
-import {useClient} from 'sanity'
+import {CheckmarkIcon, ChevronDownIcon, CommentIcon, DashboardIcon} from '@sanity/icons'
+import {Box, Button, Card, Flex, Menu, MenuButton, MenuDivider, MenuItem, Stack} from '@sanity/ui'
+import {Activity, useId, useState} from 'react'
+import {useRouter} from 'sanity/router'
+import {styled} from 'styled-components'
 
-import {AnalyticsOverview} from './AnalyticsOverview'
-import {SANITY_API_VERSION} from './constants'
-import {ConversationDetail} from './ConversationDetail'
-import {ConversationList} from './ConversationList'
-import type {SortOption} from './types'
-import {useAgentIds} from './useAgentIds'
-import {useThreadIds} from './useThreadIds'
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../schemas/conversationSchema'
+import {Conversations} from './conversations/Conversations'
+import {Overview} from './overview/Overview'
+import type {ScoreRange, Sentiment} from './types'
+import {useQuery} from './utils'
 
-type TabId = 'overview' | 'conversations'
-
-const SORT_OPTIONS: {value: SortOption; label: string}[] = [
-  {value: 'date-desc', label: 'Newest first'},
-  {value: 'date-asc', label: 'Oldest first'},
-  {value: 'score-asc', label: 'Lowest score'},
-  {value: 'sentiment', label: 'Negative first'},
-]
+const SidebarCard = styled(Card)`
+  width: 220px;
+`
 
 /**
  * Main dashboard component for Agent Insights.
  * Provides tabs for analytics overview and conversation browsing.
  */
 export function InsightsDashboard() {
-  const client = useClient({apiVersion: SANITY_API_VERSION})
-  const [activeTab, setActiveTab] = useState<TabId>('overview')
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const [agentFilter, setAgentFilter] = useState<string | null>(null)
-  const [threadFilter, setThreadFilter] = useState<string | null>(null)
   const [contentGapFilter, setContentGapFilter] = useState<string | null>(null)
-  const [daysBack, setDaysBack] = useState(30)
-  const [sortBy, setSortBy] = useState<SortOption>('date-desc')
+  const [scoreRange, setScoreRange] = useState<ScoreRange | null>(null)
+  const [sentimentFilter, setSentimentFilter] = useState<Sentiment | null>(null)
 
-  const {agentIds} = useAgentIds(client)
-  const {threadIds} = useThreadIds(client, agentFilter)
+  const agentMenuId = useId()
 
-  const handleSelectConversation = useCallback((id: string) => {
-    setSelectedConversationId(id)
-  }, [])
+  const {data: agentIds} = useQuery<string[]>(`array::unique(*[_type == $type].agentId)`, {
+    type: CONVERSATION_SCHEMA_TYPE_NAME,
+  })
 
-  const handleCloseDetail = useCallback(() => {
-    setSelectedConversationId(null)
-  }, [])
+  const router = useRouter()
+  const path = router.state['path']
+  const routerId = router.state['id']
+  const selectedConversationId = typeof routerId === 'string' ? routerId : null
 
-  const handleAgentFilterChange = useCallback((agentId: string | null) => {
-    setAgentFilter(agentId)
-    // Clear thread filter when agent changes since thread IDs are scoped to agent
-    setThreadFilter(null)
-  }, [])
+  const navigateTo = (newPath: string, id?: string) => {
+    router.navigate(id ? {path: newPath, id} : {path: newPath})
+  }
 
-  const handleThreadFilterChange = useCallback((threadId: string | null) => {
-    setThreadFilter(threadId)
-  }, [])
-
-  const handleContentGapClick = useCallback((gapDescription: string) => {
-    setContentGapFilter(gapDescription)
-    setActiveTab('conversations')
-  }, [])
-
-  const handleClearContentGapFilter = useCallback(() => {
-    setContentGapFilter(null)
-  }, [])
-
-  const handleOverviewTab = useCallback(() => setActiveTab('overview'), [])
-  const handleConversationsTab = useCallback(() => setActiveTab('conversations'), [])
-
-  const handleDaysBackChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setDaysBack(Math.max(1, parseInt(e.currentTarget.value) || 1))
-  }, [])
-
-  const handleAgentSelectChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      handleAgentFilterChange(e.currentTarget.value || null)
-    },
-    [handleAgentFilterChange],
-  )
-
-  const handleThreadSelectChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      handleThreadFilterChange(e.currentTarget.value || null)
-    },
-    [handleThreadFilterChange],
-  )
-
-  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.currentTarget.value as SortOption)
-  }, [])
+  const isOverviewActive = path === 'overview' || !path
+  const isConversationsActive = path === 'conversations'
 
   return (
-    <Card sizing="border" style={{height: '100%', overflow: 'hidden'}}>
-      <Flex direction="column" style={{height: '100%'}}>
-        {/* Header with Tabs and Filters */}
-        <Card padding={4} paddingBottom={3} borderBottom>
+    <Card sizing="border" height="fill" overflow="hidden">
+      <Flex height="fill">
+        {/* Header */}
+        <SidebarCard padding={3} borderRight tone="transparent">
           <Flex direction="column" gap={4}>
-            <Text as="h1" size={4} weight="semibold">
-              Agent Context Insights
-            </Text>
-
-            <Flex align="center" justify="space-between" wrap="wrap" gap={3}>
-              <TabList space={1}>
-                <Tab
-                  aria-controls="overview-panel"
-                  id="overview-tab"
-                  label="Overview"
-                  onClick={handleOverviewTab}
-                  selected={activeTab === 'overview'}
-                />
-
-                <Tab
-                  aria-controls="conversations-panel"
-                  id="conversations-tab"
-                  label="Conversations"
-                  onClick={handleConversationsTab}
-                  selected={activeTab === 'conversations'}
-                />
-              </TabList>
-
-              {/* Unified Filters */}
-              <Flex gap={3} align="center" wrap="wrap">
-                <Flex gap={2} align="center">
-                  <Text size={1} muted>
-                    Last
-                  </Text>
-
-                  <TextInput
-                    type="number"
-                    value={daysBack}
-                    onChange={handleDaysBackChange}
-                    style={{width: 60}}
+            <Flex gap={4} direction="column">
+              <MenuButton
+                button={
+                  <Button
+                    text={agentFilter || 'All agents'}
+                    mode="ghost"
+                    fontSize={1}
+                    iconRight={ChevronDownIcon}
+                    justify="space-between"
                   />
+                }
+                id={agentMenuId}
+                popover={{
+                  animate: true,
+                  constrainSize: true,
+                  placement: 'bottom',
+                  fallbackPlacements: ['bottom'],
+                  tone: 'default',
+                  matchReferenceWidth: true,
+                }}
+                menu={
+                  <Menu>
+                    <MenuItem
+                      text="All agents"
+                      onClick={() => setAgentFilter(null)}
+                      iconRight={agentFilter ? undefined : CheckmarkIcon}
+                    />
 
-                  <Text size={1} muted>
-                    days
-                  </Text>
-                </Flex>
+                    {agentIds && agentIds.length > 0 && <MenuDivider />}
 
-                <Box style={{width: 1, height: 20, backgroundColor: 'var(--card-border-color)'}} />
+                    {agentIds?.map((id) => {
+                      const isSelected = agentFilter === id
 
-                <Flex gap={2} align="center">
-                  <Text size={1} muted>
-                    Agent
-                  </Text>
+                      return (
+                        <MenuItem
+                          key={id}
+                          text={id}
+                          value={id}
+                          onClick={() => setAgentFilter(id)}
+                          iconRight={isSelected ? CheckmarkIcon : undefined}
+                        />
+                      )
+                    })}
+                  </Menu>
+                }
+              />
 
-                  <Select value={agentFilter ?? ''} onChange={handleAgentSelectChange}>
-                    <option value="">All</option>
+              <Stack space={2}>
+                <Button
+                  fontSize={1}
+                  mode="bleed"
+                  text="Overview"
+                  icon={DashboardIcon}
+                  selected={isOverviewActive}
+                  onClick={() => navigateTo('overview')}
+                  justify="flex-start"
+                />
 
-                    {agentIds.map((id) => (
-                      <option key={id} value={id}>
-                        {id}
-                      </option>
-                    ))}
-                  </Select>
-                </Flex>
-
-                {/* Conversations-only filters */}
-                {activeTab === 'conversations' && (
-                  <>
-                    <Flex gap={2} align="center">
-                      <Text size={1} muted>
-                        Thread
-                      </Text>
-
-                      <Select value={threadFilter ?? ''} onChange={handleThreadSelectChange}>
-                        <option value="">All</option>
-
-                        {threadIds.map((id) => (
-                          <option key={id} value={id}>
-                            {id}
-                          </option>
-                        ))}
-                      </Select>
-                    </Flex>
-
-                    <Flex gap={2} align="center">
-                      <Text size={1} muted>
-                        Sort
-                      </Text>
-
-                      <Select value={sortBy} onChange={handleSortChange}>
-                        {SORT_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </Select>
-                    </Flex>
-                  </>
-                )}
-              </Flex>
+                <Button
+                  fontSize={1}
+                  mode="bleed"
+                  icon={CommentIcon}
+                  text="Conversations"
+                  selected={isConversationsActive}
+                  onClick={() => navigateTo('conversations')}
+                  justify="flex-start"
+                />
+              </Stack>
             </Flex>
           </Flex>
-        </Card>
+        </SidebarCard>
 
-        {/* Tab Panels */}
-        <TabPanel
-          aria-labelledby="overview-tab"
-          id="overview-panel"
-          hidden={activeTab !== 'overview'}
-          style={{flex: 1, overflow: 'auto'}}
-        >
-          <AnalyticsOverview
-            daysBack={daysBack}
-            agentFilter={agentFilter}
-            onContentGapClick={handleContentGapClick}
-          />
-        </TabPanel>
-
-        <TabPanel
-          aria-labelledby="conversations-tab"
-          id="conversations-panel"
-          hidden={activeTab !== 'conversations'}
-          style={{flex: 1, overflow: 'hidden', padding: 20}}
-        >
-          <Grid columns={2} gap={5} style={{height: '100%'}}>
-            {/* Conversation List */}
-            <Card radius={2} border style={{overflow: 'hidden', height: '100%'}}>
-              <ConversationList
-                onSelect={handleSelectConversation}
-                selectedId={selectedConversationId}
-                daysBack={daysBack}
+        <Flex flex={1} direction="column">
+          <Activity mode={isOverviewActive ? 'visible' : 'hidden'}>
+            <Box flex={1} height="fill" overflow="auto">
+              <Overview
                 agentFilter={agentFilter}
-                threadFilter={threadFilter}
-                sortBy={sortBy}
-                contentGapFilter={contentGapFilter}
-                onClearContentGapFilter={handleClearContentGapFilter}
-              />
-            </Card>
-
-            {/* Conversation Detail or Placeholder */}
-            {selectedConversationId ? (
-              <ConversationDetail
-                conversationId={selectedConversationId}
-                onClose={handleCloseDetail}
-              />
-            ) : (
-              <Card
-                radius={2}
-                tone="transparent"
-                style={{
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px dashed var(--card-border-color)',
+                onContentGapClick={(gap) => {
+                  setContentGapFilter(gap)
+                  navigateTo('conversations')
                 }}
-              >
-                <CommentIcon
-                  style={{
-                    fontSize: 48,
-                    color: 'var(--card-muted-fg-color)',
-                    opacity: 0.2,
-                  }}
-                />
-              </Card>
-            )}
-          </Grid>
-        </TabPanel>
+              />
+            </Box>
+          </Activity>
+
+          <Activity mode={isConversationsActive ? 'visible' : 'hidden'}>
+            <Conversations
+              selectedConversationId={selectedConversationId}
+              onSelectConversation={(id) => {
+                if (selectedConversationId === id) {
+                  navigateTo('conversations')
+                } else {
+                  navigateTo('conversations', id)
+                }
+              }}
+              onCloseDetail={() => navigateTo('conversations')}
+              agentFilter={agentFilter}
+              contentGapFilter={contentGapFilter}
+              onContentGapFilterChange={setContentGapFilter}
+              scoreRange={scoreRange}
+              onScoreRangeChange={setScoreRange}
+              sentimentFilter={sentimentFilter}
+              onSentimentFilterChange={setSentimentFilter}
+            />
+          </Activity>
+        </Flex>
       </Flex>
     </Card>
   )

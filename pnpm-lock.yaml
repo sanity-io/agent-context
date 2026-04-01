@@ -12,6 +12,9 @@ catalogs:
     '@sanity/client':
       specifier: ^7.20.0
       version: 7.20.0
+    '@sanity/color':
+      specifier: ^3
+      version: 3.0.6
     '@sanity/icons':
       specifier: ^3
       version: 3.7.4
@@ -330,6 +333,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../@repo/eslint-config
+      '@sanity/color':
+        specifier: 'catalog:'
+        version: 3.0.6
       '@sanity/icons':
         specifier: 'catalog:'
         version: 3.7.4(react@19.2.4)
@@ -360,6 +366,12 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.4(react@19.2.4)
+      react-rx:
+        specifier: ^4.2.2
+        version: 4.2.2(react@19.2.4)(rxjs@7.8.2)
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
       sanity:
         specifier: 'catalog:'
         version: 5.18.0(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.0.1)(@oclif/core@4.10.2)(@sanity/cli-core@1.2.1(@noble/hashes@2.0.1)(@sanity/telemetry@0.9.0(react@19.2.4))(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.3))(@types/node@25.5.0)(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(jiti@2.6.1)(lightningcss@1.32.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(styled-components@6.3.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(terser@5.44.1)(ts-toolbelt@9.6.0)(typescript@5.9.3)

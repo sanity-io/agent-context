@@ -135,34 +135,6 @@ Every classified conversation includes these standardized metrics:
 | `sentiment`    | `'positive' \| 'neutral' \| 'negative'` | Overall user sentiment                       |
 | `contentGaps`  | `string[]`                              | Topics where the agent lacked knowledge      |
 
-### Custom Metrics
-
-Define your own metrics using Zod schemas in your scheduled function:
-
-```ts
-import {z} from 'zod'
-
-const customMetrics = z.object({
-  escalationNeeded: z.boolean().describe('Whether the user requested to speak with a human'),
-  department: z
-    .enum(['sales', 'support', 'billing', 'other'])
-    .describe('Which department this conversation relates to'),
-  purchaseIntent: z
-    .number()
-    .min(1)
-    .max(5)
-    .describe('Likelihood the user will make a purchase (1=unlikely, 5=very likely)'),
-})
-
-await classifyConversation({
-  client,
-  conversationId: conv._id,
-  model: anthropic('claude-sonnet-4-5'),
-  customMetrics,
-  messages: conv.messages,
-})
-```
-
 ### Primitives
 
 For custom workflows outside the AI SDK, use the primitives directly:

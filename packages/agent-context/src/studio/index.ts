@@ -1,10 +1,10 @@
 export {
   AGENT_CONTEXT_SCHEMA_TYPE_NAME,
   agentContextSchema,
-} from './agent-context-plugin/agentContextSchema'
-export type {AgentContextPluginOptions, InsightsOptions} from './agent-context-plugin/plugin'
-export {agentContextPlugin} from './agent-context-plugin/plugin'
+} from './context-document/agentContextSchema'
 export {
   CONVERSATION_SCHEMA_TYPE_NAME,
   conversationSchema,
 } from './insights/schemas/conversationSchema'
+export type {AgentContextPluginOptions, InsightsOptions} from './plugin'
+export {agentContextPlugin} from './plugin'

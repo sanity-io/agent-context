@@ -4,7 +4,7 @@ import type {Sentiment as PrimitiveSentiment} from '../../../primitives/classify
  * Sort options for conversation list.
  * @internal
  */
-export type SortField = 'date' | 'score' | 'sentiment'
+export type SortField = 'date' | 'score' | 'sentiment' | 'gaps'
 export type SortDirection = 'asc' | 'desc'
 export type SortOption = `${SortField}-${SortDirection}`
 
@@ -72,6 +72,6 @@ export interface ConversationSummary {
   agentId: string
   updatedAt: string | null
   messageCount: number
-  coreMetrics: Pick<CoreMetrics, 'successScore' | 'sentiment'> | null
+  coreMetrics: Pick<CoreMetrics, 'successScore' | 'sentiment' | 'contentGaps'> | null
   firstMessage: string | null
 }

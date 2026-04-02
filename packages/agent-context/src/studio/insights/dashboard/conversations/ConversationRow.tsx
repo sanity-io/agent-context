@@ -16,6 +16,7 @@ export function ConversationRow(props: ConversationRowProps) {
 
   const score = conversation.coreMetrics?.successScore
   const sentiment = conversation.coreMetrics?.sentiment
+  const gapCount = conversation.coreMetrics?.contentGaps?.length ?? 0
 
   return (
     <Card
@@ -44,19 +45,33 @@ export function ConversationRow(props: ConversationRowProps) {
         </Table.Cell>
 
         <Table.Cell flex={1}>
-          {score !== undefined && (
+          {score != null ? (
             <Badge tone={getScoreTone(score)} fontSize={0} overflow="hidden">
               {score}/10
             </Badge>
+          ) : (
+            <Text size={0} muted>
+              -
+            </Text>
           )}
         </Table.Cell>
 
         <Table.Cell flex={1}>
-          {sentiment && (
+          {sentiment ? (
             <Badge tone={getSentimentTone(sentiment)} fontSize={0} overflow="hidden">
               {formatSentiment(sentiment)}
             </Badge>
+          ) : (
+            <Text size={0} muted>
+              -
+            </Text>
           )}
+        </Table.Cell>
+
+        <Table.Cell flex={1}>
+          <Badge tone={gapCount > 0 ? 'caution' : 'default'} fontSize={0}>
+            {gapCount}
+          </Badge>
         </Table.Cell>
 
         <Table.Cell flex={1}>

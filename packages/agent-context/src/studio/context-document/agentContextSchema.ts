@@ -5,21 +5,13 @@ import {AgentContextDocumentInput} from './agent-context-document-input/AgentCon
 import {GroqFilterInput} from './groq-filter-input/GroqFilterInput'
 import {validateGroqFilter} from './groq-filter-input/groqUtils'
 
-/**
- * The name of the agent context schema type.
- * @beta
- */
+/** @public */
 export const AGENT_CONTEXT_SCHEMA_TYPE_NAME = 'sanity.agentContext'
 
-/**
- * The title of the agent context schema type.
- */
+/** @internal */
 export const AGENT_CONTEXT_SCHEMA_TITLE = 'Agent Context'
 
-/**
- * The schema for the agent context document.
- * @beta
- */
+/** @public */
 export const agentContextSchema = defineType({
   name: AGENT_CONTEXT_SCHEMA_TYPE_NAME,
   title: AGENT_CONTEXT_SCHEMA_TITLE,

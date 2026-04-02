@@ -110,6 +110,16 @@ Other skills help you refine: `dial-your-context` (tune the Instructions field) 
    })
    ```
 
+## Agent Insights
+
+Track and analyze your agent conversations with built-in telemetry:
+
+- Automatic conversation saving via AI SDK integration
+- AI-powered classification (success score, sentiment, content gaps)
+- Studio dashboard for analytics and conversation browsing
+
+See the [package documentation](./packages/agent-context#agent-insights) for setup.
+
 ## Troubleshooting
 
 **Validate the connection** — Test that your token and endpoint work:

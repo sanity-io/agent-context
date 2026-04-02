@@ -1,5 +1,6 @@
 import {CopyIcon} from '@sanity/icons'
 import {Box, Button, Card, Flex, Stack, Text, Tooltip, useToast} from '@sanity/ui'
+import {useCallback} from 'react'
 import {
   DEFAULT_STUDIO_CLIENT_OPTIONS,
   getValueAtPath,
@@ -30,7 +31,7 @@ export function AgentContextDocumentInput(props: InputProps) {
   const slug = getValueAtPath(props.value, ['slug'])
   const mcpURL = getMcpURL({apiHost, projectId, dataset, slug})
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     try {
       navigator.clipboard.writeText(mcpURL)
       toast.push({
@@ -47,7 +48,7 @@ export function AgentContextDocumentInput(props: InputProps) {
         closable: true,
       })
     }
-  }
+  }, [mcpURL, toast])
 
   return (
     <>

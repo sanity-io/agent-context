@@ -29,11 +29,29 @@
       "import": "./dist/studio.js",
       "default": "./dist/studio.js"
     },
+    "./primitives": {
+      "source": "./src/primitives/index.ts",
+      "import": "./dist/primitives.js",
+      "default": "./dist/primitives.js"
+    },
+    "./ai-sdk": {
+      "source": "./src/integrations/ai-sdk/index.ts",
+      "import": "./dist/ai-sdk.js",
+      "default": "./dist/ai-sdk.js"
+    },
+    "./cli/init-scheduler": {
+      "source": "./src/cli/init-scheduler.ts",
+      "import": "./dist/cli/init-scheduler.js",
+      "default": "./dist/cli/init-scheduler.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "sanity-agent-context": "./dist/cli/init-scheduler.js"
+  },
   "files": [
     "dist",
     "src"
@@ -50,31 +68,50 @@
   },
   "browserslist": "extends @sanity/browserslist-config",
   "dependencies": {
+    "@inquirer/prompts": "^8.3.2",
     "groq-js": "^1.29.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@sanity/icons": "^3",
+    "@sanity/color": "catalog:",
+    "@sanity/icons": "catalog:",
     "@sanity/pkg-utils": "^10.4.13",
     "@sanity/tsconfig": "^2.1.0",
-    "@sanity/ui": "^3",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@sanity/ui": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vitest/coverage-v8": "^4.0.18",
-    "react": "^19",
-    "react-dom": "^19",
-    "sanity": "^5.9.0",
-    "styled-components": "^6.3.12",
-    "typescript": "^5",
-    "vitest": "^4.0.18"
+    "ai": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-rx": "^4.2.2",
+    "rxjs": "^7.8.2",
+    "sanity": "catalog:",
+    "styled-components": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "^4.0.18",
+    "zod": "catalog:"
   },
   "peerDependencies": {
+    "@sanity/color": "^3",
     "@sanity/icons": "^3",
     "@sanity/ui": "^3",
+    "ai": "^6",
     "react": "^19",
     "react-dom": "^19",
+    "react-rx": "^4",
+    "rxjs": "^7",
     "sanity": "^5",
-    "styled-components": "^6"
+    "styled-components": "^6",
+    "zod": "^4"
+  },
+  "peerDependenciesMeta": {
+    "ai": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
   },
   "packageManager": "pnpm@10.32.1",
   "engines": {

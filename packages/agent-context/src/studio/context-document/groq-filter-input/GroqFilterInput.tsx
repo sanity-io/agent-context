@@ -68,13 +68,10 @@ export function GroqFilterInput(props: StringInputProps) {
   const schema = useSchema()
 
   // Compose the input ref with the ref prop
-  const setInputRef = useCallback(
-    (node: HTMLInputElement | null) => {
-      inputRef.current = node
-      setInputElement(node)
-    },
-    [inputRef],
-  )
+  const setInputRef = useCallback((node: HTMLInputElement | null) => {
+    inputRef.current = node
+    setInputElement(node)
+  }, [])
   const composedRef = useComposedRefs(setInputRef, refProp)
 
   // Check if the current query is simple enough to edit via Types UI
@@ -108,13 +105,16 @@ export function GroqFilterInput(props: StringInputProps) {
   // 1. If the item is already selected, remove it from the selected types.
   // 2. If the item is not selected, add it to the selected types.
   // 3. Transform the updated selected types into a GROQ query and set it as the new value.
-  const handleDocumentTypeItemClick = (item: string) => {
-    const nextValue = selectedTypes.includes(item)
-      ? selectedTypes.filter((t) => t !== item)
-      : [...selectedTypes, item]
+  const handleDocumentTypeItemClick = useCallback(
+    (item: string) => {
+      const nextValue = selectedTypes.includes(item)
+        ? selectedTypes.filter((t) => t !== item)
+        : [...selectedTypes, item]
 
-    onChange(nextValue.length > 0 ? set(listToQuery(nextValue)) : unset())
-  }
+      onChange(nextValue.length > 0 ? set(listToQuery(nextValue)) : unset())
+    },
+    [selectedTypes, onChange],
+  )
 
   const closeList = useCallback(() => {
     setOpen(false)

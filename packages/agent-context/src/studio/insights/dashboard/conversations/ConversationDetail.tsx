@@ -219,9 +219,15 @@ export function ConversationDetail(props: ConversationDetailProps) {
         <Container width={1} padding={5} sizing="border">
           {conversation ? (
             <Flex direction="column" gap={3}>
-              {conversation.messages?.map((message) => {
-                return <ConversationMessage key={message._key} message={message} />
-              })}
+              {conversation?.messages?.length > 0 ? (
+                conversation?.messages?.map((message) => {
+                  return <ConversationMessage key={message._key} message={message} />
+                })
+              ) : (
+                <Text size={1} muted align="center">
+                  No messages found.
+                </Text>
+              )}
             </Flex>
           ) : (
             <Card padding={4} height="fill">

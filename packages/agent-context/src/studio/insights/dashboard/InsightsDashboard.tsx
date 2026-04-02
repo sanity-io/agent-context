@@ -19,7 +19,6 @@ const SidebarCard = styled(Card)`
  * Provides tabs for analytics overview and conversation browsing.
  */
 export function InsightsDashboard() {
-  const [agentFilter, setAgentFilter] = useState<string | null>(null)
   const [contentGapFilter, setContentGapFilter] = useState<string | null>(null)
   const [scoreRange, setScoreRange] = useState<ScoreRange | null>(null)
   const [sentimentFilter, setSentimentFilter] = useState<Sentiment | null>(null)
@@ -32,11 +31,30 @@ export function InsightsDashboard() {
 
   const router = useRouter()
   const path = router.state['path']
+  const routerAgentId = router.state['agentId']
   const routerId = router.state['id']
+  const agentFilter =
+    typeof routerAgentId === 'string' && routerAgentId !== '*' ? routerAgentId : null
   const selectedConversationId = typeof routerId === 'string' ? routerId : null
 
-  const navigateTo = (newPath: string, id?: string) => {
-    router.navigate(id ? {path: newPath, id} : {path: newPath})
+  const navigateTo = (newPath: string, agentId?: string | null, id?: string) => {
+    const agent = agentId === undefined ? agentFilter : agentId
+    const state: Record<string, string> = {path: newPath}
+
+    if (agent) {
+      state['agentId'] = agent
+    }
+
+    if (id) {
+      if (!agent) state['agentId'] = '*'
+      state['id'] = id
+    }
+
+    router.navigate(state)
+  }
+
+  const setAgentFilter = (id: string | null) => {
+    navigateTo(typeof path === 'string' ? path : 'overview', id)
   }
 
   const isOverviewActive = path === 'overview' || !path
@@ -140,7 +158,7 @@ export function InsightsDashboard() {
                 if (selectedConversationId === id) {
                   navigateTo('conversations')
                 } else {
-                  navigateTo('conversations', id)
+                  navigateTo('conversations', undefined, id)
                 }
               }}
               onCloseDetail={() => navigateTo('conversations')}

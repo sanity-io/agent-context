@@ -105,7 +105,7 @@ export const agentContextPlugin = definePlugin<AgentContextPluginOptions | void>
             title: 'Insights',
             icon: ChartUpwardIcon,
             component: InsightsDashboard,
-            router: route.create('/:path', [route.create('/:id')]),
+            router: route.create('/:path', [route.create('/:agentId', [route.create('/:id')])]),
           },
         ]
       : [],

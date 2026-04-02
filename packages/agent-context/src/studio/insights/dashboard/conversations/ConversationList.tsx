@@ -41,12 +41,15 @@ const SORT_CLAUSES: Record<SortOption, string> = {
   'score-asc': '| order(coreMetrics.successScore asc)',
   'sentiment-asc': `| order(${SENTIMENT_ORDER} asc)`,
   'sentiment-desc': `| order(${SENTIMENT_ORDER} desc)`,
+  'gaps-desc': '| order(count(coreMetrics.contentGaps) desc)',
+  'gaps-asc': '| order(count(coreMetrics.contentGaps) asc)',
 }
 
 const DEFAULT_DIRECTIONS: Record<SortField, SortDirection> = {
   date: 'desc',
   score: 'asc',
   sentiment: 'asc',
+  gaps: 'desc',
 }
 
 const BASE_FILTER = `*[_type == $type
@@ -78,7 +81,7 @@ const PROJECTION = `{
   agentId,
   updatedAt,
   "messageCount": count(messages),
-  "coreMetrics": { "successScore": coreMetrics.successScore, "sentiment": coreMetrics.sentiment },
+  "coreMetrics": { "successScore": coreMetrics.successScore, "sentiment": coreMetrics.sentiment, "contentGaps": coreMetrics.contentGaps },
   "firstMessage": messages[role == "user"][0].content
 }`
 
@@ -140,11 +143,7 @@ export function ConversationList(props: ConversationListProps) {
     sentimentFilter: sentimentFilter || null,
   })
 
-  const activeField: SortField = sortBy.startsWith('date')
-    ? 'date'
-    : sortBy.startsWith('score')
-      ? 'score'
-      : 'sentiment'
+  const activeField = sortBy.split('-')[0] as SortField
   const activeDirection: SortDirection = sortBy.endsWith('asc') ? 'asc' : 'desc'
 
   const sortProps = useMemo(() => {
@@ -164,7 +163,12 @@ export function ConversationList(props: ConversationListProps) {
       }
     }
 
-    return {score: forField('score'), sentiment: forField('sentiment'), date: forField('date')}
+    return {
+      score: forField('score'),
+      sentiment: forField('sentiment'),
+      gaps: forField('gaps'),
+      date: forField('date'),
+    }
   }, [activeField, activeDirection])
 
   useClickOutsideEvent(
@@ -333,6 +337,8 @@ export function ConversationList(props: ConversationListProps) {
             <Table.Heading title="Score" flex={1} sort={sortProps.score} />
 
             <Table.Heading title="Sentiment" flex={1} sort={sortProps.sentiment} />
+
+            <Table.Heading title="Gaps" flex={1} sort={sortProps.gaps} />
 
             <Table.Heading title="Messages" flex={1} />
 

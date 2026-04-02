@@ -56,7 +56,7 @@ export function Conversations(props: ConversationsProps) {
 
       {selectedConversationId && (
         <>
-          {mediaIndex >= 3 ? (
+          {mediaIndex >= 4 ? (
             <Card flex={1} height="fill" overflow="hidden">
               <ConversationDetail conversationId={selectedConversationId} onClose={onCloseDetail} />
             </Card>

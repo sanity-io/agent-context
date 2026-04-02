@@ -87,7 +87,7 @@ function DistributionRow(props: {item: DistributionItem; total: number}) {
       >
         <div
           style={{
-            width: `${Math.max(percentage, 2)}%`,
+            width: item.count === 0 ? 0 : `${Math.max(percentage, 2)}%`,
             height: '100%',
             borderRadius: 2,
             backgroundColor: isDark ? barColor.dark : barColor.light,

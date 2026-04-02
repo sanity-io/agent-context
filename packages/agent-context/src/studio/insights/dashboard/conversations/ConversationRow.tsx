@@ -26,6 +26,7 @@ export function ConversationRow(props: ConversationRowProps) {
       onClick={() => onSelect(conversation._id)}
       aria-label={`View conversation with ${conversation.agentId}`}
       aria-pressed={isSelected}
+      style={{cursor: 'pointer'}}
     >
       <Table.Row>
         <Table.Cell flex={3}>

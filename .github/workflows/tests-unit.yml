@@ -31,7 +31,7 @@ jobs:
 
       - name: Report Coverage
         if: always()
-        uses: davelosert/vitest-coverage-report-action@v2
+        uses: davelosert/vitest-coverage-report-action@3c50566c523e04813df28de8f7c48dd97d663f1c # v2
         with:
           name: agent-context
           working-directory: packages/agent-context

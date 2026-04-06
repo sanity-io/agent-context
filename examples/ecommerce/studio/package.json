@@ -21,7 +21,7 @@
   },
   "prettier": "@sanity/prettier-config",
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.64",
+    "@ai-sdk/anthropic": "^3.0.66",
     "@sanity/agent-context": "workspace:*",
     "@sanity/client": "^7.17.0",
     "@sanity/icons": "^3",

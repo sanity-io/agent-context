@@ -131,10 +131,10 @@ export const conversationSchema = defineType({
       description: 'When the conversation started',
     }),
     defineField({
-      name: 'updatedAt',
-      title: 'Updated At',
+      name: 'messagesUpdatedAt',
+      title: 'Messages Updated At',
       type: 'datetime',
-      description: 'When the conversation was last updated',
+      description: 'When the conversation messages were last updated',
     }),
 
     // Classification - populated by classifyConversation()

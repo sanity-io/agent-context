@@ -163,7 +163,7 @@ describe('saveConversation', () => {
       expect(data.messages[1]).not.toHaveProperty('toolType')
     })
 
-    it('formats messages with _key', async () => {
+    it('formats messages and sets messagesUpdatedAt', async () => {
       let patchedData: unknown = null
       const commitMock = vi.fn().mockResolvedValue(undefined)
       const patchMock = vi.fn().mockImplementation((_id, patchFn) => {
@@ -194,12 +194,11 @@ describe('saveConversation', () => {
       expect(patchedData).toMatchObject({
         messages: [
           {
-            _key: expect.any(String),
             role: 'user',
             content: 'Test message',
           },
         ],
-        updatedAt: expect.any(String),
+        messagesUpdatedAt: expect.any(String),
       })
     })
   })

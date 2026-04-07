@@ -55,7 +55,7 @@ export interface Conversation {
   agentId: string
   threadId: string
   startedAt: string | null
-  updatedAt: string | null
+  messagesUpdatedAt: string | null
   classifiedAt: string | null
   classificationError: string | null
   firstMessage: string | null
@@ -70,7 +70,7 @@ export interface Conversation {
 export interface ConversationSummary {
   _id: string
   agentId: string
-  updatedAt: string | null
+  messagesUpdatedAt: string | null
   messageCount: number
   coreMetrics: Pick<CoreMetrics, 'successScore' | 'sentiment' | 'contentGaps'> | null
   firstMessage: string | null

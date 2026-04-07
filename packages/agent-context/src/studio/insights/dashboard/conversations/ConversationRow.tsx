@@ -82,7 +82,11 @@ export function ConversationRow(props: ConversationRowProps) {
         </Table.Cell>
 
         <Table.Cell flex={1}>
-          <Box>{conversation.updatedAt && <RelativeDate date={conversation.updatedAt} />}</Box>
+          <Box>
+            {conversation.messagesUpdatedAt && (
+              <RelativeDate date={conversation.messagesUpdatedAt} />
+            )}
+          </Box>
         </Table.Cell>
       </Table.Row>
     </Card>

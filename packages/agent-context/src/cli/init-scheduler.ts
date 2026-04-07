@@ -90,7 +90,6 @@ export default scheduledEventHandler(async ({context}) => {
 
   const client = createClient({
     ...context.clientOptions,
-    apiVersion: '2024-01-01',
     useCdn: false,
   })
 
@@ -138,7 +137,9 @@ async function main() {
   // Check if we're in a directory with a sanity.config
   const hasSanityConfig =
     existsSync('sanity.config.ts') ||
+    existsSync('sanity.config.tsx') ||
     existsSync('sanity.config.js') ||
+    existsSync('sanity.config.jsx') ||
     existsSync('sanity.config.mjs')
 
   if (!hasSanityConfig) {
@@ -148,7 +149,7 @@ async function main() {
   }
 
   // Select AI provider
-  const provider = (await select({
+  const provider = await select<ProviderKey>({
     message: 'Which AI provider will you use for classification?',
     choices: [
       {value: 'anthropic', name: 'Anthropic (claude-sonnet-4-5 recommended)'},
@@ -156,10 +157,10 @@ async function main() {
       {value: 'google', name: 'Google (gemini-1.5-flash)'},
       {value: 'other', name: 'Other (manual configuration)'},
     ],
-  })) as ProviderKey
+  })
 
   // Select schedule
-  const scheduleChoice = (await select({
+  const scheduleChoice = await select<ScheduleKey>({
     message: 'When should classification run daily?',
     choices: [
       {value: '3am', name: '3:00 AM (recommended)'},
@@ -168,7 +169,7 @@ async function main() {
       {value: 'noon', name: 'Noon'},
       {value: 'custom', name: 'Custom cron expression'},
     ],
-  })) as ScheduleKey
+  })
 
   let cron = SCHEDULES[scheduleChoice].cron
   if (scheduleChoice === 'custom') {

@@ -35,8 +35,8 @@ import {FilterMenu} from './FilterMenu'
 const SENTIMENT_ORDER = `select(coreMetrics.sentiment == "negative" => 0, coreMetrics.sentiment == "neutral" => 1, coreMetrics.sentiment == "positive" => 2, 3)`
 
 const SORT_CLAUSES: Record<SortOption, string> = {
-  'date-desc': '| order(updatedAt desc)',
-  'date-asc': '| order(updatedAt asc)',
+  'date-desc': '| order(messagesUpdatedAt desc)',
+  'date-asc': '| order(messagesUpdatedAt asc)',
   'score-desc': '| order(coreMetrics.successScore desc)',
   'score-asc': '| order(coreMetrics.successScore asc)',
   'sentiment-asc': `| order(${SENTIMENT_ORDER} asc)`,
@@ -79,7 +79,7 @@ const CONTENT_GAPS_QUERY = `array::unique(*[_type == $type
 const PROJECTION = `{
   _id,
   agentId,
-  updatedAt,
+  messagesUpdatedAt,
   "messageCount": count(messages),
   "coreMetrics": { "successScore": coreMetrics.successScore, "sentiment": coreMetrics.sentiment, "contentGaps": coreMetrics.contentGaps },
   "firstMessage": messages[role == "user"][0].content

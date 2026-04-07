@@ -1,7 +1,6 @@
 import type {SanityClient} from 'sanity'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
-import {generateKey} from './utils'
 
 /** @public */
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool'
@@ -144,7 +143,6 @@ export async function saveConversation(options: SaveConversationOptions): Promis
   const documentId = generateConversationId(agentId, threadId)
 
   const formattedMessages = messages.map((m) => ({
-    _key: generateKey(),
     role: m.role,
     content: m.content,
     ...(m.toolName !== undefined && {toolName: m.toolName}),
@@ -164,10 +162,10 @@ export async function saveConversation(options: SaveConversationOptions): Promis
     .patch(documentId, (p) =>
       p.set({
         messages: formattedMessages,
-        updatedAt: now,
+        messagesUpdatedAt: now,
       }),
     )
-    .commit()
+    .commit({autoGenerateArrayKeys: true})
 
   return documentId
 }

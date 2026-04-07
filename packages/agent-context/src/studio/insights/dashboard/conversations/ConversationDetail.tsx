@@ -14,7 +14,7 @@ const DETAIL_QUERY = `*[_type == $type && _id == $id][0]{
   agentId,
   threadId,
   startedAt,
-  updatedAt,
+  messagesUpdatedAt,
   classifiedAt,
   classificationError,
   coreMetrics,

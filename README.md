@@ -6,6 +6,8 @@ Instead of vectorizing your content into embeddings and hoping similarity search
 
 [Read the full documentation →](https://www.sanity.io/docs/ai/agent-context)
 
+> **Agent Context vs Sanity MCP Server** — Sanity offers two MCP endpoints. The [Sanity MCP Server](https://www.sanity.io/docs/ai/mcp-server) gives AI coding assistants like Cursor, Claude Code, and v0 full access to your Sanity workspace (content, schemas, releases, and more). Agent Context is different: it's for **production agents that serve your end users** — read-only, scoped access you use to power search, support bots, and other content-driven features in your application.
+
 ## How it works
 
 ```mermaid

@@ -12,6 +12,7 @@ export function ContentGapRow(props: ContentGapRowProps) {
 
   return (
     <Card
+      __unstable_focusRing
       padding={3}
       radius={3}
       tone="caution"

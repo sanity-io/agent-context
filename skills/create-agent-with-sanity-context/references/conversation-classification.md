@@ -58,7 +58,6 @@ const CONCURRENCY = 5
 export default scheduledEventHandler(async ({context}) => {
   const client = createClient({
     ...context.clientOptions,
-    apiVersion: '2024-01-01',
     useCdn: false,
   })
 

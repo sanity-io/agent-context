@@ -1,16 +1,18 @@
+import {ChartUpwardIcon} from '@sanity/icons'
 import {definePlugin} from 'sanity'
+import {route} from 'sanity/router'
 
-import {
-  CONVERSATION_SCHEMA_TITLE,
-  CONVERSATION_SCHEMA_TYPE_NAME,
-  conversationSchema,
-} from '../insights/schemas/conversationSchema'
-import {insightsTool} from '../insights/tool'
 import {
   AGENT_CONTEXT_SCHEMA_TITLE,
   AGENT_CONTEXT_SCHEMA_TYPE_NAME,
   agentContextSchema,
-} from './agentContextSchema'
+} from './context-document/agentContextSchema'
+import {InsightsDashboard} from './insights/dashboard/InsightsDashboard'
+import {
+  CONVERSATION_SCHEMA_TITLE,
+  CONVERSATION_SCHEMA_TYPE_NAME,
+  conversationSchema,
+} from './insights/schemas/conversationSchema'
 
 /** @public */
 export interface InsightsOptions {
@@ -96,6 +98,16 @@ export const agentContextPlugin = definePlugin<AgentContextPluginOptions | void>
       types: schemaTypes,
       templates: (prev) => [...prev, ...schemaTemplates],
     },
-    tools: insightsEnabled ? [insightsTool] : [],
+    tools: insightsEnabled
+      ? [
+          {
+            name: 'agent-insights',
+            title: 'Insights',
+            icon: ChartUpwardIcon,
+            component: InsightsDashboard,
+            router: route.create('/:path', [route.create('/:agentId', [route.create('/:id')])]),
+          },
+        ]
+      : [],
   }
 })

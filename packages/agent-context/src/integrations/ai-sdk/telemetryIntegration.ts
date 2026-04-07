@@ -1,6 +1,7 @@
-import {type Message, saveConversation} from '@sanity/agent-context/primitives'
 import {bindTelemetryIntegration, type TelemetryIntegration} from 'ai'
 import type {SanityClient} from 'sanity'
+
+import {type Message, saveConversation} from '../../primitives/saveConversation'
 
 /**
  * Configuration for the Sanity Insights telemetry integration.

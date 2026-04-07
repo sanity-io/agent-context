@@ -4,7 +4,9 @@ import type {Sentiment as PrimitiveSentiment} from '../../../primitives/classify
  * Sort options for conversation list.
  * @internal
  */
-export type SortOption = 'date-desc' | 'date-asc' | 'score-asc' | 'sentiment'
+export type SortField = 'date' | 'score' | 'sentiment' | 'gaps'
+export type SortDirection = 'asc' | 'desc'
+export type SortOption = `${SortField}-${SortDirection}`
 
 /**
  * Re-export Sentiment from primitives for dashboard use.
@@ -13,8 +15,14 @@ export type SortOption = 'date-desc' | 'date-asc' | 'score-asc' | 'sentiment'
 export type Sentiment = PrimitiveSentiment
 
 /**
+ * Score range buckets matching the overview distribution.
+ * @internal
+ */
+export type ScoreRange = 'good' | 'okay' | 'poor' | 'critical'
+
+/**
  * Core metrics as they appear on conversation documents.
- * Fields are optional because documents may not be classified yet.
+ * Fields are optional because documents may not be analyzed yet.
  * @internal
  */
 export interface CoreMetrics {
@@ -39,13 +47,31 @@ export interface ConversationMessage {
 }
 
 /**
- * Custom metric stored on the conversation document.
+ * Full conversation document structure used in the detail view.
  * @internal
  */
-export interface CustomMetric {
-  _key: string
-  key: string
-  stringValue?: string
-  numberValue?: number
-  booleanValue?: boolean
+export interface Conversation {
+  _id: string
+  agentId: string
+  threadId: string
+  startedAt: string | null
+  messagesUpdatedAt: string | null
+  classifiedAt: string | null
+  classificationError: string | null
+  firstMessage: string | null
+  messages: ConversationMessage[]
+  coreMetrics: CoreMetrics | null
+}
+
+/**
+ * Summary data for a conversation displayed in the list.
+ * @internal
+ */
+export interface ConversationSummary {
+  _id: string
+  agentId: string
+  messagesUpdatedAt: string | null
+  messageCount: number
+  coreMetrics: Pick<CoreMetrics, 'successScore' | 'sentiment' | 'contentGaps'> | null
+  firstMessage: string | null
 }

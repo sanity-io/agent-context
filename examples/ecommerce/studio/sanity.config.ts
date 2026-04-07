@@ -1,4 +1,8 @@
-import {AGENT_CONTEXT_SCHEMA_TYPE_NAME, agentContextPlugin} from '@sanity/agent-context/studio'
+import {
+  AGENT_CONTEXT_SCHEMA_TYPE_NAME,
+  agentContextPlugin,
+  CONVERSATION_SCHEMA_TYPE_NAME,
+} from '@sanity/agent-context/studio'
 import {visionTool} from '@sanity/vision'
 import {defineConfig} from 'sanity'
 import {type ListItemBuilder, type StructureBuilder, structureTool} from 'sanity/structure'
@@ -30,7 +34,11 @@ export default defineConfig({
     structureTool({
       structure: (S: StructureBuilder) => {
         // Document types to group under "Agents"
-        const agentTypes = [AGENT_CONTEXT_SCHEMA_TYPE_NAME, 'agent.config']
+        const agentTypes = [
+          AGENT_CONTEXT_SCHEMA_TYPE_NAME,
+          CONVERSATION_SCHEMA_TYPE_NAME,
+          'agent.config',
+        ]
 
         // Get all schema types except agent-related types
         const defaultListItems = S.documentTypeListItems().filter(
@@ -51,6 +59,7 @@ export default defineConfig({
                   .items([
                     S.documentTypeListItem('agent.config').title('Agent Configs'),
                     S.documentTypeListItem(AGENT_CONTEXT_SCHEMA_TYPE_NAME).title('Agent Contexts'),
+                    S.documentTypeListItem(CONVERSATION_SCHEMA_TYPE_NAME).title('Conversations'),
                   ]),
               ),
           ])

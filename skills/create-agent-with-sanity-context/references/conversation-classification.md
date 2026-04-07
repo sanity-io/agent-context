@@ -110,7 +110,7 @@ export default defineBlueprint({
       name: 'classify-conversations',
       src: 'functions/classify-conversations',
       event: {
-        expression: '0 2 * * *', // Daily at 2 AM UTC
+        expression: '0 3 * * *', // Daily at 3 AM UTC
       },
     }),
   ],

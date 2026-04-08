@@ -67,7 +67,7 @@ Track and classify your AI agent conversations automatically. Insights captures 
 Insights is enabled by default. To disable it:
 
 ```ts
-agentContextPlugin({insights: false})
+agentContextPlugin({insights: {enabled: false}})
 ```
 
 This registers the `sanity.agentContextConversation` schema and adds an "Agent Insights" dashboard to your Studio.

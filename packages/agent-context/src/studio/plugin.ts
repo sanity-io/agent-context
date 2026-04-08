@@ -21,56 +21,40 @@ export interface InsightsOptions {
    * @defaultValue true
    */
   enabled?: boolean
-
-  /**
-   * Whether to store conversations in the dataset.
-   * @defaultValue true
-   */
-  storeConversations?: boolean
 }
 
 /**
- * Plugin options. At least one of `agentContext` or `insights` must be enabled.
+ * The options for the agent context plugin.
  * @public
  */
-export type AgentContextPluginOptions =
-  | {
-      /** Include the `sanity.agentContext` document type. @defaultValue true */
-      agentContext?: true
-      /** Configuration for insights. Set to `false` to disable. @defaultValue true */
-      insights?: InsightsOptions | false
-    }
-  | {
-      /** Include the `sanity.agentContext` document type. @defaultValue true */
-      agentContext: false
-      /** Configuration for insights. Set to `false` to disable. @defaultValue true */
-      insights?: InsightsOptions
-    }
-  | {
-      /** Include the `sanity.agentContext` document type. @defaultValue true */
-      agentContext?: boolean
-      /** Configuration for insights. Set to `false` to disable. @defaultValue true */
-      insights: InsightsOptions
-    }
+export interface AgentContextPluginOptions {
+  /**
+   * Register the `sanity.agentContext` document type.
+   * @defaultValue true
+   */
+  registerContextDocument?: boolean
+  /**
+   * Configuration for the insights feature.
+   * Omit to use defaults; set `enabled` to `false` to disable.
+   */
+  insights?: InsightsOptions
+}
 
 /**
  * The plugin for the agent context.
  * @beta
  */
 export const agentContextPlugin = definePlugin<AgentContextPluginOptions | void>((options = {}) => {
-  const agentContextEnabled = options?.agentContext !== false
-  const insightsConfig = options?.insights
-  const insightsEnabled =
-    insightsConfig !== false &&
-    (typeof insightsConfig !== 'object' || insightsConfig?.enabled !== false)
+  const shouldRegisterContextDocument = options?.registerContextDocument !== false
+  const insightsEnabled = options?.insights?.enabled !== false
 
   const schemaTypes = [
-    ...(agentContextEnabled ? [agentContextSchema] : []),
+    ...(shouldRegisterContextDocument ? [agentContextSchema] : []),
     ...(insightsEnabled ? [conversationSchema] : []),
   ]
 
   const schemaTemplates = [
-    ...(agentContextEnabled
+    ...(shouldRegisterContextDocument
       ? [
           {
             id: AGENT_CONTEXT_SCHEMA_TYPE_NAME,

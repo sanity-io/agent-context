@@ -138,7 +138,7 @@ The `sanityInsightsIntegration` hooks into AI SDK's telemetry system:
 - **On request start**: Captures input messages
 - **On request finish**: Combines with response messages and saves to Sanity
 
-Conversations are saved as `sanity.insights.conversation` documents (provided by the plugin).
+Conversations are saved as `sanity.agentContextConversation` documents (provided by the plugin).
 
 ### Classification
 

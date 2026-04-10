@@ -1,0 +1,63 @@
+import {anthropic} from '@ai-sdk/anthropic'
+import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
+import {createClient} from '@sanity/client'
+import {scheduledEventHandler} from '@sanity/functions'
+
+// Maximum conversations to classify per run.
+const BATCH_SIZE = 50
+
+// Number of concurrent classification requests.
+const CONCURRENCY = 5
+
+export default scheduledEventHandler(async ({context}) => {
+  if (!context.clientOptions?.token) {
+    console.error('[classify-conversations] No client token available')
+    return
+  }
+
+  const client = createClient({
+    ...context.clientOptions,
+    useCdn: false,
+  })
+
+  // Find conversations that need classification
+  const conversations = await getConversationsToClassify({
+    client,
+    limit: BATCH_SIZE,
+  })
+
+  if (conversations.length === 0) {
+    return
+  }
+
+  let successCount = 0
+  let errorCount = 0
+
+  // Process in batches of CONCURRENCY
+  for (let i = 0; i < conversations.length; i += CONCURRENCY) {
+    const batch = conversations.slice(i, i + CONCURRENCY)
+    const results = await Promise.allSettled(
+      batch.map(async (conv) => {
+        await classifyConversation({
+          client,
+          conversationId: conv._id,
+          model: anthropic('claude-sonnet-4-5'),
+          messages: conv.messages,
+        })
+      }),
+    )
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        successCount++
+      } else {
+        errorCount++
+        console.error(`[classify-conversations] Failed:`, result.reason)
+      }
+    }
+  }
+
+  console.warn(
+    `[classify-conversations] Completed: ${successCount} succeeded, ${errorCount} failed`,
+  )
+})

@@ -1,85 +1,205 @@
-# Conversation Classification with Sanity Functions
+# Conversation Insights
 
-Save and classify agent conversations using Sanity Functions. This enables analytics, debugging, and insights into how users interact with your agent.
+Track and classify agent conversations using `@sanity/agent-context`. This enables analytics, debugging, and understanding how users interact with your agent.
 
-> **Reference Implementation**: See [ecommerce/\_index.md](ecommerce/_index.md) for file navigation, then explore [ecommerce/studio/functions/](ecommerce/studio/functions/) and [ecommerce/studio/sanity.blueprint.ts](ecommerce/studio/sanity.blueprint.ts).
+> **Reference Implementation**: See [ecommerce/\_index.md](ecommerce/_index.md) for file navigation.
 
 ## Overview
 
-The classification system has three parts:
+The Insights system has two parts:
 
-1. **Conversation Schema** - Document type to store conversations
-2. **Blueprint** - Triggers a function when conversations change
-3. **Classification Function** - Analyzes conversations with AI
+1. **Telemetry Integration** - Automatically saves conversations during chat
+2. **Scheduled Classification** - Analyzes conversations with AI on a schedule
 
-## Critical: Delta Functions Prevent Infinite Loops
+The `agentContextPlugin()` includes Insights by default (conversation schema and dashboard). No custom schema needed.
 
-When a function updates a document, it can trigger itself again. Without proper filtering, this creates an **infinite loop**.
+## Setup
 
-### The Problem
+### 1. Enable Telemetry in Your Chat Route
 
-```ts
-// BAD - triggers on ANY update, including the function's own updates
-filter: '_type == "agent.conversation"'
-```
-
-What happens:
-
-1. User sends message → conversation updated → function triggers
-2. Function adds classification → conversation updated → function triggers again
-3. Function runs again → updates classification → triggers again
-4. **Infinite loop**
-
-### The Solution
-
-Use delta functions to filter for **specific changes**:
+Add `sanityInsightsIntegration` to your `streamText` call:
 
 ```ts
-// GOOD - only triggers when messages actually change
-filter: '_type == "agent.conversation" && (delta::changedAny(messages) || (delta::operation() == "create" && defined(messages)))'
+import {sanityInsightsIntegration} from '@sanity/agent-context/ai-sdk'
+import {streamText} from 'ai'
+
+const result = streamText({
+  model: anthropic('claude-sonnet-4-5'),
+  messages,
+  experimental_telemetry: {
+    isEnabled: true,
+    integrations: [
+      sanityInsightsIntegration({
+        client: writeClient, // Sanity client with write permissions
+        agentId: 'my-agent', // Identifier for grouping conversations
+        threadId: chatId, // Unique conversation thread ID
+      }),
+    ],
+  },
+})
 ```
 
-| Delta Function             | Purpose                                       |
-| -------------------------- | --------------------------------------------- |
-| `delta::changedAny(field)` | True only if the specified field changed      |
-| `delta::operation()`       | Returns `"create"`, `"update"`, or `"delete"` |
+See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for the complete implementation.
 
-This filter triggers when:
+### 2. Create a Scheduled Classification Function
 
-- The `messages` field changes (user sent a message)
-- A new conversation is created with messages
+Create a Sanity Function that classifies conversations on a schedule:
 
-It does **not** trigger when:
+```ts
+// studio/functions/classify-conversations.ts
+import {createClient} from '@sanity/client'
+import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
+import {scheduledEventHandler} from '@sanity/functions'
+import {anthropic} from '@ai-sdk/anthropic'
 
-- The `classification` field is updated (function's own update)
-- The `summary` field is updated
-- Any other field changes
+const BATCH_SIZE = 50
+const CONCURRENCY = 5
 
-## Implementation
+export default scheduledEventHandler(async ({context}) => {
+  const client = createClient({
+    ...context.clientOptions,
+    useCdn: false,
+  })
 
-See the reference implementation files:
+  const conversations = await getConversationsToClassify({
+    client,
+    limit: BATCH_SIZE,
+  })
 
-| Component                | File                                                                                                                       |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| Conversation schema      | [ecommerce/studio/schemaTypes/documents/agentConversation.ts](ecommerce/studio/schemaTypes/documents/agentConversation.ts) |
-| Blueprint config         | [ecommerce/studio/sanity.blueprint.ts](ecommerce/studio/sanity.blueprint.ts)                                               |
-| Classification function  | [ecommerce/studio/functions/agent-conversation/index.ts](ecommerce/studio/functions/agent-conversation/index.ts)           |
-| Save conversation helper | [ecommerce/app/src/lib/save-conversation.ts](ecommerce/app/src/lib/save-conversation.ts)                                   |
-| Usage in chat route      | [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) (`saveConversation`)                    |
-| Package versions         | [ecommerce/studio/package.json](ecommerce/studio/package.json)                                                             |
+  if (conversations.length === 0) return
 
-## Troubleshooting
+  let successCount = 0
+  let errorCount = 0
 
-### Function triggers infinitely
+  // Process in batches of CONCURRENCY
+  for (let i = 0; i < conversations.length; i += CONCURRENCY) {
+    const batch = conversations.slice(i, i + CONCURRENCY)
+    const results = await Promise.allSettled(
+      batch.map((conv) =>
+        classifyConversation({
+          client,
+          conversationId: conv._id,
+          model: anthropic('claude-sonnet-4-5'),
+          messages: conv.messages,
+        }),
+      ),
+    )
 
-Your filter is missing delta functions. See "The Solution" above.
+    for (const result of results) {
+      if (result.status === 'fulfilled') successCount++
+      else {
+        errorCount++
+        console.error('[classify-conversations] Failed:', result.reason)
+      }
+    }
+  }
+})
+```
 
-### Function never triggers
+See [ecommerce/studio/functions/classify-conversations.ts](ecommerce/studio/functions/classify-conversations.ts) for the complete implementation.
 
-- Is the blueprint deployed? (`npx sanity blueprints deploy`)
-- Does the filter match your document type name exactly?
-- Are you updating the `messages` field (not just other fields)?
+### 3. Configure the Blueprint
 
-### Classification not saved
+```ts
+// studio/sanity.blueprint.ts
+import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
 
-Ensure your function updates different fields than what triggers it.
+export default defineBlueprint({
+  resources: [
+    defineScheduleFunction({
+      name: 'classify-conversations',
+      src: 'functions/classify-conversations',
+      event: {
+        expression: '0 3 * * *', // Daily at 3 AM UTC
+      },
+    }),
+  ],
+})
+```
+
+See [ecommerce/studio/sanity.blueprint.ts](ecommerce/studio/sanity.blueprint.ts).
+
+### 4. Deploy
+
+```bash
+# Deploy the blueprint
+npx sanity blueprints deploy
+
+# Set required secrets
+npx sanity functions secrets set ANTHROPIC_API_KEY
+```
+
+## How It Works
+
+### Conversation Saving
+
+The `sanityInsightsIntegration` hooks into AI SDK's telemetry system:
+
+- **On request start**: Captures input messages
+- **On request finish**: Combines with response messages and saves to Sanity
+
+Conversations are saved as `sanity.agentContextConversation` documents (provided by the plugin).
+
+### Classification
+
+The `getConversationsToClassify` primitive finds conversations that:
+
+- Have never been classified (`classifiedAt` not set)
+- Have been updated since last classification (`_updatedAt > classifiedAt`)
+
+Only published documents are classified (uses `perspective: 'published'`).
+
+The `classifyConversation` primitive:
+
+1. Sends messages to an LLM with a classification prompt
+2. Extracts metrics: success score, sentiment, content gaps
+3. Updates the conversation document with results
+
+## Primitives Reference
+
+### `sanityInsightsIntegration`
+
+```ts
+import {sanityInsightsIntegration} from '@sanity/agent-context/ai-sdk'
+
+sanityInsightsIntegration({
+  client: SanityClient, // Write client
+  agentId: string | (() => string), // Agent identifier
+  threadId: string | (() => string), // Thread identifier
+})
+```
+
+### `getConversationsToClassify`
+
+```ts
+import {getConversationsToClassify} from '@sanity/agent-context/primitives'
+
+const conversations = await getConversationsToClassify({
+  client: SanityClient,
+  agentId?: string, // Optional filter
+  limit?: number, // Optional max results
+})
+```
+
+### `classifyConversation`
+
+```ts
+import {classifyConversation} from '@sanity/agent-context/primitives'
+
+await classifyConversation({
+  client: SanityClient,
+  conversationId: string,
+  model: LanguageModel, // Any AI SDK compatible model
+  messages: Message[],
+})
+```
+
+## Opting Out
+
+If you don't need Insights, disable it in the plugin:
+
+```ts
+agentContextPlugin({insights: false})
+```
+
+This removes the conversation schema and dashboard from your Studio.

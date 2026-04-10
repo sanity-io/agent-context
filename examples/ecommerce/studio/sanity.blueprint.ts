@@ -1,16 +1,12 @@
-import {defineBlueprint, defineDocumentFunction} from '@sanity/blueprints'
+import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
 
 export default defineBlueprint({
   resources: [
-    defineDocumentFunction({
-      name: 'agent-conversation',
+    defineScheduleFunction({
+      name: 'classify-conversations',
+      src: 'functions/classify-conversations',
       event: {
-        filter:
-          '_type == "agent.conversation" && (delta::changedAny(messages) || (delta::operation() == "create") && defined(messages))',
-        on: ['create', 'update'],
-      },
-      env: {
-        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY as string,
+        expression: '0 3 * * *', // Daily at 3 AM UTC
       },
     }),
   ],

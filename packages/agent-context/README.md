@@ -116,7 +116,7 @@ Run the scaffolding CLI in your Studio directory:
 npx sanity-agent-context
 ```
 
-This generates a scheduled function that classifies conversations daily. Follow the printed instructions to deploy:
+This generates a scheduled function that classifies conversations on a configurable frequency (every 10 minutes, 30 minutes, or 1 hour). Follow the printed instructions to deploy:
 
 ```bash
 pnpm install
@@ -154,4 +154,4 @@ import {saveConversation, classifyConversation} from '@sanity/agent-context/prim
 
 - **Error handling** — Non-blocking by design. Save/classification failures are logged but don't break the user experience. Check logs for `[sanity-insights]` messages.
 - **Concurrency** — Create a fresh `sanityInsightsIntegration()` instance per request. Do not share instances across concurrent requests.
-- **Costs** — Classification runs in scheduled batches (daily by default) to minimize token usage. Adjust schedule and batch size in your function handler.
+- **Costs** — Classification runs in scheduled batches (every 10 minutes by default) to minimize token usage. Adjust schedule and batch size in your function handler.

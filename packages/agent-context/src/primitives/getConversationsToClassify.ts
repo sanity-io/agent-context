@@ -93,7 +93,9 @@ export async function getConversationsToClassify(
     threadId,
     "messages": messages[] {
       "role": role,
-      "content": content
+      "content": content,
+      "toolName": toolName,
+      "toolType": toolType
     }
   }`
 

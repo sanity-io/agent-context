@@ -65,7 +65,7 @@ function simpleHash(str: string): string {
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = (hash << 5) - hash + char
-    hash = hash & hash // Convert to 32-bit integer
+    hash = hash | 0 // Convert to 32-bit integer
   }
   // Convert to base36 and ensure positive
   return Math.abs(hash).toString(36)

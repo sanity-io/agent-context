@@ -1,10 +1,11 @@
 import {anthropic} from '@ai-sdk/anthropic'
-import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
+import {
+  classifyConversation,
+  getConversationsToClassify,
+  getPreviousContentGaps,
+} from '@sanity/agent-context/primitives'
 import {createClient} from '@sanity/client'
 import {scheduledEventHandler} from '@sanity/functions'
-
-// Maximum conversations to classify per run.
-const BATCH_SIZE = 50
 
 // Number of concurrent classification requests.
 const CONCURRENCY = 5
@@ -20,15 +21,17 @@ export default scheduledEventHandler(async ({context}) => {
     useCdn: false,
   })
 
-  // Find conversations that need classification
-  const conversations = await getConversationsToClassify({
-    client,
-    limit: BATCH_SIZE,
-  })
+  const [conversations, previousContentGaps] = await Promise.all([
+    getConversationsToClassify({client}),
+    getPreviousContentGaps({client}),
+  ])
 
   if (conversations.length === 0) {
+    console.log('[classify-conversations] No conversations to classify')
     return
   }
+
+  console.log(`[classify-conversations] Found ${conversations.length} conversations to classify`)
 
   let successCount = 0
   let errorCount = 0
@@ -43,6 +46,7 @@ export default scheduledEventHandler(async ({context}) => {
           conversationId: conv._id,
           model: anthropic('claude-sonnet-4-5'),
           messages: conv.messages,
+          previousContentGaps,
         })
       }),
     )
@@ -52,12 +56,10 @@ export default scheduledEventHandler(async ({context}) => {
         successCount++
       } else {
         errorCount++
-        console.error(`[classify-conversations] Failed:`, result.reason)
+        console.error(`[classify-conversations] Failed to classify:`, result.reason)
       }
     }
   }
 
-  console.warn(
-    `[classify-conversations] Completed: ${successCount} succeeded, ${errorCount} failed`,
-  )
+  console.log(`[classify-conversations] Completed: ${successCount} succeeded, ${errorCount} failed`)
 })

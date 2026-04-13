@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 
-import {formatMessagesForPrompt} from './classifyConversation'
+import {buildSystemPrompt, formatMessagesForPrompt} from './classifyConversation'
 
 describe('formatMessagesForPrompt', () => {
   it('formats messages with capitalized roles', () => {
@@ -41,5 +41,31 @@ describe('formatMessagesForPrompt', () => {
   it('returns empty string for empty array', () => {
     const result = formatMessagesForPrompt([])
     expect(result).toBe('')
+  })
+})
+
+describe('buildSystemPrompt', () => {
+  it('returns base prompt when no previous gaps provided', () => {
+    const prompt = buildSystemPrompt()
+    expect(prompt).toContain('You are analyzing a conversation')
+    expect(prompt).not.toContain('Previously identified content gaps')
+  })
+
+  it('returns base prompt when previous gaps is empty array', () => {
+    const prompt = buildSystemPrompt([])
+    expect(prompt).not.toContain('Previously identified content gaps')
+  })
+
+  it('includes previous gaps as bulleted list when provided', () => {
+    const prompt = buildSystemPrompt(['billing info', 'return policy'])
+    expect(prompt).toContain('Previously identified content gaps')
+    expect(prompt).toContain('- billing info')
+    expect(prompt).toContain('- return policy')
+  })
+
+  it('instructs the model to reuse existing terms', () => {
+    const prompt = buildSystemPrompt(['billing info'])
+    expect(prompt).toContain('reuse these exact terms when they match')
+    expect(prompt).toContain('only create new terms for genuinely new topics')
   })
 })

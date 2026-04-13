@@ -71,13 +71,10 @@ function generateFunctionContent(provider: ProviderKey): string {
 import {
   classifyConversation,
   getConversationsToClassify,
+  getPreviousContentGaps,
 } from '@sanity/agent-context/primitives'
 import {scheduledEventHandler} from '@sanity/functions'
 ${p.import}
-
-// Minimum idle time (in minutes) before a conversation is eligible for classification.
-// Conversations with messages newer than this are skipped (still active).
-const COOLDOWN_MINUTES = 10
 
 // Number of concurrent classification requests.
 const CONCURRENCY = 5
@@ -93,11 +90,10 @@ export default scheduledEventHandler(async ({context}) => {
     useCdn: false,
   })
 
-  // Find conversations that need classification
-  const conversations = await getConversationsToClassify({
-    client,
-    cooldownMinutes: COOLDOWN_MINUTES,
-  })
+  const [conversations, previousContentGaps] = await Promise.all([
+    getConversationsToClassify({client}),
+    getPreviousContentGaps({client}),
+  ])
 
   if (conversations.length === 0) {
     console.log('[classify-conversations] No conversations to classify')
@@ -119,6 +115,7 @@ export default scheduledEventHandler(async ({context}) => {
           conversationId: conv._id,
           model: ${p.modelCall},
           messages: conv.messages,
+          previousContentGaps,
         })
       }),
     )

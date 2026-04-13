@@ -79,6 +79,9 @@ ${p.import}
 // Conversations with messages newer than this are skipped (still active).
 const COOLDOWN_MINUTES = 10
 
+// Number of concurrent classification requests.
+const CONCURRENCY = 5
+
 export default scheduledEventHandler(async ({context}) => {
   if (!context.clientOptions?.token) {
     console.error('[classify-conversations] No client token available')
@@ -106,18 +109,27 @@ export default scheduledEventHandler(async ({context}) => {
   let successCount = 0
   let errorCount = 0
 
-  for (const conv of conversations) {
-    try {
-      await classifyConversation({
-        client,
-        conversationId: conv._id,
-        model: ${p.modelCall},
-        messages: conv.messages,
-      })
-      successCount++
-    } catch (error) {
-      errorCount++
-      console.error(\`[classify-conversations] Failed to classify \${conv._id}:\`, error)
+  // Process in batches of CONCURRENCY
+  for (let i = 0; i < conversations.length; i += CONCURRENCY) {
+    const batch = conversations.slice(i, i + CONCURRENCY)
+    const results = await Promise.allSettled(
+      batch.map(async (conv) => {
+        await classifyConversation({
+          client,
+          conversationId: conv._id,
+          model: ${p.modelCall},
+          messages: conv.messages,
+        })
+      }),
+    )
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        successCount++
+      } else {
+        errorCount++
+        console.error(\`[classify-conversations] Failed to classify:\`, result.reason)
+      }
     }
   }
 
@@ -174,10 +186,10 @@ async function main() {
     mkdirSync(functionsDir, {recursive: true})
   }
 
-  // Write blueprint.ts
-  if (await confirmOverwrite('blueprint.ts')) {
-    writeFileSync('blueprint.ts', generateBlueprintContent(cron))
-    console.log('✅ Created blueprint.ts')
+  // Write sanity.blueprint.ts
+  if (await confirmOverwrite('sanity.blueprint.ts')) {
+    writeFileSync('sanity.blueprint.ts', generateBlueprintContent(cron))
+    console.log('✅ Created sanity.blueprint.ts')
   }
 
   // Write function file

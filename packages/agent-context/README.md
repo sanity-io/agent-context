@@ -78,7 +78,7 @@ Connect your AI agent to save conversations automatically:
 
 ```ts
 import {sanityInsightsIntegration} from '@sanity/agent-context/ai-sdk'
-import {streamText} from 'ai'
+import {convertToModelMessages, streamText} from 'ai'
 import {openai} from '@ai-sdk/openai'
 import {createClient} from '@sanity/client'
 
@@ -92,7 +92,8 @@ const client = createClient({
 
 const result = await streamText({
   model: openai('gpt-4o'),
-  messages,
+  // If using useChat, convert UIMessage[] to ModelMessage[] for streamText
+  messages: await convertToModelMessages(messages),
   experimental_telemetry: {
     isEnabled: true,
     integrations: [

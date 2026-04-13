@@ -39,15 +39,13 @@ const PROVIDERS = {
 
 type ProviderKey = keyof typeof PROVIDERS
 
-const SCHEDULES = {
-  '3am': {name: '3:00 AM (recommended)', cron: '0 3 * * *'},
-  '6am': {name: '6:00 AM', cron: '0 6 * * *'},
-  'midnight': {name: 'Midnight', cron: '0 0 * * *'},
-  'noon': {name: 'Noon', cron: '0 12 * * *'},
-  'custom': {name: 'Custom cron expression', cron: ''},
+const FREQUENCIES = {
+  '10min': {name: 'Every 10 minutes (recommended)', cron: '*/10 * * * *'},
+  '30min': {name: 'Every 30 minutes', cron: '*/30 * * * *'},
+  '1hr': {name: 'Every hour', cron: '0 * * * *'},
 } as const
 
-type ScheduleKey = keyof typeof SCHEDULES
+type FrequencyKey = keyof typeof FREQUENCIES
 
 function generateBlueprintContent(cron: string): string {
   return `import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
@@ -77,10 +75,9 @@ import {
 import {scheduledEventHandler} from '@sanity/functions'
 ${p.import}
 
-// Maximum conversations to classify per run.
-// Adjust based on your function timeout and API rate limits.
-// Remove the limit parameter to classify all pending conversations.
-const BATCH_SIZE = 50
+// Minimum idle time (in minutes) before a conversation is eligible for classification.
+// Conversations with messages newer than this are skipped (still active).
+const COOLDOWN_MINUTES = 10
 
 export default scheduledEventHandler(async ({context}) => {
   if (!context.clientOptions?.token) {
@@ -96,7 +93,7 @@ export default scheduledEventHandler(async ({context}) => {
   // Find conversations that need classification
   const conversations = await getConversationsToClassify({
     client,
-    limit: BATCH_SIZE,
+    cooldownMinutes: COOLDOWN_MINUTES,
   })
 
   if (conversations.length === 0) {
@@ -159,24 +156,17 @@ async function main() {
     ],
   })
 
-  // Select schedule
-  const scheduleChoice = await select<ScheduleKey>({
-    message: 'When should classification run daily?',
+  // Select frequency
+  const frequencyChoice = await select<FrequencyKey>({
+    message: 'How often should classification run?',
     choices: [
-      {value: '3am', name: '3:00 AM (recommended)'},
-      {value: '6am', name: '6:00 AM'},
-      {value: 'midnight', name: 'Midnight'},
-      {value: 'noon', name: 'Noon'},
-      {value: 'custom', name: 'Custom cron expression'},
+      {value: '10min', name: 'Every 10 minutes (recommended)'},
+      {value: '30min', name: 'Every 30 minutes'},
+      {value: '1hr', name: 'Every hour'},
     ],
   })
 
-  let cron = SCHEDULES[scheduleChoice].cron
-  if (scheduleChoice === 'custom') {
-    // For custom, we'll use a placeholder - user can edit
-    cron = '0 3 * * *'
-    console.log('\n📝 Edit blueprint.ts to set your custom cron expression.\n')
-  }
+  const cron = FREQUENCIES[frequencyChoice].cron
 
   // Create files
   const functionsDir = 'functions'

@@ -11,6 +11,12 @@ export interface GetConversationsToClassifyOptions {
   agentId?: string
   /** Optional maximum number of conversations to return. By default, all matching conversations are returned. */
   limit?: number
+  /**
+   * Minimum idle time (in minutes) before a conversation becomes eligible for classification.
+   * Only conversations where `messagesUpdatedAt` is older than this cooldown period will be returned.
+   * Defaults to `10` minutes.
+   */
+  cooldownMinutes?: number
 }
 
 /** @public */
@@ -30,9 +36,10 @@ export interface ConversationToClassify {
  *
  * A conversation needs classification if:
  * - It has never been classified (`classifiedAt` is not set)
- * - It has been updated since last classification (`_updatedAt > classifiedAt`)
+ * - It has been updated since last classification (`classifiedAt <= messagesUpdatedAt`)
+ * - The conversation has been idle for at least `cooldownMinutes` (default 10)
  *
- * Results are ordered by `_updatedAt` ascending (oldest first) to prioritize
+ * Results are ordered by `messagesUpdatedAt` ascending (oldest first) to prioritize
  * conversations that have been waiting longest.
  *
  * @example
@@ -42,6 +49,7 @@ export interface ConversationToClassify {
  * const conversations = await getConversationsToClassify({
  *   client: sanityClient,
  *   limit: 500,
+ *   cooldownMinutes: 10,
  * })
  *
  * for (const conv of conversations) {
@@ -60,26 +68,26 @@ export interface ConversationToClassify {
 export async function getConversationsToClassify(
   options: GetConversationsToClassifyOptions,
 ): Promise<ConversationToClassify[]> {
-  const {client, agentId, limit} = options
+  const {client, agentId, limit, cooldownMinutes = 10} = options
 
   if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
     throw new Error('getConversationsToClassify: limit must be a positive integer')
   }
 
-  // Build query with optional limit
+  if (cooldownMinutes < 0) {
+    throw new Error('getConversationsToClassify: cooldownMinutes must be non-negative')
+  }
+
+  const cooldownCutoff = new Date(Date.now() - cooldownMinutes * 60 * 1000).toISOString()
   const sliceClause = limit !== undefined ? `[0...${limit}]` : ''
 
   const query = `*[
     _type == $type
-    && (
-      // Never classified
-      !defined(classifiedAt)
-      // Or has updates after last classification
-      || _updatedAt > classifiedAt
-    )
-    // Optional agent filter
+    && defined(messagesUpdatedAt)
+    && (!defined(classifiedAt) || classifiedAt <= messagesUpdatedAt)
+    && messagesUpdatedAt <= $cooldownCutoff
     && ($agentId == null || agentId == $agentId)
-  ] | order(_updatedAt asc)${sliceClause} {
+  ] | order(messagesUpdatedAt asc)${sliceClause} {
     _id,
     agentId,
     threadId,
@@ -94,6 +102,7 @@ export async function getConversationsToClassify(
     {
       type: CONVERSATION_SCHEMA_TYPE_NAME,
       agentId: agentId ?? null,
+      cooldownCutoff,
     },
     {perspective: 'published'},
   )

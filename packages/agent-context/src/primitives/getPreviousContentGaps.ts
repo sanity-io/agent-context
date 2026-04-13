@@ -38,8 +38,8 @@ export function rankByFrequency(gaps: string[], limit: number): string[] {
  * Fetches previously identified content gaps from classified conversations,
  * deduplicated and ranked by frequency.
  *
- * Use this to pass consistent terminology to {@link classifyConversation} via the
- * `previousContentGaps` option, reducing duplicate gap descriptions across conversations.
+ * Pass the result to `classifyConversation` via the `previousContentGaps` option
+ * to encourage consistent terminology across classifications.
  *
  * @example
  * ```ts

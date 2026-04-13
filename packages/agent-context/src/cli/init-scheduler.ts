@@ -130,9 +130,7 @@ export default scheduledEventHandler(async ({context}) => {
     }
   }
 
-  console.log(
-    \`[classify-conversations] Completed: \${successCount} succeeded, \${errorCount} failed\`,
-  )
+  console.log(\`[classify-conversations] Completed: \${successCount} succeeded, \${errorCount} failed\`)
 })
 `
 }

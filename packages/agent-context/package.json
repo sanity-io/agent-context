@@ -39,11 +39,6 @@
       "import": "./dist/ai-sdk.js",
       "default": "./dist/ai-sdk.js"
     },
-    "./cli/init-scheduler": {
-      "source": "./src/cli/init-scheduler.ts",
-      "import": "./dist/cli/init-scheduler.js",
-      "default": "./dist/cli/init-scheduler.js"
-    },
     "./cli": {
       "source": "./src/cli/index.ts",
       "import": "./dist/cli/index.js",

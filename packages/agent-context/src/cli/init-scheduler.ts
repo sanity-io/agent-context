@@ -140,6 +140,7 @@ export default scheduledEventHandler(async ({context}) => {
 `
 }
 
+/** @internal */
 async function main() {
   console.log('\n🔧 Setting up scheduled classification...\n')
 
@@ -297,7 +298,4 @@ async function updatePackageJson(provider: ProviderKey) {
   console.log('✅ Updated package.json')
 }
 
-main().catch((error) => {
-  console.error('\n❌ Error:', error.message)
-  process.exit(1)
-})
+export {main}

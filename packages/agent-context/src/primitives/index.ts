@@ -12,3 +12,4 @@ export type {
 export {getConversationsToClassify} from './getConversationsToClassify'
 export type {Message, MessageRole, SaveConversationOptions} from './saveConversation'
 export {generateConversationId, saveConversation} from './saveConversation'
+export type {ClassificationTelemetry, TelemetryConfig} from './sendInsightsTelemetry'

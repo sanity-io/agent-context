@@ -15,7 +15,19 @@ The `agentContextPlugin()` includes Insights by default (conversation schema and
 
 ## Setup
 
-### 1. Enable Telemetry in Your Chat Route
+### Quick Setup (Recommended)
+
+Run the scaffolding CLI from your Sanity Studio directory:
+
+```bash
+npx sanity-agent-context init-insights-scheduler
+```
+
+This generates the blueprint, classification function, and updates `package.json`. Then follow the printed next steps.
+
+### Manual Setup
+
+#### 1. Enable Telemetry in Your Chat Route
 
 Add `sanityInsightsIntegration` to your `streamText` call:
 
@@ -41,21 +53,26 @@ const result = streamText({
 
 See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for the complete implementation.
 
-### 2. Create a Scheduled Classification Function
+#### 2. Create a Scheduled Classification Function
 
 Create a Sanity Function that classifies conversations on a schedule:
 
 ```ts
 // studio/functions/classify-conversations.ts
-import {createClient} from '@sanity/client'
-import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
-import {scheduledEventHandler} from '@sanity/functions'
 import {anthropic} from '@ai-sdk/anthropic'
+import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
+import {createClient} from '@sanity/client'
+import {scheduledEventHandler} from '@sanity/functions'
 
-const BATCH_SIZE = 50
+const COOLDOWN_MINUTES = 10
 const CONCURRENCY = 5
 
 export default scheduledEventHandler(async ({context}) => {
+  if (!context.clientOptions?.token) {
+    console.error('[classify-conversations] No client token available')
+    return
+  }
+
   const client = createClient({
     ...context.clientOptions,
     useCdn: false,
@@ -63,7 +80,7 @@ export default scheduledEventHandler(async ({context}) => {
 
   const conversations = await getConversationsToClassify({
     client,
-    limit: BATCH_SIZE,
+    cooldownMinutes: COOLDOWN_MINUTES,
   })
 
   if (conversations.length === 0) return
@@ -71,18 +88,17 @@ export default scheduledEventHandler(async ({context}) => {
   let successCount = 0
   let errorCount = 0
 
-  // Process in batches of CONCURRENCY
   for (let i = 0; i < conversations.length; i += CONCURRENCY) {
     const batch = conversations.slice(i, i + CONCURRENCY)
     const results = await Promise.allSettled(
-      batch.map((conv) =>
-        classifyConversation({
+      batch.map(async (conv) => {
+        await classifyConversation({
           client,
           conversationId: conv._id,
           model: anthropic('claude-sonnet-4-5'),
           messages: conv.messages,
-        }),
-      ),
+        })
+      }),
     )
 
     for (const result of results) {
@@ -98,19 +114,19 @@ export default scheduledEventHandler(async ({context}) => {
 
 See [ecommerce/studio/functions/classify-conversations.ts](ecommerce/studio/functions/classify-conversations.ts) for the complete implementation.
 
-### 3. Configure the Blueprint
+#### 3. Configure the Blueprint
 
 ```ts
 // studio/sanity.blueprint.ts
-import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
+import {defineBlueprint, defineScheduledFunction} from '@sanity/blueprints'
 
 export default defineBlueprint({
   resources: [
-    defineScheduleFunction({
+    defineScheduledFunction({
       name: 'classify-conversations',
       src: 'functions/classify-conversations',
       event: {
-        expression: '0 3 * * *', // Daily at 3 AM UTC
+        expression: '*/10 * * * *', // Every 10 minutes
       },
     }),
   ],
@@ -119,7 +135,7 @@ export default defineBlueprint({
 
 See [ecommerce/studio/sanity.blueprint.ts](ecommerce/studio/sanity.blueprint.ts).
 
-### 4. Deploy
+#### 4. Deploy
 
 ```bash
 # Deploy the blueprint
@@ -146,8 +162,7 @@ The `getConversationsToClassify` primitive finds conversations that:
 
 - Have never been classified (`classifiedAt` not set)
 - Have been updated since last classification (`_updatedAt > classifiedAt`)
-
-Only published documents are classified (uses `perspective: 'published'`).
+- Have been idle for at least `cooldownMinutes` (default 10) to avoid classifying active conversations
 
 The `classifyConversation` primitive:
 
@@ -178,6 +193,7 @@ const conversations = await getConversationsToClassify({
   client: SanityClient,
   agentId?: string, // Optional filter
   limit?: number, // Optional max results
+  cooldownMinutes?: number, // Min idle time before eligible (default 10)
 })
 ```
 

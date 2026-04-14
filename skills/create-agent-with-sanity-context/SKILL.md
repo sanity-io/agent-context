@@ -149,11 +149,11 @@ Help the user configure the `@sanity/agent-context/studio` plugin in their Studi
 
 See [references/studio-setup.md](references/studio-setup.md)
 
-### Step 3: Conversation Classification (Optional)
+### Step 3: Conversation Classification
 
-Track and analyze agent conversations using Sanity Functions. Useful for analytics, debugging, and understanding user interactions.
+**Ask the user** if they want to add conversation tracking and classification. This enables analytics, debugging, and understanding how users interact with the agent.
 
-See [references/conversation-classification.md](references/conversation-classification.md).
+If the user wants it, see [references/conversation-classification.md](references/conversation-classification.md).
 
 ### Step 4: Tune Your Agent (Recommended)
 

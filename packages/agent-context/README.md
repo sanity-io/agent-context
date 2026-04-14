@@ -114,7 +114,7 @@ The integration requires a Sanity client with write permissions. Keep the token 
 Run the scaffolding CLI in your Studio directory:
 
 ```bash
-npx sanity-agent-context
+npx sanity-agent-context init-insights-scheduler
 ```
 
 This generates a scheduled function that classifies conversations on a configurable frequency (every 10 minutes, 30 minutes, or 1 hour). Follow the printed instructions to deploy:

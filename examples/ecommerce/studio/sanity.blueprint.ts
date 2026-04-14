@@ -1,8 +1,8 @@
-import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
+import {defineBlueprint, defineScheduledFunction} from '@sanity/blueprints'
 
 export default defineBlueprint({
   resources: [
-    defineScheduleFunction({
+    defineScheduledFunction({
       name: 'classify-conversations',
       src: 'functions/classify-conversations',
       event: {

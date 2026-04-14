@@ -48,11 +48,11 @@ const FREQUENCIES = {
 type FrequencyKey = keyof typeof FREQUENCIES
 
 function generateBlueprintContent(cron: string): string {
-  return `import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
+  return `import {defineBlueprint, defineScheduledFunction} from '@sanity/blueprints'
 
 export default defineBlueprint({
   resources: [
-    defineScheduleFunction({
+    defineScheduledFunction({
       name: 'classify-conversations',
       src: 'functions/classify-conversations',
       event: {
@@ -135,6 +135,7 @@ export default scheduledEventHandler(async ({context}) => {
 `
 }
 
+/** @internal */
 async function main() {
   console.log('\n🔧 Setting up scheduled classification...\n')
 
@@ -292,7 +293,4 @@ async function updatePackageJson(provider: ProviderKey) {
   console.log('✅ Updated package.json')
 }
 
-main().catch((error) => {
-  console.error('\n❌ Error:', error.message)
-  process.exit(1)
-})
+export {main}

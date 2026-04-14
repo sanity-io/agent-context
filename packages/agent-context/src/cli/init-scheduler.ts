@@ -48,11 +48,11 @@ const FREQUENCIES = {
 type FrequencyKey = keyof typeof FREQUENCIES
 
 function generateBlueprintContent(cron: string): string {
-  return `import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
+  return `import {defineBlueprint, defineScheduledFunction} from '@sanity/blueprints'
 
 export default defineBlueprint({
   resources: [
-    defineScheduleFunction({
+    defineScheduledFunction({
       name: 'classify-conversations',
       src: 'functions/classify-conversations',
       event: {

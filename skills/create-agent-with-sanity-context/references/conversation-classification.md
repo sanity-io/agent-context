@@ -118,11 +118,11 @@ See [ecommerce/studio/functions/classify-conversations.ts](ecommerce/studio/func
 
 ```ts
 // studio/sanity.blueprint.ts
-import {defineBlueprint, defineScheduleFunction} from '@sanity/blueprints'
+import {defineBlueprint, defineScheduledFunction} from '@sanity/blueprints'
 
 export default defineBlueprint({
   resources: [
-    defineScheduleFunction({
+    defineScheduledFunction({
       name: 'classify-conversations',
       src: 'functions/classify-conversations',
       event: {

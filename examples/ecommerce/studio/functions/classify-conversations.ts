@@ -4,8 +4,8 @@ import {
   getConversationsToClassify,
   getPreviousContentGaps,
 } from '@sanity/agent-context/primitives'
-import {scheduledEventHandler} from '@sanity/functions'
 import {createClient} from '@sanity/client'
+import {scheduledEventHandler} from '@sanity/functions'
 
 // Number of concurrent classification requests.
 const CONCURRENCY = 5

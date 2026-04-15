@@ -66,6 +66,7 @@ export function Conversations(props: ConversationsProps) {
               header="Conversation details"
               id={dialogId}
               onClose={onCloseDetail}
+              onClickOutside={onCloseDetail}
               width={1}
             >
               <ConversationDetail conversationId={selectedConversationId} />

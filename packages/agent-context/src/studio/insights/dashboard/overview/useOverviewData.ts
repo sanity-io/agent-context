@@ -11,7 +11,7 @@ const SENTIMENT_FILTER = `${BASE_FILTER} && defined(coreMetrics.sentiment)`
 const OVERVIEW_QUERY = `{
   "total": count(*[${BASE_FILTER}]),
   "avgScore": math::avg(*[${SCORED_FILTER}].coreMetrics.successScore),
-  "avgMessages": math::avg(*[${BASE_FILTER}]{"c": count(messages)}.c),
+  "avgMessages": math::avg(*[${BASE_FILTER}]{"c": count(messages[role in ["user", "assistant"]])}.c),
 
   "scoreGood": count(*[${SCORED_FILTER} && coreMetrics.successScore >= 8]),
   "scoreOkay": count(*[${SCORED_FILTER} && coreMetrics.successScore >= 6 && coreMetrics.successScore < 8]),

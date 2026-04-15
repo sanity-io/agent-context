@@ -28,15 +28,15 @@ import type {
   SortField,
   SortOption,
 } from '../types'
-import {formatSentiment, useQuery} from '../utils'
+import {formatSentiment, useListenQuery} from '../utils'
 import {ConversationRow} from './ConversationRow'
 import {FilterMenu} from './FilterMenu'
 
 const SENTIMENT_ORDER = `select(coreMetrics.sentiment == "negative" => 0, coreMetrics.sentiment == "neutral" => 1, coreMetrics.sentiment == "positive" => 2, 3)`
 
 const SORT_CLAUSES: Record<SortOption, string> = {
-  'date-desc': '| order(messagesUpdatedAt desc)',
-  'date-asc': '| order(messagesUpdatedAt asc)',
+  'date-desc': '| order(coalesce(messagesUpdatedAt, _updatedAt) desc)',
+  'date-asc': '| order(coalesce(messagesUpdatedAt, _updatedAt) asc)',
   'score-desc': '| order(coreMetrics.successScore desc)',
   'score-asc': '| order(coreMetrics.successScore asc)',
   'sentiment-asc': `| order(${SENTIMENT_ORDER} asc)`,
@@ -121,19 +121,20 @@ export function ConversationList(props: ConversationListProps) {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const filterPopoverRef = useRef<HTMLDivElement | null>(null)
 
-  const {data: contentGaps} = useQuery<string[]>(CONTENT_GAPS_QUERY, {
-    type: CONVERSATION_SCHEMA_TYPE_NAME,
-    agentId: agentFilter || null,
-  })
+  const {data: contentGaps, error: contentGapsError} = useListenQuery<string[]>(
+    `*[_type == $type && ($agentId == null || agentId == $agentId)]`,
+    {type: CONVERSATION_SCHEMA_TYPE_NAME, agentId: agentFilter || null},
+    {fetchQuery: CONTENT_GAPS_QUERY},
+  )
 
   const scoreParams = scoreRange ? SCORE_RANGES[scoreRange] : null
 
   const {
     data: conversations,
     loading,
-    error,
+    error: conversationsError,
     retry,
-  } = useQuery<ConversationSummary[]>(buildQuery(sortBy), {
+  } = useListenQuery<ConversationSummary[]>(buildQuery(sortBy), {
     type: CONVERSATION_SCHEMA_TYPE_NAME,
     agentId: agentFilter || null,
     search: search || null,
@@ -184,8 +185,14 @@ export function ConversationList(props: ConversationListProps) {
 
   const hasActiveFilters = Boolean(search || activeFilterLabels.length > 0)
 
-  if (error) {
-    return <ErrorBlock message={`Error loading conversations: ${error}`} fill onRetry={retry} />
+  if (conversationsError || contentGapsError) {
+    return (
+      <ErrorBlock
+        message={`Error loading conversations: ${conversationsError || contentGapsError}`}
+        fill
+        onRetry={retry}
+      />
+    )
   }
 
   return (

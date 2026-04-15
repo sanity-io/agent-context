@@ -6,7 +6,7 @@ import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../schemas/conversationSchema'
 import {ErrorBlock} from '../ErrorBlock'
 import {LoadingBlock} from '../LoadingBlock'
 import type {Conversation} from '../types'
-import {formatSentiment, getScoreTone, getSentimentTone, useQuery} from '../utils'
+import {formatSentiment, getScoreTone, getSentimentTone, useListenQuery} from '../utils'
 import {ConversationMessage} from './ConversationMessage'
 
 const DETAIL_QUERY = `*[_type == $type && _id == $id][0]{
@@ -89,7 +89,7 @@ export function ConversationDetail(props: ConversationDetailProps) {
     loading,
     error,
     retry,
-  } = useQuery<Conversation>(DETAIL_QUERY, {
+  } = useListenQuery<Conversation>(DETAIL_QUERY, {
     type: CONVERSATION_SCHEMA_TYPE_NAME,
     id: conversationId,
   })

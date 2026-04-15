@@ -1,11 +1,11 @@
-import {createClient} from '@sanity/client'
+import {anthropic} from '@ai-sdk/anthropic'
 import {
   classifyConversation,
   getConversationsToClassify,
   getPreviousContentGaps,
 } from '@sanity/agent-context/primitives'
 import {scheduledEventHandler} from '@sanity/functions'
-import {anthropic} from '@ai-sdk/anthropic'
+import {createClient} from '@sanity/client'
 
 // Number of concurrent classification requests.
 const CONCURRENCY = 5

@@ -80,7 +80,7 @@ const PROJECTION = `{
   _id,
   agentId,
   messagesUpdatedAt,
-  "messageCount": count(messages),
+  "messageCount": count(messages[role in ["user", "assistant"]]),
   "coreMetrics": { "successScore": coreMetrics.successScore, "sentiment": coreMetrics.sentiment, "contentGaps": coreMetrics.contentGaps },
   "firstMessage": messages[role == "user"][0].content
 }`

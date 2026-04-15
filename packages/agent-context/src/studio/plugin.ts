@@ -86,7 +86,7 @@ export const agentContextPlugin = definePlugin<AgentContextPluginOptions | void>
       ? [
           {
             name: 'agent-insights',
-            title: 'Insights',
+            title: 'Agent Insights',
             icon: ChartUpwardIcon,
             component: InsightsDashboard,
             router: route.create('/:path', [route.create('/:agentId', [route.create('/:id')])]),

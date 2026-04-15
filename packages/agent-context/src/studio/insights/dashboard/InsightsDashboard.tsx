@@ -8,7 +8,7 @@ import {CONVERSATION_SCHEMA_TYPE_NAME} from '../schemas/conversationSchema'
 import {Conversations} from './conversations/Conversations'
 import {Overview} from './overview/Overview'
 import type {ScoreRange, Sentiment} from './types'
-import {useQuery} from './utils'
+import {useListenQuery} from './utils'
 
 const SidebarCard = styled(Card)`
   width: 220px;
@@ -25,9 +25,11 @@ export function InsightsDashboard() {
 
   const agentMenuId = useId()
 
-  const {data: agentIds} = useQuery<string[]>(`array::unique(*[_type == $type].agentId)`, {
-    type: CONVERSATION_SCHEMA_TYPE_NAME,
-  })
+  const {data: agentIds} = useListenQuery<string[]>(
+    `*[_type == $type]`,
+    {type: CONVERSATION_SCHEMA_TYPE_NAME},
+    {fetchQuery: `array::unique(*[_type == $type].agentId)`},
+  )
 
   const router = useRouter()
   const path = router.state['path']

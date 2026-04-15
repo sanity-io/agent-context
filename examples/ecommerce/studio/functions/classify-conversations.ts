@@ -1,7 +1,7 @@
-import {createClient} from '@sanity/client'
-import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
-import {scheduledEventHandler} from '@sanity/functions'
 import {anthropic} from '@ai-sdk/anthropic'
+import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
+import {createClient} from '@sanity/client'
+import {scheduledEventHandler} from '@sanity/functions'
 
 // Minimum idle time (in minutes) before a conversation is eligible for classification.
 // Conversations with messages newer than this are skipped (still active).

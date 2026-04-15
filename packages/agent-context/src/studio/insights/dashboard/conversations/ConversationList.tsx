@@ -28,7 +28,7 @@ import type {
   SortField,
   SortOption,
 } from '../types'
-import {formatSentiment, useListenQuery} from '../utils'
+import {formatSentiment, useCompactLayout, useListenQuery} from '../utils'
 import {ConversationRow} from './ConversationRow'
 import {FilterMenu} from './FilterMenu'
 
@@ -117,6 +117,7 @@ export function ConversationList(props: ConversationListProps) {
   const [search, setSearch] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<SortOption>('date-desc')
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false)
+  const compact = useCompactLayout()
 
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const filterPopoverRef = useRef<HTMLDivElement | null>(null)
@@ -199,11 +200,7 @@ export function ConversationList(props: ConversationListProps) {
     <Flex direction="column" height="fill">
       <Card padding={3} paddingBottom={1} borderBottom>
         <Stack space={1}>
-          <Flex
-            align={['stretch', 'stretch', 'stretch', 'center']}
-            gap={2}
-            direction={['column', 'column', 'column', 'row']}
-          >
+          <Flex align="center" gap={2}>
             <Box flex={1}>
               <TextInput
                 clearButton={search !== null}
@@ -284,13 +281,14 @@ export function ConversationList(props: ConversationListProps) {
               }
             >
               <Button
+                aria-label="Filters"
                 fontSize={1}
                 icon={FilterIcon}
                 mode="ghost"
                 onClick={() => setFiltersOpen((v) => !v)}
                 ref={filterButtonRef}
                 selected={filtersOpen}
-                text="Filters"
+                text={compact ? undefined : 'Filters'}
                 tone={activeFilterLabels.length > 0 ? 'primary' : 'default'}
               />
             </Popover>
@@ -339,15 +337,15 @@ export function ConversationList(props: ConversationListProps) {
           <Table.Row paddingY={1}>
             <Table.Heading title="Preview" flex={3} />
 
-            <Table.Heading title="Agent" flex={2} />
+            {!compact && <Table.Heading title="Agent" flex={2} />}
 
             <Table.Heading title="Score" flex={1} sort={sortProps.score} />
 
-            <Table.Heading title="Sentiment" flex={1} sort={sortProps.sentiment} />
+            {!compact && <Table.Heading title="Sentiment" flex={1} sort={sortProps.sentiment} />}
 
-            <Table.Heading title="Gaps" flex={1} sort={sortProps.gaps} />
+            {!compact && <Table.Heading title="Gaps" flex={1} sort={sortProps.gaps} />}
 
-            <Table.Heading title="Messages" flex={1} />
+            {!compact && <Table.Heading title="Messages" flex={1} />}
 
             <Table.Heading title="Updated" flex={1} sort={sortProps.date} />
           </Table.Row>

@@ -1,4 +1,4 @@
-import type {BadgeTone} from '@sanity/ui'
+import {type BadgeTone, useMediaIndex} from '@sanity/ui'
 import {useCallback, useMemo} from 'react'
 import {useObservable} from 'react-rx'
 import {EMPTY, merge, of, Subject} from 'rxjs'
@@ -6,6 +6,10 @@ import {catchError, debounceTime, map, startWith, switchMap} from 'rxjs/operator
 import {DEFAULT_STUDIO_CLIENT_OPTIONS, useClient} from 'sanity'
 
 import type {Sentiment} from './types'
+
+export function useCompactLayout(): boolean {
+  return useMediaIndex() < 3
+}
 
 export function formatSentiment(sentiment: Sentiment): string {
   return sentiment.charAt(0).toUpperCase() + sentiment.slice(1)

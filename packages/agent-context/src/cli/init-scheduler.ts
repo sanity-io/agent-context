@@ -47,17 +47,33 @@ const FREQUENCIES = {
 
 type FrequencyKey = keyof typeof FREQUENCIES
 
-function generateBlueprintContent(cron: string): string {
-  return `import {defineBlueprint, defineScheduledFunction} from '@sanity/blueprints'
+function generateBlueprintContent(cron: string, envVar: string): string {
+  return `import {defineBlueprint, defineRobotToken, defineScheduledFunction} from '@sanity/blueprints'
+import 'dotenv/config'
 
 export default defineBlueprint({
   resources: [
     defineScheduledFunction({
       name: 'classify-conversations',
-      src: 'functions/classify-conversations',
+      timeout: 600,
+      robotToken: '$.resources.classify-conversations-robot.token',
+      env: {
+        ${envVar}: process.env.${envVar},
+      },
       event: {
         expression: '${cron}',
       },
+    }),
+    defineRobotToken({
+      name: 'classify-conversations-robot',
+      label: 'Classify Conversations Robot',
+      memberships: [
+        {
+          resourceType: 'project',
+          resourceId: '<your-project-id>',
+          roleNames: ['editor'],
+        },
+      ],
     }),
   ],
 })
@@ -79,7 +95,7 @@ ${p.import}
 // Number of concurrent classification requests.
 const CONCURRENCY = 5
 
-export default scheduledEventHandler(async ({context}) => {
+export const handler = scheduledEventHandler(async ({context}) => {
   if (!context.clientOptions?.token) {
     console.error('[classify-conversations] No client token available')
     return
@@ -87,6 +103,7 @@ export default scheduledEventHandler(async ({context}) => {
 
   const client = createClient({
     ...context.clientOptions,
+    apiVersion: '2026-01-01',
     useCdn: false,
   })
 
@@ -176,6 +193,8 @@ async function main() {
 
   const cron = FREQUENCIES[frequencyChoice].cron
 
+  const p = PROVIDERS[provider]
+
   // Create files
   const functionsDir = 'functions'
   if (!existsSync(functionsDir)) {
@@ -184,12 +203,16 @@ async function main() {
 
   // Write sanity.blueprint.ts
   if (await confirmOverwrite('sanity.blueprint.ts')) {
-    writeFileSync('sanity.blueprint.ts', generateBlueprintContent(cron))
+    writeFileSync('sanity.blueprint.ts', generateBlueprintContent(cron, p.envVar))
     console.log('✅ Created sanity.blueprint.ts')
   }
 
   // Write function file
-  const functionPath = join(functionsDir, 'classify-conversations.ts')
+  const functionDir = join(functionsDir, 'classify-conversations')
+  if (!existsSync(functionDir)) {
+    mkdirSync(functionDir, {recursive: true})
+  }
+  const functionPath = join(functionDir, 'index.ts')
   const functionExists = existsSync(functionPath)
   if (!functionExists || (await confirmOverwrite(functionPath))) {
     writeFileSync(functionPath, generateFunctionContent(provider))
@@ -200,23 +223,26 @@ async function main() {
   await updatePackageJson(provider)
 
   // Print next steps
-  const p = PROVIDERS[provider]
   console.log('\n' + '─'.repeat(50))
   console.log('\n📋 Next steps:\n')
   console.log('  1. Install dependencies:')
   console.log('     pnpm install\n')
-  console.log('  2. Set your API key:')
-  console.log(`     export ${p.envVar}=your-key-here\n`)
-  console.log('  3. Login to Sanity:')
-  console.log('     npx sanity login\n')
-  console.log('  4. Test locally:')
-  console.log('     npx sanity functions test classify-conversations\n')
-  console.log('  5. Deploy:')
+  console.log('  2. Update sanity.blueprint.ts:')
+  console.log('     Replace <your-project-id> with your Sanity project ID\n')
+  console.log('  3. Add your AI provider API key to .env:')
+  console.log(`     ${p.envVar}=your-key-here\n`)
+  console.log('  4. Configure blueprint stack:')
+  console.log('     npx sanity blueprints doctor --fix\n')
+  console.log('  5. Promote stack to organization scope (required for scheduled functions):')
+  console.log('     npx sanity blueprints promote\n')
+  console.log('  6. Test locally:')
+  console.log('     npx sanity functions test classify-conversations --with-user-token\n')
+  console.log('  7. Deploy:')
   console.log('     npx sanity blueprints deploy\n')
 
   if (provider === 'other') {
-    console.log('  ⚠️  Remember to configure your AI provider in')
-    console.log(`     ${functionPath}\n`)
+    console.log('  Note: Remember to configure your AI provider in')
+    console.log(`        ${functionPath}\n`)
   }
 }
 
@@ -253,7 +279,7 @@ async function updatePackageJson(provider: ProviderKey) {
   const devDeps = packageJson.devDependencies ?? {}
 
   const requiredDeps: Record<string, string> = {
-    '@sanity/blueprints': '^0.14.0',
+    '@sanity/blueprints': '^0.15.0',
     '@sanity/functions': '^1.2.1',
     '@sanity/client': '^6',
   }

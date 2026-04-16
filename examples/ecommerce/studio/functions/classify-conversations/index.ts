@@ -1,16 +1,16 @@
-import {anthropic} from '@ai-sdk/anthropic'
+import {createClient} from '@sanity/client'
 import {
   classifyConversation,
   getConversationsToClassify,
   getPreviousContentGaps,
 } from '@sanity/agent-context/primitives'
-import {createClient} from '@sanity/client'
 import {scheduledEventHandler} from '@sanity/functions'
+import {anthropic} from '@ai-sdk/anthropic'
 
 // Number of concurrent classification requests.
 const CONCURRENCY = 5
 
-export default scheduledEventHandler(async ({context}) => {
+export const handler = scheduledEventHandler(async ({context}) => {
   if (!context.clientOptions?.token) {
     console.error('[classify-conversations] No client token available')
     return
@@ -18,6 +18,7 @@ export default scheduledEventHandler(async ({context}) => {
 
   const client = createClient({
     ...context.clientOptions,
+    apiVersion: '2026-01-01',
     useCdn: false,
   })
 

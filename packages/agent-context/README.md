@@ -122,7 +122,7 @@ This generates a scheduled function that classifies conversations on a configura
 ```bash
 pnpm install
 npx sanity login
-npx sanity functions test classify-conversations  # Test locally
+npx sanity functions test classify-conversations --with-user-token  # Test locally
 npx sanity blueprints deploy                      # Deploy
 ```
 

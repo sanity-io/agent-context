@@ -58,7 +58,7 @@ See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/rou
 Create a Sanity Function that classifies conversations on a schedule:
 
 ```ts
-// studio/functions/classify-conversations.ts
+// studio/functions/classify-conversations/index.ts
 import {anthropic} from '@ai-sdk/anthropic'
 import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
 import {createClient} from '@sanity/client'
@@ -67,7 +67,7 @@ import {scheduledEventHandler} from '@sanity/functions'
 const COOLDOWN_MINUTES = 10
 const CONCURRENCY = 5
 
-export default scheduledEventHandler(async ({context}) => {
+export const handler = scheduledEventHandler(async ({context}) => {
   if (!context.clientOptions?.token) {
     console.error('[classify-conversations] No client token available')
     return
@@ -75,6 +75,7 @@ export default scheduledEventHandler(async ({context}) => {
 
   const client = createClient({
     ...context.clientOptions,
+    apiVersion: '2026-01-01',
     useCdn: false,
   })
 
@@ -112,22 +113,35 @@ export default scheduledEventHandler(async ({context}) => {
 })
 ```
 
-See [ecommerce/studio/functions/classify-conversations.ts](ecommerce/studio/functions/classify-conversations.ts) for the complete implementation.
+See [ecommerce/studio/functions/classify-conversations/index.ts](ecommerce/studio/functions/classify-conversations/index.ts) for the complete implementation.
 
 #### 3. Configure the Blueprint
 
 ```ts
 // studio/sanity.blueprint.ts
-import {defineBlueprint, defineScheduledFunction} from '@sanity/blueprints'
+import {defineBlueprint, defineRobotToken, defineScheduledFunction} from '@sanity/blueprints'
 
 export default defineBlueprint({
   resources: [
     defineScheduledFunction({
       name: 'classify-conversations',
       src: 'functions/classify-conversations',
+      timeout: 600,
+      robotToken: '$.resources.classify-conversations-robot.token',
       event: {
         expression: '*/10 * * * *', // Every 10 minutes
       },
+    }),
+    defineRobotToken({
+      name: 'classify-conversations-robot',
+      label: 'Classify Conversations Robot',
+      memberships: [
+        {
+          resourceType: 'project',
+          resourceId: '<your-project-id>',
+          roleNames: ['editor'],
+        },
+      ],
     }),
   ],
 })

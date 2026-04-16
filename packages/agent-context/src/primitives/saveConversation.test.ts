@@ -43,11 +43,13 @@ describe('saveConversation', () => {
           threadId: 'thread',
           messages: [],
         }),
-      ).rejects.toThrow('saveConversation: client is required')
+      ).rejects.toThrow(
+        'saveConversation: client must be a Sanity client with a transaction() method',
+      )
     })
 
     it('throws if agentId is empty', async () => {
-      const mockClient = {} as never
+      const mockClient = {transaction: vi.fn()} as never
       await expect(
         saveConversation({
           client: mockClient,
@@ -59,7 +61,7 @@ describe('saveConversation', () => {
     })
 
     it('throws if threadId is empty', async () => {
-      const mockClient = {} as never
+      const mockClient = {transaction: vi.fn()} as never
       await expect(
         saveConversation({
           client: mockClient,
@@ -71,7 +73,7 @@ describe('saveConversation', () => {
     })
 
     it('throws if messages is not an array', async () => {
-      const mockClient = {} as never
+      const mockClient = {transaction: vi.fn()} as never
       await expect(
         saveConversation({
           client: mockClient,

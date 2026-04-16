@@ -149,11 +149,23 @@ Help the user configure the `@sanity/agent-context/studio` plugin in their Studi
 
 See [references/studio-setup.md](references/studio-setup.md)
 
-### Step 3: Conversation Classification
+### Step 3: Conversation Insights (Recommended)
 
-**Ask the user** if they want to add conversation tracking and classification. This enables analytics, debugging, and understanding how users interact with the agent.
+**Ask the user** if they want to track conversations. This gives you a real-time dashboard in Sanity Studio showing how users interact with the agent.
 
-If the user wants it, see [references/conversation-classification.md](references/conversation-classification.md).
+**What you get:**
+
+- Success scores and sentiment distribution across conversations
+- Content gaps — what users ask about that the agent struggles with
+- Conversation browser with filtering and full transcripts
+- Multi-agent comparison (if running multiple agents)
+
+**Setup is two steps:**
+
+1. Add `sanityInsightsIntegration` to your `streamText` call (saves conversations automatically)
+2. Run `npx sanity-agent-context init-insights-scheduler` from your Studio directory (sets up AI classification)
+
+The dashboard appears in Studio automatically. See [references/conversation-classification.md](references/conversation-classification.md) for details.
 
 ### Step 4: Tune Your Agent (Recommended)
 

@@ -1,5 +1,3 @@
-import type {SanityClient} from 'sanity'
-
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
 
 /** @public */
@@ -31,10 +29,11 @@ export interface Message {
 /** @public */
 export interface SaveConversationOptions {
   /**
-   * The Sanity client to use for saving.
-   * Must have write permissions to the dataset.
+   * A Sanity client with write permissions.
+   * Works with `@sanity/client`, `next-sanity`, or `sanity` regardless of version.
    */
-  client: SanityClient
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  client: {transaction(): any}
 
   /**
    * Identifier for the agent that handled this conversation.
@@ -127,8 +126,8 @@ export function generateConversationId(agentId: string, threadId: string): strin
 export async function saveConversation(options: SaveConversationOptions): Promise<string> {
   const {client, agentId, threadId, messages} = options
 
-  if (!client) {
-    throw new Error('saveConversation: client is required')
+  if (!client || typeof client.transaction !== 'function') {
+    throw new Error('saveConversation: client must be a Sanity client with a transaction() method')
   }
   if (!agentId || typeof agentId !== 'string') {
     throw new Error('saveConversation: agentId must be a non-empty string')
@@ -159,7 +158,8 @@ export async function saveConversation(options: SaveConversationOptions): Promis
       startedAt: now,
       messages: [],
     })
-    .patch(documentId, (p) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .patch(documentId, (p: any) =>
       p.set({
         messages: formattedMessages,
         messagesUpdatedAt: now,

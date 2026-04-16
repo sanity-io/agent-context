@@ -1,4 +1,4 @@
-import type {SanityClient} from 'sanity'
+import type {SanityClient} from '@sanity/client'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
 import type {Message} from './saveConversation'

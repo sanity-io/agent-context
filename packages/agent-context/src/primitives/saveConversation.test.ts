@@ -35,19 +35,6 @@ describe('generateConversationId', () => {
 
 describe('saveConversation', () => {
   describe('input validation', () => {
-    it('throws if client is missing', async () => {
-      await expect(
-        saveConversation({
-          client: null as never,
-          agentId: 'agent',
-          threadId: 'thread',
-          messages: [],
-        }),
-      ).rejects.toThrow(
-        'saveConversation: client must be a Sanity client with a transaction() method',
-      )
-    })
-
     it('throws if agentId is empty', async () => {
       const mockClient = {transaction: vi.fn()} as never
       await expect(

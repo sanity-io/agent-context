@@ -1,3 +1,4 @@
+import type {SanityClient} from '@sanity/client'
 import {bindTelemetryIntegration, type TelemetryIntegration} from 'ai'
 
 import {type Message, saveConversation} from '../../primitives/saveConversation'
@@ -9,10 +10,8 @@ import {type Message, saveConversation} from '../../primitives/saveConversation'
 export interface SanityInsightsConfig {
   /**
    * A Sanity client with write permissions.
-   * Used for saving conversations.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  client: {transaction(): any}
+  client: SanityClient
 
   /**
    * Identifier for the agent. Used to group conversations in the dashboard.

@@ -8,7 +8,9 @@ export default defineBlueprint({
       timeout: 600,
       robotToken: '$.resources.classify-conversations-robot.token',
       env: {
-        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY!,
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+        SANITY_PROJECT_ID: process.env.SANITY_STUDIO_PROJECT_ID,
+        SANITY_DATASET: process.env.SANITY_STUDIO_DATASET,
       },
       event: {
         expression: '*/10 * * * *',
@@ -20,7 +22,7 @@ export default defineBlueprint({
       memberships: [
         {
           resourceType: 'project',
-          resourceId: 'j01klse8',
+          resourceId: process.env.SANITY_STUDIO_PROJECT_ID!,
           roleNames: ['editor'],
         },
       ],

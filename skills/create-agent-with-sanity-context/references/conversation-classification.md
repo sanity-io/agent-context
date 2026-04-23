@@ -397,7 +397,7 @@ await classifyConversation({
 If you don't need Insights, disable it in the plugin:
 
 ```ts
-agentContextPlugin({insights: false})
+agentContextPlugin({insights: {enabled: false}})
 ```
 
 This removes the conversation schema and dashboard from your Studio.

@@ -17,7 +17,7 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 | Schema design patterns    | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                                   |
 | Sanity client/queries     | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                                  |
 | Conversation insights     | `app/src/app/api/chat/route.ts` (`sanityInsightsIntegration`), `functions/classify-conversations/index.ts` |
-| Environment variables     | `.env.example`                                                                                             |
+| Environment variables     | `.env`                                                                                                     |
 
 ## File Map
 

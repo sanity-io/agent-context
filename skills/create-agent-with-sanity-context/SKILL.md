@@ -107,7 +107,7 @@ The reference patterns use Next.js + Vercel AI SDK, but adapt to whatever the us
 1. **Build the Agent** — Get a working chatbot connected to their content
 2. **Studio Setup** — Configure the plugin and create an Agent Context document
 3. **Conversation Insights** — Track and classify conversations (this is what makes the data useful)
-4. **Tune the Agent** — Improve based on real conversation data
+4. **Tune the Agent** — Refine instructions and system prompt using the tuning skills
 
 After completing each step, proactively present the next one. Only stop when all steps are done or the user explicitly defers.
 
@@ -190,7 +190,7 @@ Once the production agent works:
 
 Scheduled classification uses **Sanity Blueprints** to deploy **Sanity Functions**. Key concepts:
 
-**Project structure**: The `sanity.blueprint.ts` file and your lockfile (`pnpm-lock.yaml`, `yarn.lock`, or `package-lock.json`) must be in the same directory — typically your project root. The CLI detects the package manager from the lockfile.
+**Project structure**: The `sanity.blueprint.ts` file and your lockfile (`pnpm-lock.yaml`, `yarn.lock`, or `package-lock.json`) must be in the same directory. The CLI detects the package manager from the lockfile. Adapt this structure to the user's existing project layout:
 
 ```
 my-project/
@@ -203,6 +203,8 @@ my-project/
 ├── studio/
 └── app/
 ```
+
+**Note**: This is a reference structure. The key requirement is that `sanity.blueprint.ts` and the lockfile are in the same directory. Monorepos and other layouts may need adjustments — check the user's existing structure before adding files.
 
 **Commands** (run from project root):
 

@@ -77,7 +77,25 @@ const result = streamText({
 
 **Thread ID**: Each conversation needs a unique `threadId`. Generate one when a new chat starts (e.g., `crypto.randomUUID()`) and persist it across messages in that conversation. See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for how this is handled with cookies.
 
-**Not using AI SDK?** The telemetry integration requires Vercel AI SDK. If using another library, use the primitives directly to save conversations — see the Primitives Reference below.
+**Not using AI SDK?** The telemetry integration requires Vercel AI SDK. If using another library, use `saveConversation` directly:
+
+```ts
+import {saveConversation} from '@sanity/agent-context/primitives'
+
+// Call this after each conversation turn completes
+await saveConversation({
+  client: writeClient,
+  agentId: 'my-agent',
+  threadId: chatId,
+  messages: [
+    {role: 'user', content: 'How do I return an item?'},
+    {role: 'assistant', content: 'You can return items within 30 days...'},
+    // Include full conversation history each call — it upserts the document
+  ],
+})
+```
+
+The function generates a deterministic document ID from `agentId` + `threadId`, so repeated calls update the same document. See the Primitives Reference below for full API details.
 
 ---
 

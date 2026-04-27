@@ -58,7 +58,7 @@ describe('buildTelemetryPayload', () => {
       'project-abc',
       baseCoreMetrics,
       baseConversation,
-      {enabled: true, shareTraces: {enabled: true, discordHandle: '@testuser'}},
+      {enabled: true, shareTraces: {enabled: true, contactHandle: '@testuser'}},
     )
 
     expect(payload.conversation.messageContents).toHaveLength(3)
@@ -71,7 +71,7 @@ describe('buildTelemetryPayload', () => {
       content: '{"price": 99}',
       toolName: 'lookup',
     })
-    expect(payload.shareTraces).toEqual({discordHandle: '@testuser'})
+    expect(payload.shareTraces).toEqual({contactHandle: '@testuser'})
   })
 
   it('includes model info when available', () => {

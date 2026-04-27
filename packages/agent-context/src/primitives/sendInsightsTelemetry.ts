@@ -1,13 +1,19 @@
-import type {SanityClient} from 'sanity'
+import type {SanityClient} from '@sanity/client'
 
 import type {Sentiment} from './classifyConversation'
 
 /** @public */
 export interface TelemetryConfig {
+  /** Enable anonymous telemetry collection (metrics only, no conversation content). */
   enabled: boolean
+  /** Opt-in to share full conversation traces for research and debugging. */
   shareTraces?: {
     enabled: boolean
-    discordHandle?: string
+    /**
+     * A way to reach you if we find something interesting in your traces.
+     * Examples: "email:you@company.com", "discord:@username", "slack:@handle"
+     */
+    contactHandle?: string
   }
 }
 
@@ -48,7 +54,7 @@ export interface ClassificationTelemetry {
   conversationId: string
   classifiedAt: string
   shareTraces?: {
-    discordHandle?: string
+    contactHandle?: string
   }
 }
 
@@ -120,8 +126,8 @@ export function buildTelemetryPayload(
       content: m.content ?? '',
       ...(m.toolName && {toolName: m.toolName}),
     }))
-    if (telemetry.shareTraces.discordHandle) {
-      payload.shareTraces = {discordHandle: telemetry.shareTraces.discordHandle}
+    if (telemetry.shareTraces.contactHandle) {
+      payload.shareTraces = {contactHandle: telemetry.shareTraces.contactHandle}
     }
   }
 
@@ -129,7 +135,7 @@ export function buildTelemetryPayload(
 }
 
 const DEFAULT_API_HOST = 'https://api.sanity.io'
-const TELEMETRY_API_VERSION = 'v2025-05-01'
+const TELEMETRY_API_VERSION = 'v2026-01-01'
 
 export async function sendInsightsTelemetry(
   client: SanityClient,

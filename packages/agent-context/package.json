@@ -39,24 +39,11 @@
       "import": "./dist/ai-sdk.js",
       "default": "./dist/ai-sdk.js"
     },
-    "./cli/init-scheduler": {
-      "source": "./src/cli/init-scheduler.ts",
-      "import": "./dist/cli/init-scheduler.js",
-      "default": "./dist/cli/init-scheduler.js"
-    },
-    "./cli": {
-      "source": "./src/cli/index.ts",
-      "import": "./dist/cli/index.js",
-      "default": "./dist/cli/index.js"
-    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "sanity-agent-context": "./dist/cli/index.js"
-  },
   "files": [
     "dist",
     "src"
@@ -73,7 +60,6 @@
   },
   "browserslist": "extends @sanity/browserslist-config",
   "dependencies": {
-    "@inquirer/prompts": "^8.3.2",
     "groq-js": "^1.29.0"
   },
   "devDependencies": {

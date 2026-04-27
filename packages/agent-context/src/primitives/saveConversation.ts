@@ -1,4 +1,4 @@
-import type {SanityClient} from 'sanity'
+import type {SanityClient} from '@sanity/client'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
 
@@ -31,8 +31,7 @@ export interface Message {
 /** @public */
 export interface SaveConversationOptions {
   /**
-   * The Sanity client to use for saving.
-   * Must have write permissions to the dataset.
+   * A Sanity client with write permissions.
    */
   client: SanityClient
 
@@ -75,26 +74,26 @@ export interface SaveConversationOptions {
 }
 
 /**
- * Simple hash function for generating deterministic IDs.
+ * FNV-1a 64-bit hash for generating deterministic IDs.
  * @internal
  */
-function simpleHash(str: string): string {
-  let hash = 0
+function fnv1a64(str: string): string {
+  // FNV-1a 64-bit parameters (using BigInt for 64-bit precision)
+  const FNV_PRIME = 0x00000100000001b3n
+  const FNV_OFFSET = 0xcbf29ce484222325n
+  const MASK_64 = 0xffffffffffffffffn
+
+  let hash = FNV_OFFSET
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash | 0 // Convert to 32-bit integer
+    hash ^= BigInt(str.charCodeAt(i))
+    hash = (hash * FNV_PRIME) & MASK_64
   }
-  // Convert to base36 and ensure positive
-  return Math.abs(hash).toString(36)
+  return hash.toString(36)
 }
 
 /**
  * Generates a deterministic document ID from agentId and threadId.
  * This ensures the same conversation always maps to the same document.
- *
- * Uses a hash suffix to prevent collisions when different inputs
- * sanitize to the same string (e.g., 'my-agent' vs 'my agent').
  *
  * @example
  * ```ts
@@ -109,7 +108,7 @@ export function generateConversationId(agentId: string, threadId: string): strin
   const sanitizedAgentId = agentId.replace(/[^a-zA-Z0-9-_]/g, '-')
   const sanitizedThreadId = threadId.replace(/[^a-zA-Z0-9-_]/g, '-')
   // Add hash suffix to prevent collisions from sanitization
-  const hashSuffix = simpleHash(`${agentId}:${threadId}`)
+  const hashSuffix = fnv1a64(`${agentId}:${threadId}`)
   return `agentconversation-${sanitizedAgentId}-${sanitizedThreadId}-${hashSuffix}`
 }
 
@@ -145,9 +144,6 @@ export function generateConversationId(agentId: string, threadId: string): strin
 export async function saveConversation(options: SaveConversationOptions): Promise<string> {
   const {client, agentId, threadId, messages, modelProvider, modelId, tokenUsage} = options
 
-  if (!client) {
-    throw new Error('saveConversation: client is required')
-  }
   if (!agentId || typeof agentId !== 'string') {
     throw new Error('saveConversation: agentId must be a non-empty string')
   }

@@ -3,7 +3,7 @@ import {useRelativeTime} from 'sanity'
 
 import {Table} from '../Table'
 import type {ConversationSummary} from '../types'
-import {formatSentiment, getScoreTone, getSentimentTone} from '../utils'
+import {formatSentiment, getScoreTone, getSentimentTone, useCompactLayout} from '../utils'
 
 interface ConversationRowProps {
   conversation: ConversationSummary
@@ -13,6 +13,7 @@ interface ConversationRowProps {
 
 export function ConversationRow(props: ConversationRowProps) {
   const {conversation, isSelected, onSelect} = props
+  const compact = useCompactLayout()
 
   const score = conversation.coreMetrics?.successScore
   const sentiment = conversation.coreMetrics?.sentiment
@@ -37,13 +38,15 @@ export function ConversationRow(props: ConversationRowProps) {
           </Box>
         </Table.Cell>
 
-        <Table.Cell flex={2}>
-          <Box>
-            <Text size={0} muted textOverflow="ellipsis">
-              {conversation.agentId}
-            </Text>
-          </Box>
-        </Table.Cell>
+        {!compact && (
+          <Table.Cell flex={2}>
+            <Box>
+              <Text size={0} muted textOverflow="ellipsis">
+                {conversation.agentId}
+              </Text>
+            </Box>
+          </Table.Cell>
+        )}
 
         <Table.Cell flex={1}>
           {score != null ? (
@@ -57,29 +60,35 @@ export function ConversationRow(props: ConversationRowProps) {
           )}
         </Table.Cell>
 
-        <Table.Cell flex={1}>
-          {sentiment ? (
-            <Badge tone={getSentimentTone(sentiment)} fontSize={0} overflow="hidden">
-              {formatSentiment(sentiment)}
+        {!compact && (
+          <Table.Cell flex={1}>
+            {sentiment ? (
+              <Badge tone={getSentimentTone(sentiment)} fontSize={0} overflow="hidden">
+                {formatSentiment(sentiment)}
+              </Badge>
+            ) : (
+              <Text size={0} muted>
+                -
+              </Text>
+            )}
+          </Table.Cell>
+        )}
+
+        {!compact && (
+          <Table.Cell flex={1}>
+            <Badge tone={gapCount > 0 ? 'caution' : 'default'} fontSize={0}>
+              {gapCount}
             </Badge>
-          ) : (
+          </Table.Cell>
+        )}
+
+        {!compact && (
+          <Table.Cell flex={1}>
             <Text size={0} muted>
-              -
+              {conversation.messageCount}
             </Text>
-          )}
-        </Table.Cell>
-
-        <Table.Cell flex={1}>
-          <Badge tone={gapCount > 0 ? 'caution' : 'default'} fontSize={0}>
-            {gapCount}
-          </Badge>
-        </Table.Cell>
-
-        <Table.Cell flex={1}>
-          <Text size={0} muted>
-            {conversation.messageCount}
-          </Text>
-        </Table.Cell>
+          </Table.Cell>
+        )}
 
         <Table.Cell flex={1}>
           <Box>

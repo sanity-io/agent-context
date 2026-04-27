@@ -1,5 +1,5 @@
+import type {SanityClient} from '@sanity/client'
 import {generateText, type LanguageModel, Output} from 'ai'
-import type {SanityClient} from 'sanity'
 import {z} from 'zod'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
@@ -39,6 +39,8 @@ export interface ClassifyConversationOptions {
   model: LanguageModel
   /** Optional messages to classify directly (avoids fetching from Sanity). */
   messages?: Message[]
+  /** Previously observed content gaps to encourage consistent terminology. Use `getPreviousContentGaps` to fetch these. */
+  previousContentGaps?: string[]
   /** Telemetry configuration. When enabled, sends anonymized classification metrics. */
   telemetry?: TelemetryConfig
 }
@@ -82,6 +84,23 @@ export function formatMessagesForPrompt(messages: StoredMessage[]): string {
       return `[${role}]: ${m.content || '(no content)'}`
     })
     .join('\n\n')
+}
+
+/** @internal Exported for testing */
+export function buildSystemPrompt(previousContentGaps?: string[]): string {
+  let prompt = `You are analyzing a conversation between a user and an AI assistant.
+Classify the conversation according to the schema provided.
+
+Guidelines:
+- successScore: How well did the assistant resolve the user's needs? 1=complete failure, 5=partially addressed, 10=fully resolved.
+- sentiment: The user's overall emotional tone across the entire conversation.
+- contentGaps: Topics where the assistant lacked information in its knowledge base. Only include gaps where the assistant could not provide information — not refusals, off-topic requests, or tool errors. Be specific (e.g., "international return policy" not "returns"). Empty array if no content gaps.`
+
+  if (previousContentGaps && previousContentGaps.length > 0) {
+    prompt += `\n\nPreviously identified content gaps (reuse these exact terms when they match the gaps you find — only create new terms for genuinely new topics):\n${previousContentGaps.map((g) => `- ${g}`).join('\n')}`
+  }
+
+  return prompt
 }
 
 /**
@@ -149,13 +168,7 @@ export async function classifyConversation(
     messagesToClassify = conversation.messages
   }
 
-  const systemPrompt = `You are analyzing a conversation between a user and an AI assistant.
-Classify the conversation according to the schema provided.
-
-Guidelines:
-- successScore: How well did the assistant resolve the user's needs? 1=complete failure, 5=partially addressed, 10=fully resolved.
-- sentiment: The user's overall emotional tone across the entire conversation.
-- contentGaps: Topics where the assistant lacked information in its knowledge base. Only include gaps where the assistant could not provide information — not refusals, off-topic requests, or tool errors. Be specific (e.g., "international return policy" not "returns"). Empty array if no content gaps.`
+  const systemPrompt = buildSystemPrompt(options.previousContentGaps)
 
   const userPrompt = `Analyze this conversation:
 
@@ -171,6 +184,10 @@ ${formatMessagesForPrompt(messagesToClassify)}
       system: systemPrompt,
       prompt: userPrompt,
     })
+
+    if (!result.output) {
+      throw new Error('Model returned no output')
+    }
 
     await client
       .patch(conversationId)

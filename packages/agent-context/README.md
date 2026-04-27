@@ -111,19 +111,40 @@ The integration requires a Sanity client with write permissions. Keep the token 
 
 ### 3. Set Up Classification
 
-Run the scaffolding CLI in your Studio directory:
+Classification requires a scheduled Sanity Function that analyzes conversations with AI. Create the function and blueprint at your **project root** (not in `studio/`):
 
-```bash
-npx sanity-agent-context
+1. Add dependencies to your root `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3",
+    "@sanity/agent-context": "latest",
+    "@sanity/client": "^7",
+    "@sanity/functions": "^1",
+    "ai": "^6"
+  },
+  "devDependencies": {
+    "@sanity/blueprints": "^0.15.0",
+    "dotenv": "^17"
+  }
+}
 ```
 
-This generates a scheduled function that classifies conversations on a configurable frequency (every 10 minutes, 30 minutes, or 1 hour). Follow the printed instructions to deploy:
+2. Create `functions/classify-conversations/index.ts` — see the [full example](https://github.com/sanity-io/agent-context/tree/main/examples/ecommerce/functions/classify-conversations/index.ts)
+
+3. Create `sanity.blueprint.ts` — see the [full example](https://github.com/sanity-io/agent-context/tree/main/examples/ecommerce/sanity.blueprint.ts)
+
+4. Deploy:
 
 ```bash
 pnpm install
 npx sanity login
-npx sanity functions test classify-conversations  # Test locally
-npx sanity blueprints deploy                      # Deploy
+npx sanity blueprints init
+npx sanity blueprints promote
+npx sanity functions test classify-conversations --with-user-token  # Test locally
+npx sanity blueprints deploy
+npx sanity functions env add classify-conversations ANTHROPIC_API_KEY <your-key>
 ```
 
 ### Metrics

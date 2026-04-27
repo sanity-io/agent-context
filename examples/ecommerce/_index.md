@@ -6,18 +6,18 @@ Complete working example of a Next.js e-commerce site with AI shopping assistant
 
 ## When to Load Files
 
-| Task                      | Load These Files                                                                                            |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| MCP connection setup      | `app/src/app/api/chat/route.ts` (`createMCPClient`)                                                         |
-| System prompt from Sanity | `app/src/app/api/chat/route.ts` (`buildSystemPrompt`), `studio/schemaTypes/documents/agentConfig.ts`        |
-| Client-side tool handling | `app/src/components/chat/chat.tsx` (`onToolCall`), `app/src/lib/client-tools.ts`                            |
-| Page context capture      | `app/src/lib/capture-context.ts`                                                                            |
-| Custom markdown rendering | `app/src/components/chat/message/text-part.tsx`                                                             |
-| Studio plugin setup       | `studio/sanity.config.ts`                                                                                   |
-| Schema design patterns    | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                                    |
-| Sanity client/queries     | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                                   |
-| Conversation insights     | `app/src/app/api/chat/route.ts` (`sanityInsightsIntegration`), `studio/functions/classify-conversations.ts` |
-| Environment variables     | `.env.example`                                                                                              |
+| Task                      | Load These Files                                                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| MCP connection setup      | `app/src/app/api/chat/route.ts` (`createMCPClient`)                                                        |
+| System prompt from Sanity | `app/src/app/api/chat/route.ts` (`buildSystemPrompt`), `studio/schemaTypes/documents/agentConfig.ts`       |
+| Client-side tool handling | `app/src/components/chat/chat.tsx` (`onToolCall`), `app/src/lib/client-tools.ts`                           |
+| Page context capture      | `app/src/lib/capture-context.ts`                                                                           |
+| Custom markdown rendering | `app/src/components/chat/message/text-part.tsx`                                                            |
+| Studio plugin setup       | `studio/sanity.config.ts`                                                                                  |
+| Schema design patterns    | `studio/schemaTypes/documents/product.ts`, `studio/schemaTypes/index.ts`                                   |
+| Sanity client/queries     | `app/src/sanity/lib/client.ts`, `app/src/sanity/queries/`                                                  |
+| Conversation insights     | `app/src/app/api/chat/route.ts` (`sanityInsightsIntegration`), `functions/classify-conversations/index.ts` |
+| Environment variables     | `.env`                                                                                                     |
 
 ## File Map
 
@@ -45,14 +45,21 @@ app/src/components/chat/
     └── product.tsx               # Product card component
 ```
 
+### Scheduled Functions (Project Root)
+
+```
+./
+├── sanity.blueprint.ts           # Scheduled function config
+├── functions/
+│   └── classify-conversations/
+│       └── index.ts              # Scheduled classification function
+```
+
 ### Sanity Studio
 
 ```
 studio/
 ├── sanity.config.ts              # Plugin setup (includes agentContextPlugin)
-├── sanity.blueprint.ts           # Scheduled function config
-├── functions/
-│   └── classify-conversations.ts # Scheduled classification function
 └── schemaTypes/
     ├── index.ts                  # Schema registration
     ├── documents/
@@ -119,4 +126,4 @@ See `app/src/components/chat/message/text-part.tsx` (uses `@sanity/agent-directi
 
 ### Conversation Insights
 
-Conversations are automatically saved via `sanityInsightsIntegration` in the chat route. Classification runs daily via a scheduled function in `studio/functions/classify-conversations.ts`.
+Conversations are automatically saved via `sanityInsightsIntegration` in the chat route. Classification runs every 10 minutes via a scheduled function in `functions/classify-conversations/index.ts`.

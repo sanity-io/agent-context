@@ -1,7 +1,7 @@
 import {useMemo} from 'react'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../schemas/conversationSchema'
-import {getScoreTone, useQuery} from '../utils'
+import {getScoreTone, useListenQuery} from '../utils'
 import {type DistributionItem} from './DistributionWidget'
 
 const BASE_FILTER = `_type == $type && ($agentId == null || agentId == $agentId)`
@@ -11,7 +11,7 @@ const SENTIMENT_FILTER = `${BASE_FILTER} && defined(coreMetrics.sentiment)`
 const OVERVIEW_QUERY = `{
   "total": count(*[${BASE_FILTER}]),
   "avgScore": math::avg(*[${SCORED_FILTER}].coreMetrics.successScore),
-  "avgMessages": math::avg(*[${BASE_FILTER}]{"c": count(messages)}.c),
+  "avgMessages": math::avg(*[${BASE_FILTER}]{"c": count(messages[role in ["user", "assistant"]])}.c),
 
   "scoreGood": count(*[${SCORED_FILTER} && coreMetrics.successScore >= 8]),
   "scoreOkay": count(*[${SCORED_FILTER} && coreMetrics.successScore >= 6 && coreMetrics.successScore < 8]),
@@ -113,10 +113,11 @@ export function useOverviewData(agentFilter: string | null) {
     loading,
     error,
     retry,
-  } = useQuery<RawStats>(OVERVIEW_QUERY, {
-    type: CONVERSATION_SCHEMA_TYPE_NAME,
-    agentId: agentFilter || null,
-  })
+  } = useListenQuery<RawStats>(
+    `*[${BASE_FILTER}]`,
+    {type: CONVERSATION_SCHEMA_TYPE_NAME, agentId: agentFilter || null},
+    {fetchQuery: OVERVIEW_QUERY},
+  )
 
   const data = useMemo<OverviewData | null>(() => {
     if (!stats) return null

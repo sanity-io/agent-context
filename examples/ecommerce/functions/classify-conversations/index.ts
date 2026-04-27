@@ -1,31 +1,35 @@
 import {createClient} from '@sanity/client'
-import {classifyConversation, getConversationsToClassify} from '@sanity/agent-context/primitives'
+import {
+  classifyConversation,
+  getConversationsToClassify,
+  getPreviousContentGaps,
+} from '@sanity/agent-context/primitives'
 import {scheduledEventHandler} from '@sanity/functions'
 import {anthropic} from '@ai-sdk/anthropic'
+import {env} from 'node:process'
 
-// Minimum idle time (in minutes) before a conversation is eligible for classification.
-// Conversations with messages newer than this are skipped (still active).
-const COOLDOWN_MINUTES = 10
-
-// Number of concurrent classification requests.
 const CONCURRENCY = 5
 
-export default scheduledEventHandler(async ({context}) => {
+export const handler = scheduledEventHandler(async ({context}) => {
+  const {SANITY_PROJECT_ID, SANITY_DATASET} = env
+
   if (!context.clientOptions?.token) {
     console.error('[classify-conversations] No client token available')
     return
   }
 
   const client = createClient({
-    ...context.clientOptions,
+    projectId: SANITY_PROJECT_ID,
+    dataset: SANITY_DATASET,
+    apiVersion: '2026-01-01',
+    token: context.clientOptions.token,
     useCdn: false,
   })
 
-  // Find conversations that need classification
-  const conversations = await getConversationsToClassify({
-    client,
-    cooldownMinutes: COOLDOWN_MINUTES,
-  })
+  const [conversations, previousContentGaps] = await Promise.all([
+    getConversationsToClassify({client}),
+    getPreviousContentGaps({client}),
+  ])
 
   if (conversations.length === 0) {
     console.log('[classify-conversations] No conversations to classify')
@@ -47,6 +51,7 @@ export default scheduledEventHandler(async ({context}) => {
           conversationId: conv._id,
           model: anthropic('claude-sonnet-4-5'),
           messages: conv.messages,
+          previousContentGaps,
         })
       }),
     )

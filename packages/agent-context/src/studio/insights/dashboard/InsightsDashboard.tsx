@@ -8,10 +8,15 @@ import {CONVERSATION_SCHEMA_TYPE_NAME} from '../schemas/conversationSchema'
 import {Conversations} from './conversations/Conversations'
 import {Overview} from './overview/Overview'
 import type {ScoreRange, Sentiment} from './types'
-import {useQuery} from './utils'
+import {useCompactLayout, useListenQuery} from './utils'
 
 const SidebarCard = styled(Card)`
   width: 220px;
+
+  &[data-compact='true'] {
+    width: 100%;
+    flex-shrink: 0;
+  }
 `
 
 /**
@@ -24,10 +29,13 @@ export function InsightsDashboard() {
   const [sentimentFilter, setSentimentFilter] = useState<Sentiment | null>(null)
 
   const agentMenuId = useId()
+  const compact = useCompactLayout()
 
-  const {data: agentIds} = useQuery<string[]>(`array::unique(*[_type == $type].agentId)`, {
-    type: CONVERSATION_SCHEMA_TYPE_NAME,
-  })
+  const {data: agentIds} = useListenQuery<string[]>(
+    `*[_type == $type]`,
+    {type: CONVERSATION_SCHEMA_TYPE_NAME},
+    {fetchQuery: `array::unique(*[_type == $type].agentId)`},
+  )
 
   const router = useRouter()
   const path = router.state['path']
@@ -62,11 +70,22 @@ export function InsightsDashboard() {
 
   return (
     <Card sizing="border" height="fill" overflow="hidden">
-      <Flex height="fill">
-        {/* Header */}
-        <SidebarCard padding={3} borderRight tone="transparent">
-          <Flex direction="column" gap={4}>
-            <Flex gap={4} direction="column">
+      <Flex height="fill" direction={['column', 'column', 'column', 'row']}>
+        <SidebarCard
+          borderBottom={compact}
+          borderRight={!compact}
+          data-compact={compact}
+          padding={compact ? 2 : 3}
+          tone="transparent"
+          sizing="border"
+        >
+          <Flex
+            direction={compact ? 'row' : 'column'}
+            align={compact ? 'center' : 'stretch'}
+            justify={compact ? undefined : 'space-between'}
+            gap={compact ? 2 : 4}
+          >
+            <Stack flex={compact ? undefined : 1}>
               <MenuButton
                 button={
                   <Button
@@ -74,17 +93,17 @@ export function InsightsDashboard() {
                     mode="ghost"
                     fontSize={1}
                     iconRight={ChevronDownIcon}
-                    justify="space-between"
+                    justify={compact ? undefined : 'space-between'}
                   />
                 }
                 id={agentMenuId}
                 popover={{
                   animate: true,
                   constrainSize: true,
-                  placement: 'bottom',
-                  fallbackPlacements: ['bottom'],
+                  placement: compact ? 'bottom-start' : 'bottom',
+                  fallbackPlacements: [compact ? 'bottom-start' : 'bottom'],
                   tone: 'default',
-                  matchReferenceWidth: true,
+                  matchReferenceWidth: !compact,
                 }}
                 menu={
                   <Menu>
@@ -112,7 +131,29 @@ export function InsightsDashboard() {
                   </Menu>
                 }
               />
+            </Stack>
 
+            {compact ? (
+              <Flex gap={1} flex={1} justify="flex-end">
+                <Button
+                  aria-label="Overview"
+                  fontSize={1}
+                  mode="bleed"
+                  icon={DashboardIcon}
+                  selected={isOverviewActive}
+                  onClick={() => navigateTo('overview')}
+                />
+
+                <Button
+                  aria-label="Conversations"
+                  fontSize={1}
+                  mode="bleed"
+                  icon={CommentIcon}
+                  selected={isConversationsActive}
+                  onClick={() => navigateTo('conversations')}
+                />
+              </Flex>
+            ) : (
               <Stack space={2}>
                 <Button
                   fontSize={1}
@@ -134,11 +175,11 @@ export function InsightsDashboard() {
                   justify="flex-start"
                 />
               </Stack>
-            </Flex>
+            )}
           </Flex>
         </SidebarCard>
 
-        <Flex flex={1} direction="column">
+        <Flex flex={1} direction="column" overflow="hidden">
           <Activity mode={isOverviewActive ? 'visible' : 'hidden'}>
             <Box flex={1} height="fill" overflow="auto">
               <Overview

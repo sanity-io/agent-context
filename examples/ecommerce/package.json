@@ -1,0 +1,22 @@
+{
+  "name": "@examples/ecommerce",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy:blueprints": "sanity blueprints deploy --fn-installer pnpm",
+    "dev:functions": "sanity functions dev",
+    "test:functions": "sanity functions test classify-conversations --with-user-token"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.58",
+    "@sanity/agent-context": "workspace:*",
+    "@sanity/client": "^7.20.0",
+    "@sanity/functions": "^1.2.1",
+    "ai": "^6.0.137"
+  },
+  "devDependencies": {
+    "@sanity/blueprints": "^0.15.0",
+    "dotenv": "^17.4.1"
+  }
+}

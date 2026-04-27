@@ -28,15 +28,15 @@ import type {
   SortField,
   SortOption,
 } from '../types'
-import {formatSentiment, useQuery} from '../utils'
+import {formatSentiment, useCompactLayout, useListenQuery} from '../utils'
 import {ConversationRow} from './ConversationRow'
 import {FilterMenu} from './FilterMenu'
 
 const SENTIMENT_ORDER = `select(coreMetrics.sentiment == "negative" => 0, coreMetrics.sentiment == "neutral" => 1, coreMetrics.sentiment == "positive" => 2, 3)`
 
 const SORT_CLAUSES: Record<SortOption, string> = {
-  'date-desc': '| order(messagesUpdatedAt desc)',
-  'date-asc': '| order(messagesUpdatedAt asc)',
+  'date-desc': '| order(coalesce(messagesUpdatedAt, _updatedAt) desc)',
+  'date-asc': '| order(coalesce(messagesUpdatedAt, _updatedAt) asc)',
   'score-desc': '| order(coreMetrics.successScore desc)',
   'score-asc': '| order(coreMetrics.successScore asc)',
   'sentiment-asc': `| order(${SENTIMENT_ORDER} asc)`,
@@ -80,7 +80,7 @@ const PROJECTION = `{
   _id,
   agentId,
   messagesUpdatedAt,
-  "messageCount": count(messages),
+  "messageCount": count(messages[role in ["user", "assistant"]]),
   "coreMetrics": { "successScore": coreMetrics.successScore, "sentiment": coreMetrics.sentiment, "contentGaps": coreMetrics.contentGaps },
   "firstMessage": messages[role == "user"][0].content
 }`
@@ -117,23 +117,25 @@ export function ConversationList(props: ConversationListProps) {
   const [search, setSearch] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<SortOption>('date-desc')
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false)
+  const compact = useCompactLayout()
 
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const filterPopoverRef = useRef<HTMLDivElement | null>(null)
 
-  const {data: contentGaps} = useQuery<string[]>(CONTENT_GAPS_QUERY, {
-    type: CONVERSATION_SCHEMA_TYPE_NAME,
-    agentId: agentFilter || null,
-  })
+  const {data: contentGaps, error: contentGapsError} = useListenQuery<string[]>(
+    `*[_type == $type && ($agentId == null || agentId == $agentId)]`,
+    {type: CONVERSATION_SCHEMA_TYPE_NAME, agentId: agentFilter || null},
+    {fetchQuery: CONTENT_GAPS_QUERY},
+  )
 
   const scoreParams = scoreRange ? SCORE_RANGES[scoreRange] : null
 
   const {
     data: conversations,
     loading,
-    error,
+    error: conversationsError,
     retry,
-  } = useQuery<ConversationSummary[]>(buildQuery(sortBy), {
+  } = useListenQuery<ConversationSummary[]>(buildQuery(sortBy), {
     type: CONVERSATION_SCHEMA_TYPE_NAME,
     agentId: agentFilter || null,
     search: search || null,
@@ -184,19 +186,21 @@ export function ConversationList(props: ConversationListProps) {
 
   const hasActiveFilters = Boolean(search || activeFilterLabels.length > 0)
 
-  if (error) {
-    return <ErrorBlock message={`Error loading conversations: ${error}`} fill onRetry={retry} />
+  if (conversationsError || contentGapsError) {
+    return (
+      <ErrorBlock
+        message={`Error loading conversations: ${conversationsError || contentGapsError}`}
+        fill
+        onRetry={retry}
+      />
+    )
   }
 
   return (
     <Flex direction="column" height="fill">
       <Card padding={3} paddingBottom={1} borderBottom>
         <Stack space={1}>
-          <Flex
-            align={['stretch', 'stretch', 'stretch', 'center']}
-            gap={2}
-            direction={['column', 'column', 'column', 'row']}
-          >
+          <Flex align="center" gap={2}>
             <Box flex={1}>
               <TextInput
                 clearButton={search !== null}
@@ -277,13 +281,14 @@ export function ConversationList(props: ConversationListProps) {
               }
             >
               <Button
+                aria-label="Filters"
                 fontSize={1}
                 icon={FilterIcon}
                 mode="ghost"
                 onClick={() => setFiltersOpen((v) => !v)}
                 ref={filterButtonRef}
                 selected={filtersOpen}
-                text="Filters"
+                text={compact ? undefined : 'Filters'}
                 tone={activeFilterLabels.length > 0 ? 'primary' : 'default'}
               />
             </Popover>
@@ -332,15 +337,15 @@ export function ConversationList(props: ConversationListProps) {
           <Table.Row paddingY={1}>
             <Table.Heading title="Preview" flex={3} />
 
-            <Table.Heading title="Agent" flex={2} />
+            {!compact && <Table.Heading title="Agent" flex={2} />}
 
             <Table.Heading title="Score" flex={1} sort={sortProps.score} />
 
-            <Table.Heading title="Sentiment" flex={1} sort={sortProps.sentiment} />
+            {!compact && <Table.Heading title="Sentiment" flex={1} sort={sortProps.sentiment} />}
 
-            <Table.Heading title="Gaps" flex={1} sort={sortProps.gaps} />
+            {!compact && <Table.Heading title="Gaps" flex={1} sort={sortProps.gaps} />}
 
-            <Table.Heading title="Messages" flex={1} />
+            {!compact && <Table.Heading title="Messages" flex={1} />}
 
             <Table.Heading title="Updated" flex={1} sort={sortProps.date} />
           </Table.Row>

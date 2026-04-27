@@ -1,4 +1,4 @@
-import type {SanityClient} from 'sanity'
+import type {SanityClient} from '@sanity/client'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
 
@@ -31,8 +31,7 @@ export interface Message {
 /** @public */
 export interface SaveConversationOptions {
   /**
-   * The Sanity client to use for saving.
-   * Must have write permissions to the dataset.
+   * A Sanity client with write permissions.
    */
   client: SanityClient
 
@@ -127,9 +126,6 @@ export function generateConversationId(agentId: string, threadId: string): strin
 export async function saveConversation(options: SaveConversationOptions): Promise<string> {
   const {client, agentId, threadId, messages} = options
 
-  if (!client) {
-    throw new Error('saveConversation: client is required')
-  }
   if (!agentId || typeof agentId !== 'string') {
     throw new Error('saveConversation: agentId must be a non-empty string')
   }

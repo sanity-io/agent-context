@@ -117,7 +117,9 @@ export function ConversationMessage(props: ConversationMessageProps) {
   return (
     <Flex gap={4}>
       <Box paddingTop={4}>
-        <Text size={1}>{ROLE_ICONS[message.role]}</Text>
+        <Text aria-label={`Message from ${message.role}`} size={1}>
+          {ROLE_ICONS[message.role]}
+        </Text>
       </Box>
 
       <Card padding={4} tone={ROLE_TONES[message.role]} border radius={3} flex={1} overflow="auto">

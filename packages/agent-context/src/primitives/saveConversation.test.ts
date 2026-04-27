@@ -35,19 +35,8 @@ describe('generateConversationId', () => {
 
 describe('saveConversation', () => {
   describe('input validation', () => {
-    it('throws if client is missing', async () => {
-      await expect(
-        saveConversation({
-          client: null as never,
-          agentId: 'agent',
-          threadId: 'thread',
-          messages: [],
-        }),
-      ).rejects.toThrow('saveConversation: client is required')
-    })
-
     it('throws if agentId is empty', async () => {
-      const mockClient = {} as never
+      const mockClient = {transaction: vi.fn()} as never
       await expect(
         saveConversation({
           client: mockClient,
@@ -59,7 +48,7 @@ describe('saveConversation', () => {
     })
 
     it('throws if threadId is empty', async () => {
-      const mockClient = {} as never
+      const mockClient = {transaction: vi.fn()} as never
       await expect(
         saveConversation({
           client: mockClient,
@@ -71,7 +60,7 @@ describe('saveConversation', () => {
     })
 
     it('throws if messages is not an array', async () => {
-      const mockClient = {} as never
+      const mockClient = {transaction: vi.fn()} as never
       await expect(
         saveConversation({
           client: mockClient,

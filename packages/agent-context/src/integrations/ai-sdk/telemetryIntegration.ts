@@ -1,5 +1,5 @@
+import type {SanityClient} from '@sanity/client'
 import {bindTelemetryIntegration, type TelemetryIntegration} from 'ai'
-import type {SanityClient} from 'sanity'
 
 import {type Message, saveConversation} from '../../primitives/saveConversation'
 
@@ -9,8 +9,7 @@ import {type Message, saveConversation} from '../../primitives/saveConversation'
  */
 export interface SanityInsightsConfig {
   /**
-   * The Sanity client to use for saving conversations.
-   * Must have write permissions to the dataset.
+   * A Sanity client with write permissions.
    */
   client: SanityClient
 

@@ -1,5 +1,5 @@
+import type {SanityClient} from '@sanity/client'
 import {generateText, type LanguageModel, Output} from 'ai'
-import type {SanityClient} from 'sanity'
 import {z} from 'zod'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'

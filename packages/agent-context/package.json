@@ -29,10 +29,10 @@
       "import": "./dist/studio.js",
       "default": "./dist/studio.js"
     },
-    "./primitives": {
-      "source": "./src/primitives/index.ts",
-      "import": "./dist/primitives.js",
-      "default": "./dist/primitives.js"
+    "./insights": {
+      "source": "./src/insights/index.ts",
+      "import": "./dist/insights.js",
+      "default": "./dist/insights.js"
     },
     "./ai-sdk": {
       "source": "./src/integrations/ai-sdk/index.ts",

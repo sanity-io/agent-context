@@ -3,11 +3,11 @@ import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {sanityInsightsIntegration} from './telemetryIntegration'
 
 // Mock saveConversation
-vi.mock('../../primitives/saveConversation', () => ({
+vi.mock('../../insights/saveConversation', () => ({
   saveConversation: vi.fn().mockResolvedValue('doc-id'),
 }))
 
-import {saveConversation} from '../../primitives/saveConversation'
+import {saveConversation} from '../../insights/saveConversation'
 
 const mockSaveConversation = vi.mocked(saveConversation)
 

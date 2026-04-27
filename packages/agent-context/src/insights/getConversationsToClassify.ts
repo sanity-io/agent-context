@@ -44,7 +44,7 @@ export interface ConversationToClassify {
  *
  * @example
  * ```ts
- * import {getConversationsToClassify, classifyConversation} from '@sanity/agent-context/primitives'
+ * import {getConversationsToClassify, classifyConversation} from '@sanity/agent-context/insights'
  *
  * const conversations = await getConversationsToClassify({
  *   client: sanityClient,

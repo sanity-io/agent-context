@@ -1,4 +1,4 @@
-import type {Sentiment as PrimitiveSentiment} from '../../../primitives/classifyConversation'
+import type {Sentiment as PrimitiveSentiment} from '../../../insights/classifyConversation'
 
 /**
  * Sort options for conversation list.
@@ -9,7 +9,7 @@ export type SortDirection = 'asc' | 'desc'
 export type SortOption = `${SortField}-${SortDirection}`
 
 /**
- * Re-export Sentiment from primitives for dashboard use.
+ * Re-export Sentiment from insights for dashboard use.
  * @internal
  */
 export type Sentiment = PrimitiveSentiment

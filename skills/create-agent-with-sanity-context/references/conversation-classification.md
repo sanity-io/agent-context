@@ -77,7 +77,7 @@ const result = streamText({
 
 **Thread ID**: Each conversation needs a unique `threadId`. Generate one when a new chat starts (e.g., `crypto.randomUUID()`) and persist it across messages in that conversation. See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for how this is handled with cookies.
 
-**Not using AI SDK?** The telemetry integration requires Vercel AI SDK. If using another library, use the primitives directly to save conversations — see the Primitives Reference below.
+**Not using AI SDK?** The telemetry integration requires Vercel AI SDK. If using another library, use the insights APIs directly to save conversations — see the Insights API Reference below.
 
 ---
 
@@ -116,7 +116,7 @@ import {
   classifyConversation,
   getConversationsToClassify,
   getPreviousContentGaps,
-} from '@sanity/agent-context/primitives'
+} from '@sanity/agent-context/insights'
 import {scheduledEventHandler} from '@sanity/functions'
 import {anthropic} from '@ai-sdk/anthropic'
 import {env} from 'node:process'
@@ -340,7 +340,7 @@ The robot token isn't configured correctly. Verify:
 - Conversations need at least 10 minutes of idle time before classification
 - Check that telemetry is saving conversations: look for `sanity.agentContextConversation` documents in Studio
 
-## Primitives Reference
+## Insights API Reference
 
 ### `sanityInsightsIntegration`
 
@@ -357,7 +357,7 @@ sanityInsightsIntegration({
 ### `getConversationsToClassify`
 
 ```ts
-import {getConversationsToClassify} from '@sanity/agent-context/primitives'
+import {getConversationsToClassify} from '@sanity/agent-context/insights'
 
 const conversations = await getConversationsToClassify({
   client: SanityClient,
@@ -371,7 +371,7 @@ const conversations = await getConversationsToClassify({
 Fetches previously identified content gaps to avoid duplicates:
 
 ```ts
-import {getPreviousContentGaps} from '@sanity/agent-context/primitives'
+import {getPreviousContentGaps} from '@sanity/agent-context/insights'
 
 const previousContentGaps = await getPreviousContentGaps({
   client: SanityClient,
@@ -381,7 +381,7 @@ const previousContentGaps = await getPreviousContentGaps({
 ### `classifyConversation`
 
 ```ts
-import {classifyConversation} from '@sanity/agent-context/primitives'
+import {classifyConversation} from '@sanity/agent-context/insights'
 
 await classifyConversation({
   client: SanityClient,

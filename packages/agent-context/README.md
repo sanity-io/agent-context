@@ -8,11 +8,11 @@ npm install @sanity/agent-context
 
 ## Exports
 
-| Entry point                        | Purpose                                   |
-| ---------------------------------- | ----------------------------------------- |
-| `@sanity/agent-context/studio`     | Studio plugin and schema type constant    |
-| `@sanity/agent-context/ai-sdk`     | AI SDK telemetry integration for Insights |
-| `@sanity/agent-context/primitives` | Lower-level APIs for custom workflows     |
+| Entry point                      | Purpose                                   |
+| -------------------------------- | ----------------------------------------- |
+| `@sanity/agent-context/studio`   | Studio plugin and schema type constant    |
+| `@sanity/agent-context/ai-sdk`   | AI SDK telemetry integration for Insights |
+| `@sanity/agent-context/insights` | Lower-level APIs for custom workflows     |
 
 ## Studio Plugin
 
@@ -157,9 +157,9 @@ Every classified conversation includes these standardized metrics:
 | `sentiment`    | `'positive' \| 'neutral' \| 'negative'` | Overall user sentiment                       |
 | `contentGaps`  | `string[]`                              | Topics where the agent lacked knowledge      |
 
-### Primitives
+### Insights Primitives
 
-For custom workflows outside the AI SDK, use the primitives directly:
+For custom workflows outside the AI SDK, use the insights APIs directly:
 
 | Function                     | Purpose                                           |
 | ---------------------------- | ------------------------------------------------- |
@@ -169,7 +169,7 @@ For custom workflows outside the AI SDK, use the primitives directly:
 | `generateConversationId`     | Generate deterministic ID from agentId + threadId |
 
 ```ts
-import {saveConversation, classifyConversation} from '@sanity/agent-context/primitives'
+import {saveConversation, classifyConversation} from '@sanity/agent-context/insights'
 ```
 
 ### Notes

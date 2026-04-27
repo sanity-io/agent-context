@@ -106,7 +106,7 @@ export function generateConversationId(agentId: string, threadId: string): strin
  *
  * @example
  * ```ts
- * import {saveConversation} from '@sanity/agent-context/primitives'
+ * import {saveConversation} from '@sanity/agent-context/insights'
  *
  * await saveConversation({
  *   client: sanityClient,

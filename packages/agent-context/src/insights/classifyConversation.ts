@@ -105,7 +105,7 @@ Guidelines:
  *
  * @example
  * ```ts
- * import {classifyConversation} from '@sanity/agent-context/primitives'
+ * import {classifyConversation} from '@sanity/agent-context/insights'
  * import {openai} from '@ai-sdk/openai'
  *
  * await classifyConversation({

@@ -3,7 +3,7 @@ import {
   classifyConversation,
   getConversationsToClassify,
   getPreviousContentGaps,
-} from '@sanity/agent-context/primitives'
+} from '@sanity/agent-context/insights'
 import {scheduledEventHandler} from '@sanity/functions'
 import {anthropic} from '@ai-sdk/anthropic'
 import {env} from 'node:process'

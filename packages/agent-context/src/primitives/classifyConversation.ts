@@ -171,6 +171,10 @@ ${formatMessagesForPrompt(messagesToClassify)}
       prompt: userPrompt,
     })
 
+    if (!result.output) {
+      throw new Error('Model returned no output')
+    }
+
     await client
       .patch(conversationId)
       .set({coreMetrics: result.output.coreMetrics, classifiedAt: now})

@@ -42,6 +42,3 @@ next-env.d.ts
 
 # sanity typegen - committed for Vercel builds
 # sanity.types.ts
-
-# dev utilities
-run-classify.ts

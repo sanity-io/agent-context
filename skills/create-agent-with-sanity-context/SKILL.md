@@ -253,7 +253,7 @@ See [references/system-prompts.md](references/system-prompts.md) for domain-spec
 - **Content filters**: Use `groqFilter` to scope what the production agent sees — start broad, then narrow based on what it actually needs. The filter is a full GROQ expression (e.g., `_type in ["product", "article"]`)
 - **Instructions field**: Keep it concise — only include what the auto-generated schema doesn't make obvious. Don't duplicate schema information. See the `dial-your-context` skill.
 - **System prompts**: Be explicit about forbidden behaviors and formatting rules. Less is more — an over-engineered prompt can interfere with the Instructions content. See the `shape-your-agent` skill.
-- **Package versions**: Always check the reference `package.json` files or use `npm info <package> version` rather than guessing. AI SDK and Sanity packages update frequently, and using outdated versions will cause errors that are hard to debug.
+- **Package versions**: Always use the latest version of `@sanity/agent-context` — run `npm info @sanity/agent-context version` to get it. For other packages, check the reference `package.json` files or use `npm info <package> version`. AI SDK and Sanity packages update frequently, and using outdated versions will cause errors that are hard to debug.
 
 ## Troubleshooting
 

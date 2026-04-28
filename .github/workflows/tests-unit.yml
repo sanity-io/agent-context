@@ -27,7 +27,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: pnpm --filter @sanity/agent-context test:unit:coverage
+        run: pnpm test:unit:coverage
 
       - name: Report Coverage
         if: always()

@@ -19,7 +19,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",
     "@sanity/agent-context": "workspace:*",
-    "@sanity/client": "^7.20.0",
+    "@sanity/client": "^7.21.0",
     "@sanity/icons": "^3",
     "@sanity/ui": "^3",
     "@sanity/vision": "5.22.0",

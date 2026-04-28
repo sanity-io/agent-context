@@ -65,7 +65,7 @@ const result = streamText({
     integrations: [
       sanityInsightsIntegration({
         client: writeClient, // Sanity client with Editor permissions
-        agentId: 'my-agent', // Identifier for grouping conversations
+        agentId: 'my-agent', // Name/ID for grouping conversations
         threadId: chatId, // Unique conversation thread ID
       }),
     ],

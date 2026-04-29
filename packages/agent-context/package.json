@@ -84,19 +84,23 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
+    "@sanity/client": "^7",
     "@sanity/color": "^3",
     "@sanity/icons": "^3",
     "@sanity/ui": "^3",
-    "ai": "^6",
+    "ai": "^6.0.137",
     "react": "^19",
     "react-dom": "^19",
     "react-rx": "^4",
     "rxjs": "^7",
     "sanity": "^5",
     "styled-components": "^6",
-    "zod": "^4"
+    "zod": "^3.20 || ^4"
   },
   "peerDependenciesMeta": {
+    "@sanity/client": {
+      "optional": true
+    },
     "ai": {
       "optional": true
     },

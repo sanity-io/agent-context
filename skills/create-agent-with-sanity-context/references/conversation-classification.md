@@ -75,7 +75,17 @@ const result = streamText({
 
 **Write client**: Create a Sanity client with a token that has Editor permissions. Create the token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Editor role. Store it as `SANITY_API_WRITE_TOKEN` in your app's environment.
 
-**Thread ID**: Each conversation needs a unique `threadId`. Generate one when a new chat starts (e.g., `crypto.randomUUID()`) and persist it across messages in that conversation. See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for how this is handled with cookies.
+**Thread ID**: Each conversation needs a unique `threadId`. Generate one when a new chat starts and persist it across messages in that conversation. See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for how this is handled with cookies.
+
+For client-side thread ID generation, use SSR-safe initialization to avoid hydration mismatches:
+
+```tsx
+const [threadId] = useState(() =>
+  typeof window !== 'undefined' ? crypto.randomUUID() : ''
+)
+```
+
+Then pass it to your chat API via request body or headers.
 
 **Not using AI SDK?** The telemetry integration requires Vercel AI SDK. If using another library, use the insights APIs directly to save conversations — see the Insights API Reference below.
 
@@ -94,7 +104,7 @@ Add these dependencies to your **root** `package.json` (not `studio/package.json
     "@sanity/agent-context": "latest",
     "@sanity/client": "^7",
     "@sanity/functions": "^1",
-    "ai": "^6"
+    "ai": "^6.0.137"  // Minimum version required for experimental_telemetry.integrations
   },
   "devDependencies": {
     "@sanity/blueprints": "^0.15.0",
@@ -368,14 +378,18 @@ const conversations = await getConversationsToClassify({
 
 ### `getPreviousContentGaps`
 
-Fetches previously identified content gaps to avoid duplicates:
+Fetches previously identified content gaps, ranked by frequency. Pass the result to `classifyConversation` to encourage consistent terminology:
 
 ```ts
 import {getPreviousContentGaps} from '@sanity/agent-context/insights'
 
 const previousContentGaps = await getPreviousContentGaps({
   client: SanityClient,
+  maxAgeDays?: number,    // Optional: only include gaps from last N days (default 30)
+  limit?: number,         // Optional: max gaps to return (default 50)
+  agentId?: string,       // Optional: filter by agent
 })
+// Returns: string[]
 ```
 
 ### `classifyConversation`
@@ -386,9 +400,9 @@ import {classifyConversation} from '@sanity/agent-context/insights'
 await classifyConversation({
   client: SanityClient,
   conversationId: string,
-  model: LanguageModel,                    // Any AI SDK compatible model
-  messages: Message[],
-  previousContentGaps?: ContentGap[],      // From getPreviousContentGaps
+  model: LanguageModel,             // Any AI SDK compatible model
+  messages: Message[],              // From getConversationsToClassify
+  previousContentGaps?: string[],   // From getPreviousContentGaps
 })
 ```
 

@@ -102,6 +102,15 @@ The reference patterns use Next.js + Vercel AI SDK, but adapt to whatever the us
 
 ## Workflow
 
+**Always present the full workflow.** Even if the user's request seems narrow, inform them of all four steps — you don't have to implement everything, but they should know what's available. A working chatbot without Insights is only half the value. Walk the user through all four steps, explaining what each unlocks:
+
+1. **Build the Agent** — Get a working chatbot connected to their content
+2. **Studio Setup** — Configure the plugin and create an Agent Context document
+3. **Conversation Insights** — Track and classify conversations (this is what makes the data useful)
+4. **Tune the Agent** — Refine instructions and system prompt using the tuning skills
+
+After completing each step, proactively present the next one. Only stop when all steps are done or the user explicitly defers.
+
 ### Quick Validation (Optional)
 
 Before building the production agent, validate that the MCP endpoint is reachable. If the user doesn't have a read token yet, offer to create one from the terminal — detect the `projectId` from `sanity.config.ts` or `sanity.cli.ts` if available:
@@ -149,11 +158,25 @@ Help the user configure the `@sanity/agent-context/studio` plugin in their Studi
 
 See [references/studio-setup.md](references/studio-setup.md)
 
-### Step 3: Conversation Classification (Optional)
+### Step 3: Conversation Insights (Recommended)
 
-Track and analyze agent conversations using Sanity Functions. Useful for analytics, debugging, and understanding user interactions.
+**Recommend the user sets up Insights.** Without tracking, there's no way to know if the agent is actually helping users or failing silently. Insights shows you what users ask, where the agent struggles, and what content is missing — data you need to improve the agent over time.
 
-See [references/conversation-classification.md](references/conversation-classification.md).
+**What this unlocks:**
+
+- See which conversations succeed and which fail
+- Discover content gaps — topics users ask about that the agent can't answer well
+- Debug specific conversations with full transcripts
+- Compare performance across multiple agents
+
+**Setup is two parts — do both:**
+
+1. **Telemetry** — Add one integration to your existing `streamText` call (saves conversations)
+2. **Classification** — Deploy a scheduled function that analyzes conversations with AI
+
+Telemetry without classification just stores raw conversations. Classification is what extracts success scores, sentiment, and content gaps — the actual insights. Always set up both.
+
+**Follow [references/conversation-classification.md](references/conversation-classification.md) to set this up.** The guide covers both parts end-to-end. The dashboard appears in Studio automatically once deployed.
 
 ### Step 4: Tune Your Agent (Recommended)
 
@@ -162,6 +185,41 @@ Once the production agent works:
 1. **Tune the Instructions field** using the `dial-your-context` skill — an interactive session where you explore the user's dataset together, verify findings, and produce concise Instructions that teach the production agent what the schema alone doesn't make obvious: counter-intuitive field names, second-order reference chains, data quality issues, required filters, and query patterns. The skill can also help configure a `groqFilter` to scope what content the production agent sees.
 
 2. **Shape the system prompt** (optional) using the `shape-your-agent` skill — if the user controls the production agent's system prompt, this helps define tone, boundaries, and guardrails. Skip this if the user doesn't control the system prompt.
+
+## Sanity Blueprints & Functions
+
+Scheduled classification uses **Sanity Blueprints** to deploy **Sanity Functions**. Key concepts:
+
+**Project structure**: The `sanity.blueprint.ts` file and your lockfile (`pnpm-lock.yaml`, `yarn.lock`, or `package-lock.json`) must be in the same directory. The CLI detects the package manager from the lockfile. Adapt this structure to the user's existing project layout:
+
+```
+my-project/
+├── sanity.blueprint.ts       # Blueprint config
+├── functions/                # Functions directory
+│   └── classify-conversations/
+│       └── index.ts
+├── package.json              # Shared dependencies
+├── pnpm-lock.yaml            # Lockfile (same dir as blueprint)
+├── studio/
+└── app/
+```
+
+**Note**: This is a reference structure. The key requirement is that `sanity.blueprint.ts` and the lockfile are in the same directory. Monorepos and other layouts may need adjustments — check the user's existing structure before adding files.
+
+**Commands** (run from project root):
+
+| Command                                              | Purpose                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------- |
+| `npx sanity blueprints init`                         | Initialize the blueprint stack (first time only)        |
+| `npx sanity blueprints promote`                      | Promote to org scope (required for scheduled functions) |
+| `npx sanity blueprints deploy`                       | Deploy blueprint and functions                          |
+| `npx sanity functions env add <fn> <key> <value>`    | Set an env var (after deploy)                           |
+| `npx sanity functions logs <name>`                   | View function logs                                      |
+| `npx sanity functions test <name> --with-user-token` | Test function locally                                   |
+
+**Package manager**: If the CLI can't detect your package manager, pass `--fn-installer pnpm` (or `npm`/`yarn`) to the deploy command.
+
+**Dependencies**: Functions use the root `package.json` for dependencies by default. Each function does NOT need its own `package.json` unless you need isolated dependencies. See [Sanity Functions: Dependencies](https://www.sanity.io/docs/functions/function-dependencies).
 
 ## GROQ with Semantic Search
 
@@ -195,7 +253,7 @@ See [references/system-prompts.md](references/system-prompts.md) for domain-spec
 - **Content filters**: Use `groqFilter` to scope what the production agent sees — start broad, then narrow based on what it actually needs. The filter is a full GROQ expression (e.g., `_type in ["product", "article"]`)
 - **Instructions field**: Keep it concise — only include what the auto-generated schema doesn't make obvious. Don't duplicate schema information. See the `dial-your-context` skill.
 - **System prompts**: Be explicit about forbidden behaviors and formatting rules. Less is more — an over-engineered prompt can interfere with the Instructions content. See the `shape-your-agent` skill.
-- **Package versions**: Always check the reference `package.json` files or use `npm info <package> version` rather than guessing. AI SDK and Sanity packages update frequently, and using outdated versions will cause errors that are hard to debug.
+- **Package versions**: Always use the latest version of `@sanity/agent-context` — run `npm info @sanity/agent-context version` to get it. For other packages, check the reference `package.json` files or use `npm info <package> version`. AI SDK and Sanity packages update frequently, and using outdated versions will cause errors that are hard to debug.
 
 ## Troubleshooting
 

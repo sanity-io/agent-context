@@ -145,6 +145,33 @@ The agent should:
 
 ---
 
+## Conversation Insights
+
+Track conversations for analytics and debugging using `sanityInsightsIntegration`:
+
+```ts
+import {sanityInsightsIntegration} from '@sanity/agent-context/ai-sdk'
+
+const result = streamText({
+  model: anthropic('claude-sonnet-4-5'),
+  messages,
+  experimental_telemetry: {
+    isEnabled: true,
+    integrations: [
+      sanityInsightsIntegration({
+        client: writeClient, // Sanity client with write permissions
+        agentId: 'my-agent',
+        threadId: chatId,
+      }),
+    ],
+  },
+})
+```
+
+This automatically saves conversations to Sanity. Set up a scheduled function to classify them. See [conversation-classification.md](conversation-classification.md) for details.
+
+---
+
 ## Advanced Patterns
 
 These patterns take your agent from basic to production-ready. See the reference implementation for working examples of each.

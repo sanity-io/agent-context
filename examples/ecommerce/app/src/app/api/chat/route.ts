@@ -1,5 +1,6 @@
 import {anthropic} from '@ai-sdk/anthropic'
 import {createMCPClient, type MCPClient} from '@ai-sdk/mcp'
+import {sanityInsightsIntegration} from '@sanity/agent-context/ai-sdk'
 import {
   convertToModelMessages,
   type Experimental_DownloadFunction,
@@ -9,8 +10,8 @@ import {
 } from 'ai'
 
 import {clientTools, type DocumentContext} from '@/lib/client-tools'
-import {saveConversation} from '@/lib/save-conversation'
 import {client} from '@/sanity/lib/client'
+import {writeClient} from '@/sanity/lib/write-client'
 
 const DEFAULT_MODEL = 'claude-sonnet-4-5'
 const MAX_STEPS = 20
@@ -139,6 +140,16 @@ export async function POST(req: Request) {
         ...clientTools,
       },
       stopWhen: stepCountIs(MAX_STEPS),
+      experimental_telemetry: {
+        isEnabled: true,
+        integrations: [
+          sanityInsightsIntegration({
+            client: writeClient,
+            agentId: 'shopping-assistant',
+            threadId: chatId,
+          }),
+        ],
+      },
       onFinish: async () => {
         await mcpClient?.close()
       },
@@ -146,13 +157,6 @@ export async function POST(req: Request) {
 
     return result.toUIMessageStreamResponse({
       originalMessages: messages,
-      onFinish: async ({messages: allMessages}) => {
-        try {
-          await saveConversation({chatId, messages: allMessages})
-        } catch (err) {
-          console.error('Failed to save conversation:', err)
-        }
-      },
     })
   } catch (error) {
     await mcpClient?.close()

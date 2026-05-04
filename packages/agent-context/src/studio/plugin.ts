@@ -2,17 +2,14 @@ import {ChartUpwardIcon} from '@sanity/icons'
 import {definePlugin} from 'sanity'
 import {route} from 'sanity/router'
 
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../insights/constants'
 import {
   AGENT_CONTEXT_SCHEMA_TITLE,
   AGENT_CONTEXT_SCHEMA_TYPE_NAME,
   agentContextSchema,
 } from './context-document/agentContextSchema'
 import {InsightsDashboard} from './insights/dashboard/InsightsDashboard'
-import {
-  CONVERSATION_SCHEMA_TITLE,
-  CONVERSATION_SCHEMA_TYPE_NAME,
-  conversationSchema,
-} from './insights/schemas/conversationSchema'
+import {CONVERSATION_SCHEMA_TITLE, conversationSchema} from './insights/schemas/conversationSchema'
 
 /** @public */
 export interface InsightsOptions {

@@ -1,6 +1,6 @@
 import {useMemo} from 'react'
 
-import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../schemas/conversationSchema'
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../../../insights/constants'
 import {getScoreTone, useListenQuery} from '../utils'
 import {type DistributionItem} from './DistributionWidget'
 

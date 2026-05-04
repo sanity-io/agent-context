@@ -4,7 +4,7 @@ import {Activity, useId, useState} from 'react'
 import {useRouter} from 'sanity/router'
 import {styled} from 'styled-components'
 
-import {CONVERSATION_SCHEMA_TYPE_NAME} from '../schemas/conversationSchema'
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../../insights/constants'
 import {Conversations} from './conversations/Conversations'
 import {Overview} from './overview/Overview'
 import type {ScoreRange, Sentiment} from './types'

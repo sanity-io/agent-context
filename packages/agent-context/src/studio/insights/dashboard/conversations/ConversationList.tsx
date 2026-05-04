@@ -15,7 +15,7 @@ import {
 } from '@sanity/ui'
 import {Fragment, useMemo, useRef, useState} from 'react'
 
-import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../schemas/conversationSchema'
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../../../insights/constants'
 import {SCORE_RANGES, SENTIMENT_OPTIONS} from '../constants'
 import {ErrorBlock} from '../ErrorBlock'
 import {LoadingBlock} from '../LoadingBlock'

@@ -2,7 +2,7 @@ import {CloseIcon} from '@sanity/icons'
 import {Badge, Box, Button, Card, Container, Flex, Grid, Label, Stack, Text} from '@sanity/ui'
 import type {ReactNode} from 'react'
 
-import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../schemas/conversationSchema'
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../../../insights/constants'
 import {ErrorBlock} from '../ErrorBlock'
 import {LoadingBlock} from '../LoadingBlock'
 import type {Conversation} from '../types'

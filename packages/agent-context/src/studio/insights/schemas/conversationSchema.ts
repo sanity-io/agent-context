@@ -1,9 +1,6 @@
 import {defineField, defineType} from 'sanity'
 
-/**
- * @public
- */
-export const CONVERSATION_SCHEMA_TYPE_NAME = 'sanity.agentContextConversation'
+import {CONVERSATION_SCHEMA_TYPE_NAME} from '../../../insights/constants'
 
 /**
  * @internal

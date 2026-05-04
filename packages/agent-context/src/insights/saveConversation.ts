@@ -1,6 +1,6 @@
 import type {SanityClient} from '@sanity/client'
 
-import {CONVERSATION_SCHEMA_TYPE_NAME} from '../studio/insights/schemas/conversationSchema'
+import {CONVERSATION_SCHEMA_TYPE_NAME} from './constants'
 
 /** @public */
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool'

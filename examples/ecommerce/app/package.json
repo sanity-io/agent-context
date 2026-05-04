@@ -15,7 +15,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.74",
     "@ai-sdk/mcp": "^1.0.25",
-    "@ai-sdk/react": "^3.0.118",
+    "@ai-sdk/react": "^3.0.176",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@sanity/agent-context": "workspace:*",

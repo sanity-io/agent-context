@@ -25,8 +25,8 @@
     "@sanity/vision": "5.22.0",
     "ai": "^6.0.137",
     "easymde": "^2.20.0",
-    "react": "^19",
-    "react-dom": "^19",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "react-markdown": "^10.1.0",
     "sanity": "5.22.0",
     "sanity-plugin-markdown": "^8.0.5",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@types/react": "^19",
+    "@types/react": "^19.2.14",
     "dotenv-cli": "^11.0.0",
     "typescript": "^5"
   }

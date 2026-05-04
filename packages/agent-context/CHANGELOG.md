@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.5...agent-context-v0.4.0) (2026-05-04)
+
+### Features
+
+- add Agent Context Insights ([#176](https://github.com/sanity-io/agent-context/issues/176)) ([a7dac07](https://github.com/sanity-io/agent-context/commit/a7dac07c0a67fa1646eb29a2fc058b33515ff6be))
+
 ## [0.3.5](https://github.com/sanity-io/agent-context/compare/agent-context-v0.3.4...agent-context-v0.3.5) (2026-03-13)
 
 ### Bug Fixes

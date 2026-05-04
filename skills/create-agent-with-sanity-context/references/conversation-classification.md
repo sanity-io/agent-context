@@ -87,7 +87,25 @@ const [threadId] = useState(() =>
 
 Then pass it to your chat API via request body or headers.
 
-**Not using AI SDK?** The telemetry integration requires Vercel AI SDK. If using another library, use the insights APIs directly to save conversations — see the Insights API Reference below.
+**Not using AI SDK?** The telemetry integration requires Vercel AI SDK. If using another library, use `saveConversation` directly:
+
+```ts
+import {saveConversation} from '@sanity/agent-context/insights'
+
+// Call this after each conversation turn completes
+await saveConversation({
+  client: writeClient,
+  agentId: 'my-agent',
+  threadId: chatId,
+  messages: [
+    {role: 'user', content: 'How do I return an item?'},
+    {role: 'assistant', content: 'You can return items within 30 days...'},
+    // Include full conversation history each call — it upserts the document
+  ],
+})
+```
+
+The function generates a deterministic document ID from `agentId` + `threadId`, so repeated calls update the same document. See the Insights API Reference below for full API details.
 
 ---
 

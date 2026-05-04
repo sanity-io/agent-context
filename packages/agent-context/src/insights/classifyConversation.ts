@@ -4,6 +4,11 @@ import {z} from 'zod'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from './constants'
 import type {Message} from './saveConversation'
+import {
+  buildTelemetryPayload,
+  sendInsightsTelemetry,
+  type TelemetryConfig,
+} from './sendInsightsTelemetry'
 
 /** @public */
 export type Sentiment = 'positive' | 'neutral' | 'negative'
@@ -36,6 +41,8 @@ export interface ClassifyConversationOptions {
   messages?: Message[]
   /** Previously observed content gaps to encourage consistent terminology. Use `getPreviousContentGaps` to fetch these. */
   previousContentGaps?: string[]
+  /** Telemetry configuration. When enabled, sends anonymized classification metrics. */
+  telemetry?: TelemetryConfig
 }
 
 const coreMetricsSchema = z.object({
@@ -64,6 +71,9 @@ interface ConversationDocument {
   agentId: string
   threadId: string
   messages: StoredMessage[]
+  modelProvider?: string
+  modelId?: string
+  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
 }
 
 /** @internal Exported for testing */
@@ -122,10 +132,11 @@ Guidelines:
 export async function classifyConversation(
   options: ClassifyConversationOptions,
 ): Promise<ClassificationResult> {
-  const {client, conversationId, model, messages: providedMessages} = options
+  const {client, conversationId, model, messages: providedMessages, telemetry} = options
   const now = new Date().toISOString()
 
   let messagesToClassify: StoredMessage[]
+  let conversation: ConversationDocument | null = null
 
   if (providedMessages !== undefined) {
     if (providedMessages.length === 0) {
@@ -133,12 +144,15 @@ export async function classifyConversation(
     }
     messagesToClassify = providedMessages
   } else {
-    const conversation = await client.fetch<ConversationDocument | null>(
+    conversation = await client.fetch<ConversationDocument | null>(
       `*[_type == $type && _id == $id][0]{
         _id,
         agentId,
         threadId,
-        messages
+        messages,
+        modelProvider,
+        modelId,
+        tokenUsage
       }`,
       {type: CONVERSATION_SCHEMA_TYPE_NAME, id: conversationId},
     )
@@ -180,6 +194,27 @@ ${formatMessagesForPrompt(messagesToClassify)}
       .set({coreMetrics: result.output.coreMetrics, classifiedAt: now})
       .unset(['classificationError'])
       .commit()
+
+    if (telemetry?.enabled) {
+      const projectId = client.config().projectId
+      if (projectId) {
+        const payload = buildTelemetryPayload(
+          conversationId,
+          now,
+          projectId,
+          result.output.coreMetrics,
+          {
+            messages: messagesToClassify,
+            modelProvider: conversation?.modelProvider,
+            modelId: conversation?.modelId,
+            tokenUsage: conversation?.tokenUsage,
+          },
+          telemetry,
+        )
+        // Fire-and-forget: don't block classification result on telemetry
+        void sendInsightsTelemetry(client, payload).catch(() => {})
+      }
+    }
 
     return {coreMetrics: result.output.coreMetrics, classifiedAt: now}
   } catch (error) {

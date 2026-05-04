@@ -1,4 +1,7 @@
-import type {Sentiment as PrimitiveSentiment} from '../../../insights/classifyConversation'
+import type {
+  CoreMetrics as PrimitiveCoreMetrics,
+  Sentiment as PrimitiveSentiment,
+} from '../../../insights/classifyConversation'
 
 /**
  * Sort options for conversation list.
@@ -25,14 +28,7 @@ export type ScoreRange = 'good' | 'okay' | 'poor' | 'critical'
  * Fields are optional because documents may not be analyzed yet.
  * @internal
  */
-export interface CoreMetrics {
-  /** How successfully the agent addressed user needs (1-10) */
-  successScore?: number
-  /** Overall sentiment of the conversation */
-  sentiment?: Sentiment
-  /** Topics where the agent lacked information */
-  contentGaps?: string[]
-}
+export type CoreMetrics = Partial<PrimitiveCoreMetrics>
 
 /**
  * A message in a conversation thread.

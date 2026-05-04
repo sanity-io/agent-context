@@ -87,7 +87,7 @@ const client = createClient({
   dataset: 'production',
   token: process.env.SANITY_WRITE_TOKEN, // Needs write access
   useCdn: false,
-  apiVersion: '2024-01-01',
+  apiVersion: '2026-01-01',
 })
 
 const result = await streamText({

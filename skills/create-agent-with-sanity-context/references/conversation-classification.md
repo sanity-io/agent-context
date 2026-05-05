@@ -193,6 +193,10 @@ export const handler = scheduledEventHandler(async ({context}) => {
           client,
           conversationId: conv._id,
           model: anthropic('claude-sonnet-4-5'),
+          messages: conv.messages,
+          modelProvider: conv.modelProvider,
+          modelId: conv.modelId,
+          tokenUsage: conv.tokenUsage,
           previousContentGaps,
           telemetry: {
             enabled: true,
@@ -413,6 +417,8 @@ const conversations = await getConversationsToClassify({
   agentId?: string,    // Optional: filter by agent
   limit?: number,      // Optional: max results
 })
+// Each conversation includes: _id, agentId, threadId, messages,
+// modelProvider?, modelId?, tokenUsage?
 ```
 
 ### `getPreviousContentGaps`
@@ -440,6 +446,14 @@ await classifyConversation({
   client: SanityClient,
   conversationId: string,
   model: LanguageModel,             // Any AI SDK compatible model
+  messages: Message[],              // Conversation messages to classify
+  modelProvider?: string,           // LLM provider (for telemetry)
+  modelId?: string,                 // Model ID (for telemetry)
+  tokenUsage?: {                    // Token usage stats (for telemetry)
+    inputTokens?: number,
+    outputTokens?: number,
+    totalTokens?: number,
+  },
   previousContentGaps?: string[],   // From getPreviousContentGaps
   telemetry: {
     enabled: true,                  // Share metadata-only metrics with Sanity

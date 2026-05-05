@@ -2,7 +2,6 @@ import type {SanityClient} from '@sanity/client'
 import {generateText, type LanguageModel, Output} from 'ai'
 import {z} from 'zod'
 
-import {CONVERSATION_SCHEMA_TYPE_NAME} from './constants'
 import type {Message} from './saveConversation'
 import {
   buildTelemetryPayload,
@@ -37,15 +36,18 @@ export interface ClassifyConversationOptions {
   conversationId: string
   /** AI SDK model for classification (e.g., `openai('gpt-4o-mini')`). */
   model: LanguageModel
-  /**
-   * Messages to classify directly.
-   * @deprecated No longer needed — messages are fetched internally from the conversation document. Will be removed in a future release.
-   */
-  messages?: Message[]
+  /** Messages to classify. */
+  messages: Message[]
   /** Previously observed content gaps to encourage consistent terminology. Use `getPreviousContentGaps` to fetch these. */
   previousContentGaps?: string[]
   /** Telemetry configuration. When enabled, shares metadata-only classification metrics with Sanity. */
   telemetry?: TelemetryConfig
+  /** LLM provider used for this conversation (e.g. `"anthropic"`). Stored on the conversation document. */
+  modelProvider?: string
+  /** Model ID used for this conversation (e.g. `"claude-sonnet-4-5"`). Stored on the conversation document. */
+  modelId?: string
+  /** Token usage stats for this conversation. Stored on the conversation document. */
+  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
 }
 
 const coreMetricsSchema = z.object({
@@ -64,23 +66,8 @@ const coreMetricsSchema = z.object({
     ),
 })
 
-interface StoredMessage {
-  role: string
-  content: string
-}
-
-interface ConversationDocument {
-  _id: string
-  agentId: string
-  threadId: string
-  messages: StoredMessage[]
-  modelProvider?: string
-  modelId?: string
-  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
-}
-
 /** @internal Exported for testing */
-export function formatMessagesForPrompt(messages: StoredMessage[]): string {
+export function formatMessagesForPrompt(messages: {role: string; content?: string}[]): string {
   return messages
     .map((m) => {
       const role = m.role.charAt(0).toUpperCase() + m.role.slice(1)
@@ -109,56 +96,41 @@ Guidelines:
 /**
  * Classifies a conversation using AI to extract metrics.
  *
- * This function fetches the conversation, sends it to an AI model for analysis,
- * and stores the classification results back on the document.
- *
- * Core metrics (successScore, sentiment, contentGaps) are always extracted.
+ * Sends the provided messages to an AI model for analysis and stores the
+ * classification results back on the document.
  *
  * If classification fails, an error is stored on the document and the error is re-thrown.
  *
  * @example
  * ```ts
- * import {classifyConversation} from '@sanity/agent-context/insights'
+ * import {getConversationsToClassify, classifyConversation} from '@sanity/agent-context/insights'
  * import {openai} from '@ai-sdk/openai'
  *
- * await classifyConversation({
- *   client: sanityClient,
- *   conversationId: 'agentconversation-support-bot-thread-123',
- *   model: openai('gpt-4o-mini'),
- * })
+ * const conversations = await getConversationsToClassify({client})
+ * for (const conv of conversations) {
+ *   await classifyConversation({
+ *     client,
+ *     conversationId: conv._id,
+ *     model: openai('gpt-4o-mini'),
+ *     messages: conv.messages,
+ *     modelProvider: conv.modelProvider,
+ *     modelId: conv.modelId,
+ *     tokenUsage: conv.tokenUsage,
+ *   })
+ * }
  * ```
  *
  * @returns The classification result with core metrics.
- * @throws If the conversation doesn't exist, has no messages, or classification fails.
+ * @throws If the conversation has no messages or classification fails.
  * @public
  */
 export async function classifyConversation(
   options: ClassifyConversationOptions,
 ): Promise<ClassificationResult> {
-  const {client, conversationId, model, messages: providedMessages, telemetry} = options
+  const {client, conversationId, model, messages, telemetry} = options
   const now = new Date().toISOString()
 
-  const conversation = await client.fetch<ConversationDocument | null>(
-    `*[_type == $type && _id == $id][0]{
-      _id,
-      agentId,
-      threadId,
-      messages,
-      modelProvider,
-      modelId,
-      tokenUsage
-    }`,
-    {type: CONVERSATION_SCHEMA_TYPE_NAME, id: conversationId},
-  )
-
-  if (!conversation) {
-    throw new Error(`Conversation not found: ${conversationId}`)
-  }
-
-  // Use provided messages (deprecated path) or fetched messages
-  const messagesToClassify = providedMessages ?? conversation.messages
-
-  if (!messagesToClassify || messagesToClassify.length === 0) {
+  if (!messages || messages.length === 0) {
     throw new Error(`Conversation has no messages: ${conversationId}`)
   }
 
@@ -167,7 +139,7 @@ export async function classifyConversation(
   const userPrompt = `Analyze this conversation:
 
 ---
-${formatMessagesForPrompt(messagesToClassify)}
+${formatMessagesForPrompt(messages)}
 ---`
 
   try {
@@ -185,7 +157,13 @@ ${formatMessagesForPrompt(messagesToClassify)}
 
     await client
       .patch(conversationId)
-      .set({coreMetrics: result.output.coreMetrics, classifiedAt: now})
+      .set({
+        coreMetrics: result.output.coreMetrics,
+        classifiedAt: now,
+        ...(options.modelProvider && {modelProvider: options.modelProvider}),
+        ...(options.modelId && {modelId: options.modelId}),
+        ...(options.tokenUsage && {tokenUsage: options.tokenUsage}),
+      })
       .unset(['classificationError'])
       .commit()
 
@@ -198,15 +176,13 @@ ${formatMessagesForPrompt(messagesToClassify)}
           projectId,
           result.output.coreMetrics,
           {
-            messages: messagesToClassify,
-            modelProvider: conversation.modelProvider,
-            modelId: conversation.modelId,
-            tokenUsage: conversation.tokenUsage,
+            messages,
+            modelProvider: options.modelProvider,
+            modelId: options.modelId,
+            tokenUsage: options.tokenUsage,
           },
           telemetry,
         )
-        // Await telemetry so it completes before the process exits (e.g. in serverless/functions).
-        // Errors are swallowed — telemetry failures should never affect classification results.
         await sendInsightsTelemetry(client, payload).catch(() => {})
       }
     }
@@ -215,9 +191,6 @@ ${formatMessagesForPrompt(messagesToClassify)}
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
 
-    // Store the error but don't set classifiedAt — this allows the conversation
-    // to be picked up again by getConversationsToClassify on the next run.
-    // Transient errors (API rate limits, network issues) will resolve themselves.
     try {
       await client.patch(conversationId).set({classificationError: errorMessage}).commit()
     } catch (storageError) {

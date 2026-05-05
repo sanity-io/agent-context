@@ -27,11 +27,14 @@ export interface ConversationToClassify {
   agentId: string
   /** Unique thread identifier. */
   threadId: string
-  /**
-   * Conversation messages.
-   * @deprecated No longer needed — `classifyConversation` fetches messages internally. Will be removed in a future release.
-   */
+  /** Conversation messages. */
   messages: Message[]
+  /** LLM provider used for this conversation (e.g. `"anthropic"`). */
+  modelProvider?: string
+  /** Model ID used for this conversation (e.g. `"claude-sonnet-4-5"`). */
+  modelId?: string
+  /** Token usage stats for this conversation. */
+  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
 }
 
 /**
@@ -49,17 +52,17 @@ export interface ConversationToClassify {
  * ```ts
  * import {getConversationsToClassify, classifyConversation} from '@sanity/agent-context/insights'
  *
- * const conversations = await getConversationsToClassify({
- *   client: sanityClient,
- *   limit: 500,
- *   cooldownMinutes: 10,
- * })
+ * const conversations = await getConversationsToClassify({client, limit: 500})
  *
  * for (const conv of conversations) {
  *   await classifyConversation({
- *     client: sanityClient,
+ *     client,
  *     conversationId: conv._id,
  *     model: openai('gpt-4o-mini'),
+ *     messages: conv.messages,
+ *     modelProvider: conv.modelProvider,
+ *     modelId: conv.modelId,
+ *     tokenUsage: conv.tokenUsage,
  *   })
  * }
  * ```
@@ -98,7 +101,10 @@ export async function getConversationsToClassify(
       "content": content,
       "toolName": toolName,
       "toolType": toolType
-    }
+    },
+    modelProvider,
+    modelId,
+    tokenUsage
   }`
 
   const conversations = await client.fetch<ConversationToClassify[]>(

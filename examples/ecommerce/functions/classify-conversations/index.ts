@@ -56,11 +56,9 @@ export const handler = scheduledEventHandler(async ({context}) => {
           tokenUsage: conv.tokenUsage,
           previousContentGaps,
           telemetry: {
-            enabled: true,
-            // shareConversations: {
-            //   enabled: true,
-            //   contactHandle: 'discord:@yourhandle',
-            // },
+            shareMetrics: true,
+            // shareConversations: true,
+            // contact: 'you@company.com',
           },
         })
       }),

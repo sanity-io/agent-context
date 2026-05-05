@@ -24,7 +24,7 @@ describe('buildTelemetryPayload', () => {
       'project-abc',
       baseCoreMetrics,
       baseConversation,
-      {enabled: true},
+      {shareMetrics: true},
     )
 
     expect(payload.coreMetrics).toEqual({
@@ -58,7 +58,7 @@ describe('buildTelemetryPayload', () => {
       'project-abc',
       baseCoreMetrics,
       baseConversation,
-      {enabled: true, shareConversations: {enabled: true, contactHandle: '@testuser'}},
+      {shareConversations: true, contact: '@testuser'},
     )
 
     expect(payload.conversation.messageContents).toHaveLength(3)
@@ -71,7 +71,7 @@ describe('buildTelemetryPayload', () => {
       content: '{"price": 99}',
       toolName: 'lookup',
     })
-    expect(payload.shareConversations).toEqual({contactHandle: '@testuser'})
+    expect(payload.contact).toBe('@testuser')
   })
 
   it('includes model info when available', () => {
@@ -86,7 +86,7 @@ describe('buildTelemetryPayload', () => {
         modelId: 'gpt-4o',
         tokenUsage: {inputTokens: 100, outputTokens: 50, totalTokens: 150},
       },
-      {enabled: true},
+      {shareMetrics: true},
     )
 
     expect(payload.model).toEqual({
@@ -103,7 +103,7 @@ describe('buildTelemetryPayload', () => {
       'project-abc',
       baseCoreMetrics,
       baseConversation,
-      {enabled: true},
+      {shareMetrics: true},
     )
 
     expect(payload.model).toBeUndefined()
@@ -116,7 +116,7 @@ describe('buildTelemetryPayload', () => {
       'project-abc',
       {...baseCoreMetrics, contentGaps: []},
       baseConversation,
-      {enabled: true},
+      {shareMetrics: true},
     )
 
     expect(payload.coreMetrics.contentGapCount).toBe(0)
@@ -129,7 +129,7 @@ describe('buildTelemetryPayload', () => {
       'project-abc',
       baseCoreMetrics,
       {messages: [{role: 'user'}]},
-      {enabled: true},
+      {shareMetrics: true},
     )
 
     expect(payload.conversation.messages[0]!.bytes).toBe(0)

@@ -199,11 +199,9 @@ export const handler = scheduledEventHandler(async ({context}) => {
           tokenUsage: conv.tokenUsage,
           previousContentGaps,
           telemetry: {
-            enabled: true,
-            // shareConversations: {
-            //   enabled: true,
-            //   contactHandle: 'discord:@yourhandle',
-            // },
+            shareMetrics: true,
+            // shareConversations: true,
+            // contact: 'you@company.com',
           },
         })
       }),
@@ -362,11 +360,11 @@ The `telemetry` option on `classifyConversation` lets you share classification d
 
 There are two tiers:
 
-**Metadata-only** (`telemetry: { enabled: true }`): Shares classification metrics (success scores, sentiment, content gap counts), message shapes (roles, byte sizes, tool names), model info, and token usage. No conversation content is transmitted — we cannot see what your users or agent said.
+**Metadata-only** (`shareMetrics: true`): Shares classification metrics (success scores, sentiment, content gap counts), message shapes (roles, byte sizes, tool names), model info, and token usage. No conversation content is transmitted — we cannot see what your users or agent said.
 
-**Full conversation sharing** (`shareConversations: { enabled: true }`): Additionally shares the actual message contents. This lets the Sanity team analyze real conversations to identify patterns, suggest improvements to your agent configuration, and help you get better results. Provide a `contactHandle` so the team can reach out and collaborate with you directly.
+**Full conversation sharing** (`shareConversations: true`): Additionally shares the actual message contents. This lets the Sanity team analyze real conversations to identify patterns, suggest improvements to your agent configuration, and help you get better results. Provide a `contact` so the team can reach out and collaborate with you directly.
 
-We recommend **always enabling metadata-only telemetry** — it helps us understand how Agent Context is used in the wild and prioritize improvements. If you want hands-on help tuning your agent, enable full sharing and the team will be in touch.
+If you can, enabling metadata-only telemetry helps us prioritize improvements. If you want hands-on help tuning your agent, enable full sharing and the team will be in touch.
 
 ## Troubleshooting
 
@@ -456,11 +454,9 @@ await classifyConversation({
   },
   previousContentGaps?: string[],   // From getPreviousContentGaps
   telemetry: {
-    enabled: true,                  // Share metadata-only metrics with Sanity
-    // shareConversations: {
-    //   enabled: true,
-    //   contactHandle: 'discord:@yourhandle',
-    // },
+    shareMetrics: true,             // Share metadata-only metrics with Sanity
+    // shareConversations: true,    // Also share full message contents
+    // contact: 'you@company.com',  // So we can reach you
   },
 })
 ```

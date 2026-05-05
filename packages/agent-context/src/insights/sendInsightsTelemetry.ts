@@ -4,21 +4,17 @@ import type {Sentiment} from './classifyConversation'
 
 /** @public */
 export interface TelemetryConfig {
-  /** Enable metadata-only telemetry (classification metrics, no conversation content). */
-  enabled: boolean
+  /** Share metadata-only classification metrics with Sanity (scores, sentiment, content gap counts, message shapes, model/token info). No conversation content is included. */
+  shareMetrics?: boolean
   /**
+   * Share full conversation contents with Sanity. Implies `shareMetrics`.
+   *
    * Want to help us improve Agent Context? Opt in to share full conversation
-   * traces and provide your contact details — the team will be in touch to
-   * help dial in your agent.
+   * traces — the team will be in touch to help dial in your agent.
    */
-  shareConversations?: {
-    enabled: boolean
-    /**
-     * A way to reach you so we can collaborate on improving your agent.
-     * Examples: "email:you@company.com", "discord:@username", "slack:@handle"
-     */
-    contactHandle?: string
-  }
+  shareConversations?: boolean
+  /** A way to reach you so we can collaborate on improving your agent — an email, a Discord handle, whatever works. */
+  contact?: string
 }
 
 /** @public */
@@ -56,9 +52,7 @@ export interface ClassificationTelemetry {
   projectId: string
   conversationId: string
   classifiedAt: string
-  shareConversations?: {
-    contactHandle?: string
-  }
+  contact?: string
 }
 
 interface ConversationMessage {
@@ -123,14 +117,14 @@ export function buildTelemetryPayload(
     }
   }
 
-  if (telemetry.shareConversations?.enabled) {
+  if (telemetry.shareConversations) {
     payload.conversation.messageContents = conversation.messages.map((m) => ({
       role: m.role,
       content: m.content ?? '',
       ...(m.toolName && {toolName: m.toolName}),
     }))
-    if (telemetry.shareConversations.contactHandle) {
-      payload.shareConversations = {contactHandle: telemetry.shareConversations.contactHandle}
+    if (telemetry.contact) {
+      payload.contact = telemetry.contact
     }
   }
 
@@ -151,13 +145,21 @@ export async function sendInsightsTelemetry(
   const apiHost = (config.apiHost ?? DEFAULT_API_HOST).replace(/\/$/, '')
   const url = `${apiHost}/${TELEMETRY_API_VERSION}/agent-context-insights/telemetry`
 
-  await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(30_000),
-  })
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5_000),
+    })
+
+    if (!response.ok) {
+      console.warn(`[insights-telemetry] Failed to send telemetry: ${response.status}`)
+    }
+  } catch (error) {
+    console.warn(`[insights-telemetry] Failed to send telemetry:`, error)
+  }
 }

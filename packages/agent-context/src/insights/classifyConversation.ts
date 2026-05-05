@@ -167,7 +167,7 @@ ${formatMessagesForPrompt(messages)}
       .unset(['classificationError'])
       .commit()
 
-    if (telemetry?.enabled) {
+    if (telemetry?.shareMetrics || telemetry?.shareConversations) {
       const projectId = client.config().projectId
       if (projectId) {
         const payload = buildTelemetryPayload(
@@ -183,7 +183,7 @@ ${formatMessagesForPrompt(messages)}
           },
           telemetry,
         )
-        await sendInsightsTelemetry(client, payload).catch(() => {})
+        await sendInsightsTelemetry(client, payload)
       }
     }
 

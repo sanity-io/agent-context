@@ -1,7 +1,7 @@
 import type {SanityClient} from '@sanity/client'
 
 import {CONVERSATION_SCHEMA_TYPE_NAME} from './constants'
-import type {Message} from './saveConversation'
+import type {Message, TokenUsage} from './saveConversation'
 
 /** @public */
 export interface GetConversationsToClassifyOptions {
@@ -34,7 +34,7 @@ export interface ConversationToClassify {
   /** Model ID used for this conversation (e.g. `"claude-sonnet-4-5"`). */
   modelId?: string
   /** Token usage stats for this conversation. */
-  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
+  tokenUsage?: TokenUsage
 }
 
 /**

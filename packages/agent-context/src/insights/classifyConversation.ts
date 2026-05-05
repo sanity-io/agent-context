@@ -2,7 +2,7 @@ import type {SanityClient} from '@sanity/client'
 import {generateText, type LanguageModel, Output} from 'ai'
 import {z} from 'zod'
 
-import type {Message} from './saveConversation'
+import type {Message, TokenUsage} from './saveConversation'
 import {
   buildTelemetryPayload,
   sendInsightsTelemetry,
@@ -47,7 +47,7 @@ export interface ClassifyConversationOptions {
   /** Model ID used for this conversation (e.g. `"claude-sonnet-4-5"`). Stored on the conversation document. */
   modelId?: string
   /** Token usage stats for this conversation. Stored on the conversation document. */
-  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
+  tokenUsage?: TokenUsage
 }
 
 const coreMetricsSchema = z.object({
@@ -191,6 +191,9 @@ ${formatMessagesForPrompt(messages)}
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
 
+    // Store the error but don't set classifiedAt — this allows the conversation
+    // to be picked up again by getConversationsToClassify on the next run.
+    // Transient errors (API rate limits, network issues) will resolve themselves.
     try {
       await client.patch(conversationId).set({classificationError: errorMessage}).commit()
     } catch (storageError) {

@@ -3,6 +3,13 @@ import type {SanityClient} from '@sanity/client'
 import {CONVERSATION_SCHEMA_TYPE_NAME} from './constants'
 
 /** @public */
+export interface TokenUsage {
+  inputTokens?: number
+  outputTokens?: number
+  totalTokens?: number
+}
+
+/** @public */
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool'
 
 /** @public */
@@ -70,7 +77,7 @@ export interface SaveConversationOptions {
    * Aggregated token usage for the conversation.
    * Populated by the AI SDK telemetry integration.
    */
-  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
+  tokenUsage?: TokenUsage
 }
 
 /**

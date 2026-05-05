@@ -1,6 +1,7 @@
 import type {SanityClient} from '@sanity/client'
 
 import type {Sentiment} from './classifyConversation'
+import type {TokenUsage} from './saveConversation'
 
 /** @public */
 export interface TelemetryConfig {
@@ -17,7 +18,7 @@ export interface TelemetryConfig {
   contact?: string
 }
 
-/** @public */
+/** @internal */
 export interface ClassificationTelemetry {
   coreMetrics: {
     successScore?: number
@@ -43,11 +44,7 @@ export interface ClassificationTelemetry {
   model?: {
     provider?: string
     modelId?: string
-    tokenUsage?: {
-      inputTokens?: number
-      outputTokens?: number
-      totalTokens?: number
-    }
+    tokenUsage?: TokenUsage
   }
   projectId: string
   conversationId: string
@@ -65,7 +62,7 @@ interface ConversationData {
   messages: ConversationMessage[]
   modelProvider?: string
   modelId?: string
-  tokenUsage?: {inputTokens?: number; outputTokens?: number; totalTokens?: number}
+  tokenUsage?: TokenUsage
 }
 
 let encoder: TextEncoder | undefined

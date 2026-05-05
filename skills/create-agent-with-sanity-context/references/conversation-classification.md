@@ -102,6 +102,9 @@ await saveConversation({
     {role: 'assistant', content: 'You can return items within 30 days...'},
     // Include full conversation history each call — it upserts the document
   ],
+  modelProvider: 'anthropic',
+  modelId: 'claude-sonnet-4-5',
+  tokenUsage: {inputTokens: 1200, outputTokens: 350, totalTokens: 1550},
 })
 ```
 

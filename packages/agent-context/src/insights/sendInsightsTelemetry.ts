@@ -158,5 +158,6 @@ export async function sendInsightsTelemetry(
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(30_000),
   })
 }

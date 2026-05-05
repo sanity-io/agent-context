@@ -205,8 +205,9 @@ ${formatMessagesForPrompt(messagesToClassify)}
           },
           telemetry,
         )
-        // Fire-and-forget: don't block classification result on telemetry
-        void sendInsightsTelemetry(client, payload).catch(() => {})
+        // Await telemetry so it completes before the process exits (e.g. in serverless/functions).
+        // Errors are swallowed — telemetry failures should never affect classification results.
+        await sendInsightsTelemetry(client, payload).catch(() => {})
       }
     }
 

@@ -134,7 +134,7 @@ export const conversationSchema = defineType({
       description: 'When the conversation messages were last updated',
     }),
 
-    // Model info - populated by AI SDK telemetry integration
+    // Model info
     defineField({
       name: 'modelProvider',
       title: 'Model Provider',

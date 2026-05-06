@@ -20,7 +20,7 @@ export const handler = scheduledEventHandler(async ({context}) => {
     useCdn: false,
   })
 
-  await classifyConversations({
+  const result = await classifyConversations({
     client,
     model: anthropic('claude-sonnet-4-5'),
     telemetry: {
@@ -29,4 +29,8 @@ export const handler = scheduledEventHandler(async ({context}) => {
       // contact: 'you@company.com',
     },
   })
+
+  console.log(
+    `Classified ${result.successCount}/${result.totalFound} conversations${result.errorCount > 0 ? ` (${result.errorCount} failed)` : ''}`,
+  )
 })

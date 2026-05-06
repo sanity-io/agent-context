@@ -147,10 +147,7 @@ describe('classifyConversations', () => {
     mockGetConversations.mockResolvedValue(conversations)
     mockGetGaps.mockResolvedValue([])
 
-    const callOrder: number[] = []
-    let batchIndex = 0
     mockClassify.mockImplementation(async () => {
-      callOrder.push(batchIndex)
       return {
         coreMetrics: {successScore: 8, sentiment: 'positive', contentGaps: []},
         classifiedAt: new Date().toISOString(),

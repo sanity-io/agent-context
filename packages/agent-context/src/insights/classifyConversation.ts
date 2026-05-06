@@ -34,7 +34,7 @@ export interface ClassifyConversationOptions {
   client: SanityClient
   /** Document ID to classify. */
   conversationId: string
-  /** AI SDK model for classification (e.g., `openai('gpt-4o-mini')`). */
+  /** AI SDK model for classification (e.g., `anthropic('claude-sonnet-4-5')`). */
   model: LanguageModel
   /** Messages to classify. */
   messages: Message[]
@@ -107,12 +107,12 @@ Guidelines:
  * @example
  * ```ts
  * import {classifyConversation} from '@sanity/agent-context/insights'
- * import {openai} from '@ai-sdk/openai'
+ * import {anthropic} from '@ai-sdk/anthropic'
  *
  * await classifyConversation({
  *   client,
  *   conversationId: 'agentconversation-bot-thread-123',
- *   model: openai('gpt-4o-mini'),
+ *   model: anthropic('claude-sonnet-4-5'),
  *   messages: [{role: 'user', content: 'Hello'}, {role: 'assistant', content: 'Hi!'}],
  * })
  * ```

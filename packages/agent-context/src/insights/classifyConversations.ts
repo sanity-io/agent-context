@@ -111,7 +111,7 @@ export async function classifyConversations(
         successCount++
       } else {
         errorCount++
-        console.error('[classifyConversations] Failed to classify:', result.reason)
+        console.error('[classifyConversation] Failed to classify:', result.reason)
       }
     }
   }

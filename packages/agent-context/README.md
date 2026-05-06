@@ -181,22 +181,31 @@ The recommended way to classify conversations is with `classifyConversations`, w
 ```ts
 import {classifyConversations} from '@sanity/agent-context/insights'
 
-await classifyConversations({
+const result = await classifyConversations({
   client,
   model: anthropic('claude-sonnet-4-5'),
+  agentId: 'support-bot', // Optional: scope to a specific agent
+  limit: 100, // Optional: max conversations per run
+  concurrency: 5, // Optional: parallel classifications (default 3)
+  cooldownMinutes: 15, // Optional: idle time before eligible (default 10)
   telemetry: {shareMetrics: true},
 })
+
+console.log(
+  `${result.successCount} classified, ${result.errorCount} failed out of ${result.totalFound}`,
+)
 ```
 
 For custom workflows, use the lower-level primitives directly:
 
-| Function                     | Purpose                                           |
-| ---------------------------- | ------------------------------------------------- |
-| `classifyConversation`       | Classify a single conversation                    |
-| `getConversationsToClassify` | Find conversations needing (re)classification     |
-| `getPreviousContentGaps`     | Fetch content gaps ranked by frequency            |
-| `saveConversation`           | Save a conversation without classification        |
-| `generateConversationId`     | Generate deterministic ID from agentId + threadId |
+| Function                     | Purpose                                               |
+| ---------------------------- | ----------------------------------------------------- |
+| `classifyConversations`      | **Recommended** — classify all eligible conversations |
+| `classifyConversation`       | Classify a single conversation                        |
+| `getConversationsToClassify` | Find conversations needing (re)classification         |
+| `getPreviousContentGaps`     | Fetch content gaps ranked by frequency                |
+| `saveConversation`           | Save a conversation without classification            |
+| `generateConversationId`     | Generate deterministic ID from agentId + threadId     |
 
 ### Notes
 

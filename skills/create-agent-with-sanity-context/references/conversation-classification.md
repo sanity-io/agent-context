@@ -23,29 +23,47 @@ Before setting up insights, gather:
 | --------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Sanity Project ID** | Both                    | From `sanity.config.ts` or [sanity.io/manage](https://sanity.io/manage)                                                                  |
 | **Dataset name**      | Both                    | Usually `production`                                                                                                                     |
-| **Write token**       | Telemetry (Step 1)      | For saving conversations to Sanity. Create at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with **Editor** role |
+| **Write token**       | Telemetry (Step 1)      | For saving `sanity.agentContextConversation` documents. Create at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with **Editor** role |
 | **LLM API key**       | Classification (Step 3) | For the scheduled function that classifies conversations (Anthropic, OpenAI, etc.)                                                       |
 
 **Note**: The classification function uses a **robot token** (created automatically by the blueprint) — you don't need to create a separate token for it.
 
 ## Project Structure
 
-The recommended structure places `sanity.blueprint.ts` and `functions/` at the project root, alongside your lockfile. This ensures the CLI can detect your package manager and resolve dependencies correctly.
+Place `sanity.blueprint.ts` in the same directory as the project's lockfile. See [Sanity Blueprints & Functions](../SKILL.md#sanity-blueprints--functions) for the full placement rules.
+
+In a **monorepo**, this means the blueprint and `functions/` go at the workspace root — not inside a workspace like `apps/studio/`:
 
 ```
-my-project/
-├── sanity.blueprint.ts       # Blueprint config
+my-monorepo/
+├── sanity.blueprint.ts       # Next to lockfile
 ├── functions/
 │   └── classify-conversations/
 │       └── index.ts
-├── package.json              # Shared dependencies for functions
-├── pnpm-lock.yaml            # (or yarn.lock, package-lock.json)
+├── package.json              # Function deps go here (project-level)
+├── yarn.lock                 # (or pnpm-lock.yaml, package-lock.json)
+├── .env
+└── apps/
+    ├── studio/
+    └── web/
+```
+
+In a **flat project**, the layout is the same — everything at the root:
+
+```
+my-project/
+├── sanity.blueprint.ts
+├── functions/
+│   └── classify-conversations/
+│       └── index.ts
+├── package.json
+├── pnpm-lock.yaml
 ├── .env
 ├── studio/
 └── app/
 ```
 
-Functions use the root `package.json` for dependencies by default. See [Sanity Functions: Dependencies](https://www.sanity.io/docs/functions/function-dependencies) for alternative setups.
+These are reference layouts — always adapt to the user's existing directory structure. The constraint is that `sanity.blueprint.ts` and the lockfile share the same directory; everything else is flexible.
 
 ## Setup
 
@@ -73,7 +91,7 @@ const result = streamText({
 })
 ```
 
-**Write client**: Create a Sanity client with a token that has Editor permissions. Create the token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Editor role. Store it as `SANITY_API_WRITE_TOKEN` in your app's environment.
+**Write client**: Create a Sanity client with a token that has Editor permissions. Create the token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Editor role. Store it as `SANITY_API_WRITE_TOKEN` in your app's environment. The token only needs write access to `sanity.agentContextConversation` documents.
 
 **Thread ID**: Each conversation needs a unique `threadId`. Generate one when a new chat starts and persist it across messages in that conversation. See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for how this is handled with cookies.
 
@@ -114,31 +132,19 @@ The function generates a deterministic document ID from `agentId` + `threadId`, 
 
 **Steps 2-7 below set up the classification function** — a separate scheduled job that analyzes saved conversations. This runs outside your app using Sanity Functions.
 
-### Step 2: Add Dependencies to Root package.json
+### Step 2: Add Dependencies
 
-Add these dependencies to your **root** `package.json` (not `studio/package.json`):
+Ensure these packages are in the `package.json` next to `sanity.blueprint.ts` — merge them into existing dependencies, do not overwrite the file:
 
-```json
-{
-  "dependencies": {
-    "@ai-sdk/anthropic": "^3",
-    "@sanity/agent-context": "latest",
-    "@sanity/client": "^7",
-    "@sanity/functions": "^1",
-    "ai": "^6.0.137"  // Minimum version required for experimental_telemetry.integrations
-  },
-  "devDependencies": {
-    "@sanity/blueprints": "^0.15.0",
-    "dotenv": "^17"
-  }
-}
-```
+**dependencies**: `@ai-sdk/anthropic` (^3), `@sanity/agent-context` (latest), `@sanity/client` (^7), `@sanity/functions` (^1), `ai` (^6.0.137 minimum — required for `experimental_telemetry.integrations`)
+
+**devDependencies**: `@sanity/blueprints` (latest), `dotenv` (^17)
 
 If using a different LLM provider, swap `@ai-sdk/anthropic` for your provider's package (e.g., `@ai-sdk/openai`).
 
 ### Step 3: Create the Classification Function
 
-Create `functions/classify-conversations/index.ts` at your **project root**:
+Create `functions/classify-conversations/index.ts` next to `sanity.blueprint.ts`:
 
 ```ts
 // functions/classify-conversations/index.ts
@@ -221,12 +227,12 @@ export const handler = scheduledEventHandler(async ({context}) => {
 })
 ```
 
-### Step 4: Create the Blueprint
+### Step 4: Configure the Blueprint
 
-Create `sanity.blueprint.ts` at your **project root**:
+If `sanity.blueprint.ts` already exists next to the lockfile, add the scheduled function and robot token resources to it. Otherwise, create it:
 
 ```ts
-// sanity.blueprint.ts (project root - NOT in studio/)
+// sanity.blueprint.ts (next to lockfile)
 import {defineBlueprint, defineRobotToken, defineScheduledFunction} from '@sanity/blueprints'
 import 'dotenv/config'
 
@@ -264,7 +270,7 @@ export default defineBlueprint({
 
 ### Step 5: Configure Environment Variables
 
-Create or update `.env` at your project root:
+Create or update `.env` next to `sanity.blueprint.ts`:
 
 ```bash
 # Required for blueprint deployment
@@ -289,7 +295,7 @@ The `--with-user-token` flag provides your personal token for API calls. The fun
 
 ### Step 7: Deploy
 
-Run all commands from your **project root** (where `sanity.blueprint.ts` and your lockfile are located).
+Run all commands from the directory containing `sanity.blueprint.ts` and the lockfile.
 
 **Prerequisites**: Make sure you're logged in to the Sanity CLI. Run `npx sanity login` if needed.
 
@@ -303,10 +309,13 @@ npx sanity blueprints init
 # 3. Promote to organization scope (required for scheduled functions)
 npx sanity blueprints promote
 
-# 4. Deploy the blueprint and function (ask for permission to deploy)
+# 4. Check for issues
+npx sanity blueprints doctor
+
+# 5. Deploy the blueprint and function (ask for permission to deploy)
 npx sanity blueprints deploy
 
-# 5. Set the API key as an environment variable (after deploy)
+# 6. Set the API key as an environment variable (after deploy)
 npx sanity functions env add classify-conversations ANTHROPIC_API_KEY <your-api-key>
 ```
 
@@ -314,10 +323,9 @@ npx sanity functions env add classify-conversations ANTHROPIC_API_KEY <your-api-
 
 - **`blueprints init`**: Links your project to a Sanity blueprint stack. Run once per project.
 - **`blueprints promote`**: Elevates the stack to organization scope, which is required for scheduled functions. You need organization member permissions to run this.
+- **`blueprints doctor`**: Checks blueprint health — flags dependency issues, version mismatches, and directory structure problems.
 - **`blueprints deploy`**: Deploys the function and schedules it to run.
 - **`functions env add`**: Sets an environment variable for a deployed function. Must be run after deploy. Replace `<your-api-key>` with your actual API key.
-
-**Package manager**: The CLI detects your package manager from the lockfile. If it can't detect it, pass `--fn-installer pnpm` (or `npm`/`yarn`) to the deploy command.
 
 ### Step 8: Verify Deployment
 

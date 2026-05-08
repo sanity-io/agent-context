@@ -6,25 +6,24 @@ import {
 } from '@sanity/agent-context/insights'
 import {scheduledEventHandler} from '@sanity/functions'
 import {anthropic} from '@ai-sdk/anthropic'
-import {env} from 'node:process'
 
 const CONCURRENCY = 5
 
 export const handler = scheduledEventHandler(async ({context}) => {
-  const {SANITY_PROJECT_ID, SANITY_DATASET} = env
-
-  if (!context.clientOptions?.token) {
-    console.error('[classify-conversations] No client token available')
-    return
-  }
-
+  // SANITY_PROJECT_ID and SANITY_DATASET are injected by the blueprint's env block.
+  // These are example names — adapt to match the user's env var conventions.
   const client = createClient({
-    projectId: SANITY_PROJECT_ID,
-    dataset: SANITY_DATASET,
+    projectId: process.env.SANITY_PROJECT_ID,
+    dataset: process.env.SANITY_DATASET,
     apiVersion: '2026-01-01',
-    token: context.clientOptions.token,
+    token: context.clientOptions?.token,
     useCdn: false,
   })
+
+  if (!client.config().token) {
+    console.error('[classify-conversations] No token available')
+    return
+  }
 
   const [conversations, previousContentGaps] = await Promise.all([
     getConversationsToClassify({client}),
@@ -41,7 +40,6 @@ export const handler = scheduledEventHandler(async ({context}) => {
   let successCount = 0
   let errorCount = 0
 
-  // Process in batches of CONCURRENCY
   for (let i = 0; i < conversations.length; i += CONCURRENCY) {
     const batch = conversations.slice(i, i + CONCURRENCY)
     const results = await Promise.allSettled(

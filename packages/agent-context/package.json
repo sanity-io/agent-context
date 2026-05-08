@@ -88,7 +88,7 @@
     "@sanity/color": "^3",
     "@sanity/icons": "^3",
     "@sanity/ui": "^3",
-    "ai": "^6.0.137",
+    "ai": "^6.0.175",
     "react": "^19",
     "react-dom": "^19",
     "react-rx": "^4",
@@ -101,7 +101,34 @@
     "@sanity/client": {
       "optional": true
     },
+    "@sanity/color": {
+      "optional": true
+    },
+    "@sanity/icons": {
+      "optional": true
+    },
+    "@sanity/ui": {
+      "optional": true
+    },
     "ai": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "react-rx": {
+      "optional": true
+    },
+    "rxjs": {
+      "optional": true
+    },
+    "sanity": {
+      "optional": true
+    },
+    "styled-components": {
       "optional": true
     },
     "zod": {

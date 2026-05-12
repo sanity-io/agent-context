@@ -76,27 +76,28 @@ This means Studio users can manage agent behavior without touching code — upda
 
 ## Before You Start: Understand the User's Situation
 
-A complete integration has **three distinct components** that may live in different places:
+A complete integration has **four distinct components** that may live in different places:
 
-| Component                   | What it is                                                       | Examples                                                                        |
-| --------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **1. Studio Setup**         | Configure the context plugin and create agent context documents  | Sanity Studio (separate repo or embedded)                                       |
-| **2. Agent Implementation** | Code that connects to Agent Context and handles LLM interactions | Next.js API route, Express server, Python service, or any MCP-compatible client |
-| **3. Frontend (optional)**  | UI for users to interact with the agent                          | Chat widget, search interface, CLI—or none for backend services                 |
+| Component                   | What it is                                                       | Examples                                                                                                                                                |
+| --------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Studio Setup**         | Configure the context plugin and create agent context documents  | Sanity Studio (separate repo or embedded)                                                                                                               |
+| **2. Agent Implementation** | Code that connects to Agent Context and handles LLM interactions | Next.js API route, Express server, Python service, or any MCP-compatible client                                                                         |
+| **3. Frontend**             | UI for users to interact with the agent                          | Chat widget, search interface, CLI—or none for backend services                                                                                         |
+| **4. Functions**            | Scheduled classification via Sanity Blueprints                   | `sanity.blueprint.ts` + `functions/` directory — has its own placement constraints (see [Sanity Blueprints & Functions](#sanity-blueprints--functions)) |
 
 A deployed Studio (v5.1.0+) is always required. Not every integration needs the agent context plugin or document—the base MCP URL works without them, so users can start with just agent implementation and add document configuration later—or vice versa. Frontend depends on the use case (many agents run as backend services or integrate into existing UIs).
 
-Ask the user which part they need help with:
+**Before writing any code, inspect the project to understand:**
+
+1. **Project layout**: Read the top-level `package.json` (check for `workspaces` or a `pnpm-workspace.yaml`), locate the lockfile, and map out the distinct apps/packages. This determines where `sanity.blueprint.ts` and `functions/` will go — see [Sanity Blueprints & Functions](#sanity-blueprints--functions).
+2. **Their stack**: What framework/runtime? (Next.js, Remix, Node server, Python, etc.)
+3. **Their AI library**: Vercel AI SDK, LangChain, direct API calls, etc.
+4. **Their domain**: What will the agent help with? (Shopping, docs, support, search, etc.)
+5. **Which components they need help with**: They may only need one or two.
 
 - **Components in different repos** (most common): You may only have access to one component. Complete what you can, then tell the user what steps remain for the other repos.
-- **Co-located components**: All three in the same project—work through them based on what the user wants to tackle first.
+- **Co-located components**: All in the same project—work through them based on what the user wants to tackle first.
 - **No Studio in the codebase?** Ask the user if Studio setup is done elsewhere, or if they want to skip the agent context plugin and document for now—the base URL works without them.
-
-Also understand:
-
-1. **Their stack**: What framework/runtime? (Next.js, Remix, Node server, Python, etc.)
-2. **Their AI library**: Vercel AI SDK, LangChain, direct API calls, etc.
-3. **Their domain**: What will the agent help with? (Shopping, docs, support, search, etc.)
 
 The reference patterns use Next.js + Vercel AI SDK, but adapt to whatever the user is working with.
 
@@ -188,38 +189,35 @@ Once the production agent works:
 
 ## Sanity Blueprints & Functions
 
-Scheduled classification uses **Sanity Blueprints** to deploy **Sanity Functions**. Key concepts:
+Scheduled classification uses **Sanity Blueprints** to deploy **Sanity Functions**.
 
-**Project structure**: The `sanity.blueprint.ts` file and your lockfile (`pnpm-lock.yaml`, `yarn.lock`, or `package-lock.json`) must be in the same directory. The CLI detects the package manager from the lockfile. Adapt this structure to the user's existing project layout:
+### Placement principles
 
-```
-my-project/
-├── sanity.blueprint.ts       # Blueprint config
-├── functions/                # Functions directory
-│   └── classify-conversations/
-│       └── index.ts
-├── package.json              # Shared dependencies
-├── pnpm-lock.yaml            # Lockfile (same dir as blueprint)
-├── studio/
-└── app/
-```
+Before adding files, search the project for an existing `sanity.blueprint.ts`. If one exists with deployed functions, add the new function there — even if it's not next to the lockfile. An existing working setup takes precedence over the default placement rules below. Only follow these rules when creating a new blueprint from scratch.
 
-**Note**: This is a reference structure. The key requirement is that `sanity.blueprint.ts` and the lockfile are in the same directory. Monorepos and other layouts may need adjustments — check the user's existing structure before adding files.
+Find the project's lockfile (`yarn.lock`, `pnpm-lock.yaml`, or `package-lock.json`). Two rules for new blueprints:
 
-**Commands** (run from project root):
+1. **`sanity.blueprint.ts` must be in the same directory as the lockfile.** The CLI detects the package manager from the lockfile. If no lockfile is present, pass `--fn-installer pnpm` (or `npm`/`yarn`) to the deploy command.
+2. **Function `src` paths are resolved relative to the blueprint file.** By default a function named `classify-conversations` maps to `functions/classify-conversations/` next to the blueprint. Use the `src` property in `defineScheduledFunction` to point to a different directory.
+
+**In a monorepo** with no existing blueprint, the lockfile is at the workspace root — so `sanity.blueprint.ts` and `functions/` go there too, alongside the root `package.json`. However, if a blueprint already exists in a subdirectory (e.g. `apps/studio/`) and functions are successfully deploying from there, use that location. The CLI can work from subdirectories when configured correctly (e.g. with `--fn-installer pnpm`).
+
+**Dependencies**: Functions use the `package.json` next to the blueprint for dependencies by default (`project-level`). Each function can alternatively have its own `package.json` (`function-level`), but a function uses one or the other — never both. See [Sanity Functions: Dependencies](https://www.sanity.io/docs/functions/function-dependencies).
+
+### Commands
+
+Run from the directory containing `sanity.blueprint.ts`:
 
 | Command                                              | Purpose                                                 |
 | ---------------------------------------------------- | ------------------------------------------------------- |
 | `npx sanity blueprints init`                         | Initialize the blueprint stack (first time only)        |
 | `npx sanity blueprints promote`                      | Promote to org scope (required for scheduled functions) |
+| `npx sanity blueprints doctor`                       | Check blueprint health and flag issues                  |
+| `npx sanity blueprints plan`                         | Preview what deploy will change                         |
 | `npx sanity blueprints deploy`                       | Deploy blueprint and functions                          |
 | `npx sanity functions env add <fn> <key> <value>`    | Set an env var (after deploy)                           |
 | `npx sanity functions logs <name>`                   | View function logs                                      |
 | `npx sanity functions test <name> --with-user-token` | Test function locally                                   |
-
-**Package manager**: If the CLI can't detect your package manager, pass `--fn-installer pnpm` (or `npm`/`yarn`) to the deploy command.
-
-**Dependencies**: Functions use the root `package.json` for dependencies by default. Each function does NOT need its own `package.json` unless you need isolated dependencies. See [Sanity Functions: Dependencies](https://www.sanity.io/docs/functions/function-dependencies).
 
 ## GROQ with Semantic Search
 

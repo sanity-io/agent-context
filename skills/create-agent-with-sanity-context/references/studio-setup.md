@@ -62,9 +62,11 @@ This registers the `sanity.agentContext` document type and enables Insights (con
 agentContextPlugin({insights: false})
 ```
 
-## Customize Structure Tool (Optional)
+## Update the Structure Tool
 
-To organize agent-related documents in a dedicated section, see [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for an example.
+Check whether `structureTool()` in the Studio config has a `structure` prop. If it does, the Studio uses an explicit structure — document types only appear in the sidebar if they are listed there. The agent context types (`AGENT_CONTEXT_SCHEMA_TYPE_NAME`, `CONVERSATION_SCHEMA_TYPE_NAME`) must be added to the existing structure, or they will be invisible. If there is no `structure` prop, types appear automatically and no changes are needed.
+
+See [ecommerce/studio/sanity.config.ts](ecommerce/studio/sanity.config.ts) for an example that groups agent types under an "Agents" section. Adapt the placement to match the project's existing organization.
 
 ## Create an Agent Context document
 

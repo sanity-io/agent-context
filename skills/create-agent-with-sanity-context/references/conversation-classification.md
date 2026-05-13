@@ -23,29 +23,49 @@ Before setting up insights, gather:
 | --------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Sanity Project ID** | Both                    | From `sanity.config.ts` or [sanity.io/manage](https://sanity.io/manage)                                                                  |
 | **Dataset name**      | Both                    | Usually `production`                                                                                                                     |
-| **Write token**       | Telemetry (Step 1)      | For saving conversations to Sanity. Create at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with **Editor** role |
+| **Write token**       | Telemetry (Step 1)      | For saving `sanity.agentContextConversation` documents. Use an existing write token if the project has one, or create one at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with **Editor** role |
 | **LLM API key**       | Classification (Step 3) | For the scheduled function that classifies conversations (Anthropic, OpenAI, etc.)                                                       |
 
 **Note**: The classification function uses a **robot token** (created automatically by the blueprint) — you don't need to create a separate token for it.
 
 ## Project Structure
 
-The recommended structure places `sanity.blueprint.ts` and `functions/` at the project root, alongside your lockfile. This ensures the CLI can detect your package manager and resolve dependencies correctly.
+**First, check if the project already has a `sanity.blueprint.ts`** — search the full repo. If one exists with deployed functions, add the classification function there. Do not create a second blueprint.
+
+If no blueprint exists, create one following the [placement rules in SKILL.md](../SKILL.md#sanity-blueprints--functions). The default placement is next to the project's lockfile.
+
+If creating a new blueprint in a **monorepo**, the default placement is the workspace root (next to the lockfile):
 
 ```
-my-project/
-├── sanity.blueprint.ts       # Blueprint config
+my-monorepo/
+├── sanity.blueprint.ts       # Next to lockfile
 ├── functions/
 │   └── classify-conversations/
 │       └── index.ts
-├── package.json              # Shared dependencies for functions
-├── pnpm-lock.yaml            # (or yarn.lock, package-lock.json)
+├── package.json              # Function deps go here (project-level)
+├── yarn.lock                 # (or pnpm-lock.yaml, package-lock.json)
+├── .env
+└── apps/
+    ├── studio/
+    └── web/
+```
+
+In a **flat project**, the layout is the same — everything at the root:
+
+```
+my-project/
+├── sanity.blueprint.ts
+├── functions/
+│   └── classify-conversations/
+│       └── index.ts
+├── package.json
+├── pnpm-lock.yaml
 ├── .env
 ├── studio/
 └── app/
 ```
 
-Functions use the root `package.json` for dependencies by default. See [Sanity Functions: Dependencies](https://www.sanity.io/docs/functions/function-dependencies) for alternative setups.
+These are reference layouts for new blueprints — always adapt to the user's existing directory structure. If a blueprint already exists elsewhere, use that location instead. If the project has multiple blueprint stacks in a subdirectory pattern (e.g. `apps/blueprints/studio/`, `apps/blueprints/web/`), create a new stack following the same convention.
 
 ## Setup
 
@@ -73,9 +93,14 @@ const result = streamText({
 })
 ```
 
-**Write client**: Create a Sanity client with a token that has Editor permissions. Create the token at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Editor role. Store it as `SANITY_API_WRITE_TOKEN` in your app's environment.
+**Write client**: Requires a Sanity client with a token that has Editor permissions. Ask the user if they already have a write token in their environment — many projects do (e.g. `ADMIN_STUDIO_WRITE_TOKEN`, `SANITY_API_WRITE_TOKEN`). If not, create one at [sanity.io/manage](https://sanity.io/manage) → Project → API → Tokens with Editor role.
 
-**Thread ID**: Each conversation needs a unique `threadId`. Generate one when a new chat starts and persist it across messages in that conversation. See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for how this is handled with cookies.
+**Thread ID**: Each conversation needs a unique `threadId`. Generate one when a new chat starts and persist it across messages in that conversation. How it reaches the server depends on the setup:
+
+- **AI SDK `useChat`**: The hook sends `id` (the chat ID) in the request body automatically. Extract it in your route handler and use it as `threadId`.
+- **Custom transport**: Pass the thread ID via request body, headers, or cookies — whatever fits the app's architecture.
+
+See [ecommerce/app/src/app/api/chat/route.ts](ecommerce/app/src/app/api/chat/route.ts) for how this is handled with cookies.
 
 For client-side thread ID generation, use SSR-safe initialization to avoid hydration mismatches:
 
@@ -114,119 +139,65 @@ The function generates a deterministic document ID from `agentId` + `threadId`, 
 
 **Steps 2-7 below set up the classification function** — a separate scheduled job that analyzes saved conversations. This runs outside your app using Sanity Functions.
 
-### Step 2: Add Dependencies to Root package.json
+### Step 2: Add Dependencies
 
-Add these dependencies to your **root** `package.json` (not `studio/package.json`):
+Ensure these packages are in the `package.json` next to `sanity.blueprint.ts` — merge them into existing dependencies, do not overwrite the file:
 
-```json
-{
-  "dependencies": {
-    "@ai-sdk/anthropic": "^3",
-    "@sanity/agent-context": "latest",
-    "@sanity/client": "^7",
-    "@sanity/functions": "^1",
-    "ai": "^6.0.137"  // Minimum version required for experimental_telemetry.integrations
-  },
-  "devDependencies": {
-    "@sanity/blueprints": "^0.15.0",
-    "dotenv": "^17"
-  }
-}
-```
+**dependencies**: `@ai-sdk/anthropic` (^3), `@sanity/agent-context` (latest), `@sanity/client` (^7), `@sanity/functions` (^1), `ai` (^6.0.175 minimum — required for `experimental_telemetry.integrations`)
+
+**devDependencies**: `@sanity/blueprints` (latest), `dotenv` (^17)
 
 If using a different LLM provider, swap `@ai-sdk/anthropic` for your provider's package (e.g., `@ai-sdk/openai`).
 
 ### Step 3: Create the Classification Function
 
-Create `functions/classify-conversations/index.ts` at your **project root**:
+Create `functions/classify-conversations/index.ts` next to `sanity.blueprint.ts`:
 
 ```ts
 // functions/classify-conversations/index.ts
 import {createClient} from '@sanity/client'
-import {
-  classifyConversation,
-  getConversationsToClassify,
-  getPreviousContentGaps,
-} from '@sanity/agent-context/insights'
+import {classifyConversations} from '@sanity/agent-context/insights'
 import {scheduledEventHandler} from '@sanity/functions'
 import {anthropic} from '@ai-sdk/anthropic'
-import {env} from 'node:process'
-
-const CONCURRENCY = 5
 
 export const handler = scheduledEventHandler(async ({context}) => {
-  const {SANITY_PROJECT_ID, SANITY_DATASET} = env
-
   if (!context.clientOptions?.token) {
     console.error('[classify-conversations] No client token available')
     return
   }
 
+  // SANITY_PROJECT_ID and SANITY_DATASET are injected by the blueprint's env block.
+  // These are example names — adapt to match the user's env var conventions.
   const client = createClient({
-    projectId: SANITY_PROJECT_ID,
-    dataset: SANITY_DATASET,
+    projectId: process.env.SANITY_PROJECT_ID,
+    dataset: process.env.SANITY_DATASET,
     apiVersion: '2026-01-01',
     token: context.clientOptions.token,
     useCdn: false,
   })
 
-  const [conversations, previousContentGaps] = await Promise.all([
-    getConversationsToClassify({client}),
-    getPreviousContentGaps({client}),
-  ])
+  const result = await classifyConversations({
+    client,
+    model: anthropic('claude-sonnet-4-5'),
+    telemetry: {
+      shareMetrics: true,
+      // shareConversations: true,
+      // contact: 'you@company.com',
+    },
+  })
 
-  if (conversations.length === 0) {
-    console.log('[classify-conversations] No conversations to classify')
-    return
-  }
-
-  console.log(`[classify-conversations] Found ${conversations.length} conversations to classify`)
-
-  let successCount = 0
-  let errorCount = 0
-
-  for (let i = 0; i < conversations.length; i += CONCURRENCY) {
-    const batch = conversations.slice(i, i + CONCURRENCY)
-    const results = await Promise.allSettled(
-      batch.map(async (conv) => {
-        await classifyConversation({
-          client,
-          conversationId: conv._id,
-          model: anthropic('claude-sonnet-4-5'),
-          messages: conv.messages,
-          modelProvider: conv.modelProvider,
-          modelId: conv.modelId,
-          tokenUsage: conv.tokenUsage,
-          previousContentGaps,
-          telemetry: {
-            shareMetrics: true,
-            // shareConversations: true,
-            // contact: 'you@company.com',
-          },
-        })
-      }),
-    )
-
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        successCount++
-      } else {
-        errorCount++
-        console.error(`[classify-conversations] Failed to classify:`, result.reason)
-      }
-    }
-  }
-
-  console.log(`[classify-conversations] Completed: ${successCount} succeeded, ${errorCount} failed`)
+  console.log(
+    `Classified ${result.successCount}/${result.totalFound} conversations${result.errorCount > 0 ? ` (${result.errorCount} failed)` : ''}`,
+  )
 })
 ```
 
-### Step 4: Create the Blueprint
+### Step 4: Configure the Blueprint
 
-Create `sanity.blueprint.ts` at your **project root**:
+If `sanity.blueprint.ts` already exists, add the scheduled function and robot token resources to it. Otherwise, create it:
 
 ```ts
-// sanity.blueprint.ts (project root - NOT in studio/)
+// sanity.blueprint.ts
 import {defineBlueprint, defineRobotToken, defineScheduledFunction} from '@sanity/blueprints'
 import 'dotenv/config'
 
@@ -260,36 +231,44 @@ export default defineBlueprint({
 })
 ```
 
-**Important**: The `resourceId` in `defineRobotToken` must be your actual project ID. Using `process.env.SANITY_STUDIO_PROJECT_ID` reads it from your `.env` file at deploy time.
+**How this works**: The `env` block reads from your local `.env` at deploy time and injects the values into the function's `process.env` at runtime. The robot token provides only the auth token — scheduled functions need projectId and dataset via env vars. The env var names on the left (`SANITY_PROJECT_ID`) are what the function reads; the names on the right (`SANITY_STUDIO_PROJECT_ID`) are what your `.env` file uses. Ask the user for the correct `.env` var names in their project.
+
+**Robot token role**: The robot token must have `editor` role — classification writes results back to conversation documents. Using `viewer` will cause silent write failures.
 
 ### Step 5: Configure Environment Variables
 
-Create or update `.env` at your project root:
+The function needs three values at runtime: project ID, dataset, and an LLM API key.
+
+**Project ID and dataset** are passed via the blueprint's `env` block (Step 4). The blueprint reads from your `.env` at deploy time. Create or update `.env` next to `sanity.blueprint.ts` — ask the user what env var names their project uses:
 
 ```bash
-# Required for blueprint deployment
+# Example — use the env var names from the project's existing .env
 SANITY_STUDIO_PROJECT_ID=your-project-id
 SANITY_STUDIO_DATASET=production
-
-# Required for classification function
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
+**LLM API key** is also in the `env` block, so it's read from `.env` at deploy time. You can alternatively set it after deploying (Step 7) via `npx sanity functions env add` — useful if you don't want secrets in `.env` or are deploying from CI.
+
 ### Step 6: Test Locally
 
-Before deploying, test the function locally to verify everything works:
+Before deploying, verify the full pipeline works:
+
+1. **Conversations are saved**: Check Studio for `sanity.agentContextConversation` documents (send a few messages to your agent first)
+2. **Insights tool is visible**: Open Studio and confirm the Agent Insights tool appears in the topbar
+3. **Classification runs**: Execute the function locally:
 
 ```bash
 npx sanity functions test classify-conversations --with-user-token
 ```
 
-The `--with-user-token` flag provides your personal token for API calls. The function reads `ANTHROPIC_API_KEY` from your `.env` file.
+The `--with-user-token` flag injects your personal token into `context.clientOptions` — this is the same path the robot token uses in production. The function reads `ANTHROPIC_API_KEY` from the `.env` file next to `sanity.blueprint.ts`.
 
 **Note**: Local testing runs against your real dataset — conversations will actually be classified. Only conversations that have been idle for at least 10 minutes are eligible for classification (to avoid classifying active conversations).
 
 ### Step 7: Deploy
 
-Run all commands from your **project root** (where `sanity.blueprint.ts` and your lockfile are located).
+Run all commands from the directory containing `sanity.blueprint.ts`.
 
 **Prerequisites**: Make sure you're logged in to the Sanity CLI. Run `npx sanity login` if needed.
 
@@ -303,10 +282,13 @@ npx sanity blueprints init
 # 3. Promote to organization scope (required for scheduled functions)
 npx sanity blueprints promote
 
-# 4. Deploy the blueprint and function (ask for permission to deploy)
+# 4. Check for issues
+npx sanity blueprints doctor
+
+# 5. Deploy the blueprint and function (ask for permission to deploy)
 npx sanity blueprints deploy
 
-# 5. Set the API key as an environment variable (after deploy)
+# 6. Set the API key as an environment variable (after deploy)
 npx sanity functions env add classify-conversations ANTHROPIC_API_KEY <your-api-key>
 ```
 
@@ -314,10 +296,9 @@ npx sanity functions env add classify-conversations ANTHROPIC_API_KEY <your-api-
 
 - **`blueprints init`**: Links your project to a Sanity blueprint stack. Run once per project.
 - **`blueprints promote`**: Elevates the stack to organization scope, which is required for scheduled functions. You need organization member permissions to run this.
+- **`blueprints doctor`**: Checks blueprint health — flags dependency issues, version mismatches, and directory structure problems.
 - **`blueprints deploy`**: Deploys the function and schedules it to run.
 - **`functions env add`**: Sets an environment variable for a deployed function. Must be run after deploy. Replace `<your-api-key>` with your actual API key.
-
-**Package manager**: The CLI detects your package manager from the lockfile. If it can't detect it, pass `--fn-installer pnpm` (or `npm`/`yarn`) to the deploy command.
 
 ### Step 8: Verify Deployment
 
@@ -375,16 +356,12 @@ If you can, enabling metadata-only telemetry helps us prioritize improvements. I
 
 ### "No client token available"
 
-The robot token isn't configured correctly. Verify:
+**In production**: The robot token isn't configured correctly. Verify:
 
-- `robotToken` in the blueprint matches the robot token resource name
+- `robotToken` in the blueprint matches the robot token resource name (e.g. `$.resources.classify-conversations-robot.token`)
 - The `resourceId` in `defineRobotToken` is your actual project ID
 
-### Environment variables not found
-
-- Blueprint reads env vars at **deploy time** from your local `.env`
-- Function reads env vars at **runtime** from what was passed via `env: {}` in the blueprint
-- Make sure `.env` exists and has the required values before deploying
+**During local testing**: Run with `--with-user-token` to inject your personal token into `context.clientOptions`.
 
 ### Classification not finding conversations
 
@@ -405,60 +382,35 @@ sanityInsightsIntegration({
 })
 ```
 
-### `getConversationsToClassify`
+### `classifyConversations`
+
+The recommended way to classify conversations. Handles fetching, batching, and error handling in a single call:
 
 ```ts
-import {getConversationsToClassify} from '@sanity/agent-context/insights'
+import {classifyConversations} from '@sanity/agent-context/insights'
 
-const conversations = await getConversationsToClassify({
+const result = await classifyConversations({
   client: SanityClient,
-  agentId?: string,    // Optional: filter by agent
-  limit?: number,      // Optional: max results
-})
-// Each conversation includes: _id, agentId, threadId, messages,
-// modelProvider?, modelId?, tokenUsage?
-```
-
-### `getPreviousContentGaps`
-
-Fetches previously identified content gaps, ranked by frequency. Pass the result to `classifyConversation` to encourage consistent terminology:
-
-```ts
-import {getPreviousContentGaps} from '@sanity/agent-context/insights'
-
-const previousContentGaps = await getPreviousContentGaps({
-  client: SanityClient,
-  maxAgeDays?: number,    // Optional: only include gaps from last N days (default 30)
-  limit?: number,         // Optional: max gaps to return (default 50)
-  agentId?: string,       // Optional: filter by agent
-})
-// Returns: string[]
-```
-
-### `classifyConversation`
-
-```ts
-import {classifyConversation} from '@sanity/agent-context/insights'
-
-await classifyConversation({
-  client: SanityClient,
-  conversationId: string,
   model: LanguageModel,             // Any AI SDK compatible model
-  messages: Message[],              // Conversation messages to classify
-  modelProvider?: string,           // LLM provider (for telemetry)
-  modelId?: string,                 // Model ID (for telemetry)
-  tokenUsage?: {                    // Token usage stats (for telemetry)
-    inputTokens?: number,
-    outputTokens?: number,
-    totalTokens?: number,
-  },
-  previousContentGaps?: string[],   // From getPreviousContentGaps
-  telemetry: {
-    shareMetrics: true,             // Share metadata-only metrics with Sanity
-    // shareConversations: true,    // Also share full message contents
-    // contact: 'you@company.com',  // So we can reach you
-  },
+  telemetry?: TelemetryConfig,      // Optional: share metrics with Sanity
+  agentId?: string,                 // Optional: filter by agent
+  limit?: number,                   // Optional: max conversations to process
+  cooldownMinutes?: number,         // Optional: idle time before eligibility (default 10)
+  concurrency?: number,             // Optional: parallel classifications (default 5)
 })
+// Returns: { successCount, errorCount, totalFound }
+```
+
+### Lower-level Primitives
+
+For custom workflows, use the individual primitives directly:
+
+- `getConversationsToClassify({client, agentId?, limit?, cooldownMinutes?})` — Find conversations needing classification
+- `getPreviousContentGaps({client, agentId?, maxAgeDays?, limit?})` — Fetch content gaps ranked by frequency
+- `classifyConversation({client, conversationId, model, messages, ...})` — Classify a single conversation
+
+```ts
+import {classifyConversation, getConversationsToClassify, getPreviousContentGaps} from '@sanity/agent-context/insights'
 ```
 
 ## Opting Out
